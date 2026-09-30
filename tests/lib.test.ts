@@ -25,11 +25,11 @@ describe('rng', () => {
 
 describe('format', () => {
   it('formats euros compactly', () => {
-    expect(formatEur(220_000_000)).toBe('€220M');
-    expect(formatEur(45_000_000)).toBe('€45M');
-    expect(formatEur(45_500_000)).toBe('€45.5M');
-    expect(formatEur(1_500_000)).toBe('€1.5M');
-    expect(formatEur(750_000)).toBe('€750K');
+    expect(formatEur(220_000_000, 'en')).toBe('€220M');
+    expect(formatEur(45_000_000, 'en')).toBe('€45M');
+    expect(formatEur(45_500_000, 'en')).toBe('€45.5M');
+    expect(formatEur(1_500_000, 'en')).toBe('€1.5M');
+    expect(formatEur(750_000, 'en')).toBe('€750K');
   });
 
   it('formats gaps with a real minus sign and no negative zero', () => {

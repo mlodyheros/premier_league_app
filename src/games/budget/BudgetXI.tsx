@@ -3,9 +3,11 @@ import { Avatar } from '../../components/Avatar';
 import { Pitch } from '../../components/Pitch';
 import { useDataset } from '../../data/store';
 import type { Player } from '../../data/types';
-import { SOURCE_LABEL, SOURCE_SHORT, valueSource } from '../../data/valueSource';
-import { fold, formatEur } from '../../lib/format';
-import { clubsBeaten, clubTeams, formatOdds, withUserTeam } from '../../lib/league';
+import { shareValues, valueSource, valuesPhrase } from '../../data/valueSource';
+import { t, tj } from '../../i18n';
+import { posLabel, shareNote } from '../../i18n/labels';
+import { fold, formatDecimal, formatEur, formatOdds } from '../../lib/format';
+import { clubsBeaten, clubTeams, withUserTeam } from '../../lib/league';
 import { getBest, submitBest } from '../../lib/records';
 import { expectedPoints, perfectSeasonOdds } from '../../lib/season';
 import { shareText, siteUrl } from '../../lib/share';
@@ -112,7 +114,7 @@ export function BudgetXI() {
   const outlook = useMemo(() => {
     if (!complete) return null;
     const { league } = withUserTeam(clubs, strength);
-    const opponents = league.slice(1).map((t) => t.strength);
+    const opponents = league.slice(1).map((team) => team.strength);
     return {
       points: expectedPoints(strength, opponents),
       perfect: perfectSeasonOdds(strength, opponents),
@@ -122,34 +124,37 @@ export function BudgetXI() {
 
   async function share() {
     const lines = [...formation.slots].reverse().map((s) => lineup[s.id]?.short ?? '?');
-    const text = `Budget XI ${formatEur(budget)} · ${strength.toFixed(1)} OVR (${grade(strength)}) · ${SOURCE_SHORT[source]} values\n${formation.label}: ${lines.join(', ')}\n${siteUrl()}#/budget`;
-    const r = await shareText(text);
-    setNote(r === 'copied' ? 'Copied to clipboard' : r === 'shared' ? 'Shared' : 'Could not share');
+    const head = t('budget.share', {
+      budget: formatEur(budget),
+      ovr: formatDecimal(strength),
+      grade: grade(strength),
+      values: shareValues(source),
+    });
+    setNote(shareNote(await shareText(`${head}\n${formation.label}: ${lines.join(', ')}\n${siteUrl()}#/budget`)));
   }
 
   return (
     <section class="game budget">
       <div class="game__head">
-        <h1>Budget XI</h1>
+        <h1>{t('game.budget.title')}</h1>
         <div class="scorebug">
           <span>
-            <small>OVR</small>
-            <b>{strength ? strength.toFixed(1) : '–'}</b>
+            <small>{t('common.ovr')}</small>
+            <b>{strength ? formatDecimal(strength) : '–'}</b>
           </span>
           <span>
-            <small>Best</small>
-            <b>{best ? best.toFixed(1) : '–'}</b>
+            <small>{t('common.best')}</small>
+            <b>{best ? formatDecimal(best) : '–'}</b>
           </span>
         </div>
       </div>
       <p class="lede">
-        Build the strongest XI you can within budget. Prices are <b>{SOURCE_LABEL[source]}</b> values. A player's
-        rating mixes his performance with his value, and drops when he plays out of position.
+        {tj('budget.lede', { values: <b>{valuesPhrase(source)}</b> })}
       </p>
 
       <div class="controls">
         <label>
-          Budget
+          {t('budget.budget')}
           <select value={budget} onChange={(e) => setBudget(Number((e.target as HTMLSelectElement).value))}>
             {BUDGETS.map((b) => (
               <option value={b}>{formatEur(b)}</option>
@@ -157,7 +162,7 @@ export function BudgetXI() {
           </select>
         </label>
         <label>
-          Formation
+          {t('budget.formation')}
           <select value={formationKey} onChange={(e) => changeFormation((e.target as HTMLSelectElement).value)}>
             {FORMATIONS.map((f) => (
               <option value={f.key}>{f.label}</option>
@@ -165,23 +170,18 @@ export function BudgetXI() {
           </select>
         </label>
         <button class="btn btn--ghost" onClick={reset} disabled={!Object.keys(picks).length}>
-          Clear
+          {t('budget.clear')}
         </button>
       </div>
 
       <div class={`budget__bar ${over ? 'over' : ''}`}>
         <div class="budget__fill" style={{ width: `${Math.min(100, (used / budget) * 100)}%` }} />
-        <span>
-          Spent <b>{formatEur(used)}</b>
-        </span>
-        <span>
-          {over ? 'Over by ' : 'Left '}
-          <b>{formatEur(Math.abs(budget - used))}</b>
-        </span>
+        <span>{tj('budget.spent', { v: <b>{formatEur(used)}</b> })}</span>
+        <span>{tj(over ? 'budget.overBy' : 'budget.left', { v: <b>{formatEur(Math.abs(budget - used))}</b> })}</span>
       </div>
       {over && (
         <p class="notice-inline">
-          This XI costs more than {formatEur(budget)} on {SOURCE_LABEL[source]} values. Swap someone out to finish it.
+          {t('budget.overNotice', { budget: formatEur(budget), values: valuesPhrase(source) })}
         </p>
       )}
 
@@ -191,30 +191,29 @@ export function BudgetXI() {
         <div class="picker" ref={pickerRef}>
           {!slot ? (
             <p class="picker__hint">
-              {complete ? 'Tap any position to swap a player.' : 'Tap a position on the pitch to pick a player for it.'}
+              {complete ? t('budget.hintSwap') : t('budget.hintPick')}
             </p>
           ) : (
             <>
               <div class="picker__head">
-                <h2>{slot.type}</h2>
+                <h2>{posLabel(slot.type)}</h2>
                 {lineup[slot.id] && (
                   <button class="btn btn--ghost btn--sm" onClick={removeFromSlot}>
-                    Remove {lineup[slot.id]!.short}
+                    {t('budget.remove', { name: lineup[slot.id]!.short })}
                   </button>
                 )}
               </div>
               <div class="picker__tools">
                 <input
                   type="search"
-                  placeholder="Filter by name or club"
+                  placeholder={t('budget.filter')}
                   value={query}
                   onInput={(e) => setQuery((e.target as HTMLInputElement).value)}
                 />
-                <select value={sort} onChange={(e) => setSort((e.target as HTMLSelectElement).value as SortKey)} aria-label="Sort">
-                  <option value="rating">Best rated</option>
-                  <option value="bargain">Best value</option>
-                  <option value="cheap">Cheapest</option>
-                  <option value="dear">Dearest</option>
+                <select value={sort} onChange={(e) => setSort((e.target as HTMLSelectElement).value as SortKey)} aria-label={t('budget.sort')}>
+                  {(['rating', 'bargain', 'cheap', 'dear'] as SortKey[]).map((k) => (
+                    <option value={k}>{t(`budget.sort.${k}`)}</option>
+                  ))}
                 </select>
               </div>
               <ul class="picker__list">
@@ -229,8 +228,8 @@ export function BudgetXI() {
                       <span class="prow__name">
                         {o.player.name}
                         <small>
-                          {meta.clubs[o.player.club].short} · {o.player.pos}
-                          {o.fit < 1 && <em> · {Math.round(o.fit * 100)}% fit</em>}
+                          {meta.clubs[o.player.club].short} · {posLabel(o.player.pos)}
+                          {o.fit < 1 && <em> · {t('budget.fit', { pct: Math.round(o.fit * 100) })}</em>}
                         </small>
                       </span>
                       <span class="prow__ovr">{Math.round(o.rating)}</span>
@@ -238,7 +237,7 @@ export function BudgetXI() {
                     </button>
                   </li>
                 ))}
-                {!rows.length && <li class="picker__hint">No one matches.</li>}
+                {!rows.length && <li class="picker__hint">{t('budget.none')}</li>}
               </ul>
             </>
           )}
@@ -248,28 +247,21 @@ export function BudgetXI() {
       {complete && outlook && (
         <div class="end end--win">
           <p class="end__title">
-            {strength.toFixed(1)} OVR · grade {grade(strength)} {newBest ? '· new best!' : ''}
+            {t('budget.result', { ovr: formatDecimal(strength), grade: grade(strength) })}
+            {newBest ? t('common.newBestSuffix') : ''}
           </p>
           <ul class="facts">
-            <li>
-              Stronger than <b>{outlook.beaten}</b> of the 20 Premier League squads
-            </li>
-            <li>
-              Expected points over a season: <b>{Math.round(outlook.points)}</b>
-            </li>
-            <li>
-              Chance of going 38-0: <b>{formatOdds(outlook.perfect)}</b>
-            </li>
-            <li>
-              Spent <b>{formatEur(used)}</b> of {formatEur(budget)}
-            </li>
+            <li>{tj('budget.beaten', { n: <b>{outlook.beaten}</b> })}</li>
+            <li>{tj('budget.points', { n: <b>{Math.round(outlook.points)}</b> })}</li>
+            <li>{tj('budget.odds', { odds: <b>{formatOdds(outlook.perfect)}</b> })}</li>
+            <li>{tj('budget.spentOf', { v: <b>{formatEur(used)}</b>, budget: formatEur(budget) })}</li>
           </ul>
           <div class="end__actions">
             <button class="btn" onClick={share}>
-              Share
+              {t('common.share')}
             </button>
             <a class="btn btn--primary" href="#/road38">
-              Try Road to 38-0 →
+              {t('budget.tryRoad')}
             </a>
           </div>
           {note && <p class="end__note" role="status">{note}</p>}

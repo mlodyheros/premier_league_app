@@ -85,6 +85,17 @@ export interface Meta {
     cvTopDecileRatio: number;
     rangeLevel: number;
     tiers: Record<string, TierInfo>;
+    /** Plain-language accuracy figures from the same out-of-fold estimates. */
+    diagnostics: {
+      typicalMiss: number;
+      inRange: number;
+      ratioUnder5m: number;
+      ratioOver20m: number;
+      typicalMissNoRecord: number;
+      typicalMissWithRecord: number;
+      totalModelEur: number;
+      totalTmEur: number;
+    };
   };
   clubs: Record<string, Club>;
 }

@@ -2,6 +2,8 @@ import { useState } from 'preact/hooks';
 import { PlayerCard } from '../../components/PlayerCard';
 import { ValueCompare } from '../../components/ValueCompare';
 import { useDataset } from '../../data/store';
+import { t, tj } from '../../i18n';
+import { shareNote } from '../../i18n/labels';
 import { formatEur } from '../../lib/format';
 import { getBest, submitBest } from '../../lib/records';
 import { shareText, siteUrl } from '../../lib/share';
@@ -45,8 +47,8 @@ export function BeatModel() {
 
   async function share() {
     const grid = marks.map((m) => (m ? '🟩' : '🟥')).join('');
-    const r = await shareText(`Beat the Model ${score}/${ROUNDS}\n${grid}\n${siteUrl()}#/beat-model`);
-    setNote(r === 'copied' ? 'Copied to clipboard' : r === 'shared' ? 'Shared' : 'Could not share');
+    const head = t('bm.share', { score, rounds: ROUNDS });
+    setNote(shareNote(await shareText(`${head}\n${grid}\n${siteUrl()}#/beat-model`)));
   }
 
   const right = revealed ? marks[index] : null;
@@ -54,26 +56,25 @@ export function BeatModel() {
   return (
     <section class="game bm">
       <div class="game__head">
-        <h1>Beat the Model</h1>
+        <h1>{t('game.beat.title')}</h1>
         <div class="scorebug">
           <span>
-            <small>Score</small>
+            <small>{t('common.score')}</small>
             <b>
               {score}/{answers.length}
             </b>
           </span>
           <span>
-            <small>Best</small>
+            <small>{t('common.best')}</small>
             <b>{best ?? '–'}</b>
           </span>
         </div>
       </div>
       <p class="lede">
-        Here's the player and his Transfermarkt value. Does the model rate him <b>over</b> or <b>under</b> that? This
-        game always compares both, whatever the switch says.
+        {tj('bm.lede', { over: <b>{t('bm.overWord')}</b>, under: <b>{t('bm.underWord')}</b> })}
       </p>
 
-      <ol class="progress" aria-label="Rounds">
+      <ol class="progress" aria-label={t('common.rounds')}>
         {Array.from({ length: ROUNDS }, (_, i) => (
           <li class={i < marks.length ? (marks[i] ? 'ok' : 'no') : i === index ? 'now' : ''} />
         ))}
@@ -81,34 +82,34 @@ export function BeatModel() {
 
       <PlayerCard player={player}>
         <p class="bm__tm">
-          <small>Transfermarkt</small>
+          <small>{t('bm.tm')}</small>
           {formatEur(player.tm)}
         </p>
         {!revealed ? (
           <div class="hl__buttons">
             <button class="btn btn--primary" onClick={() => answer('over')}>
-              ▲ Model says more
+              {t('bm.more')}
             </button>
             <button class="btn btn--magenta" onClick={() => answer('under')}>
-              ▼ Model says less
+              {t('bm.less')}
             </button>
           </div>
         ) : (
           <div class="bm__reveal">
             <p class={`bm__verdict ${right ? 'good' : 'bad'}`}>
-              {right ? '✓ Right' : '✗ Wrong'}: the model says {formatEur(player.model)}
+              {t('bm.verdict', { mark: right ? t('bm.right') : t('bm.wrong'), value: formatEur(player.model) })}
             </p>
             <ValueCompare player={player} range />
             {modelNotes(player, meta.gameweek).length > 0 && (
               <ul class="bm__notes">
                 {modelNotes(player, meta.gameweek).map((n) => (
-                  <li>{n}</li>
+                  <li>{t(n.key, n.params)}</li>
                 ))}
               </ul>
             )}
             {answers.length < ROUNDS && (
               <button class="btn btn--primary" onClick={() => setRevealed(false)}>
-                Next player →
+                {t('common.nextPlayerArrow')}
               </button>
             )}
           </div>
@@ -118,25 +119,21 @@ export function BeatModel() {
       {answers.length === ROUNDS && (
         <div class={`end ${score >= 7 ? 'end--win' : 'end--lose'}`}>
           <p class="end__title">
-            {score}/{ROUNDS} {newBest ? '· new best!' : ''}
+            {score}/{ROUNDS}
+            {newBest ? t('common.newBestSuffix') : ''}
           </p>
           <p class="end__note">
-            {score >= 8
-              ? 'You read the model like its author.'
-              : score >= 6
-                ? 'Better than a coin toss.'
-                : 'The model is harder to read than it looks.'}{' '}
-            Guessing at random scores 5 on average.
+            {score >= 8 ? t('bm.great') : score >= 6 ? t('bm.good') : t('bm.poor')} {t('bm.random')}
           </p>
           <div class="end__actions">
             <button class="btn btn--primary" onClick={restart}>
-              Play again
+              {t('common.playAgain')}
             </button>
             <button class="btn" onClick={share}>
-              Share
+              {t('common.share')}
             </button>
             <a class="btn btn--ghost" href="#/how">
-              How the model works
+              {t('bm.howLink')}
             </a>
           </div>
           {note && <p class="end__note" role="status">{note}</p>}

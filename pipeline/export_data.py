@@ -241,6 +241,29 @@ def build(root: Path) -> tuple[list[dict], dict]:
     return players, meta
 
 
+def _diagnostics(players: list[dict]) -> dict:
+    """Plain-language accuracy figures, from the same out-of-fold estimates the
+    games use. They reproduce pl-value's README (typical miss 28%, 430 of 540
+    inside the range, 1.7x below EUR5m, 0.95x above EUR20m)."""
+    from statistics import median
+
+    def miss(p):
+        return math.exp(abs(math.log(p["model"] / p["tm"]))) - 1
+
+    no_record = [p for p in players if p["tier"] == 2]
+    others = [p for p in players if p["tier"] != 2]
+    return {
+        "typicalMiss": round(median(miss(p) for p in players), 3),
+        "inRange": sum(p["low"] <= p["tm"] <= p["high"] for p in players),
+        "ratioUnder5m": round(median(p["model"] / p["tm"] for p in players if p["tm"] < 5_000_000), 2),
+        "ratioOver20m": round(median(p["model"] / p["tm"] for p in players if p["tm"] > 20_000_000), 2),
+        "typicalMissNoRecord": round(median(miss(p) for p in no_record), 3),
+        "typicalMissWithRecord": round(median(miss(p) for p in others), 3),
+        "totalModelEur": sum(p["model"] for p in players),
+        "totalTmEur": sum(p["tm"] for p in players),
+    }
+
+
 def _check(players: list[dict]) -> None:
     for p in players:
         for key in ("tm", "model", "low", "high"):
@@ -267,6 +290,7 @@ def main() -> None:
 
     players, meta = build(root)
     _check(players)
+    meta["model"]["diagnostics"] = _diagnostics(players)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     (OUT_DIR / "players.json").write_text(
         json.dumps(players, ensure_ascii=False, separators=(",", ":"), allow_nan=False)

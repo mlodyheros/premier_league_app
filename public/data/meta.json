@@ -2,7 +2,7 @@
   "season": "2026/27",
   "dataDate": "2026-09-24",
   "gameweek": 5,
-  "exportedAt": "2026-09-30T23:11:11+00:00",
+  "exportedAt": "2026-09-30T23:45:28+00:00",
   "source": {
     "name": "pl-value-predictor",
     "url": "https://github.com/mlodyheros/pl-value-predictor"
@@ -40,6 +40,16 @@
         "rangeLow": 0.3,
         "rangeHigh": 1.8
       }
+    },
+    "diagnostics": {
+      "typicalMiss": 0.279,
+      "inRange": 430,
+      "ratioUnder5m": 1.73,
+      "ratioOver20m": 0.95,
+      "typicalMissNoRecord": 0.479,
+      "typicalMissWithRecord": 0.266,
+      "totalModelEur": 13150830000,
+      "totalTmEur": 13159125000
     }
   },
   "clubs": {

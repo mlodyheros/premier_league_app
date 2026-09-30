@@ -1,6 +1,7 @@
 /** Road to 38-0: the draft rules and the season verdict. No UI here. */
 import type { Player } from '../../data/types';
 import type { ValueSource } from '../../data/valueSource';
+import type { Key } from '../../i18n';
 import type { MatchResult, TableRow } from '../../lib/season';
 import { fit, slotRating, type Formation, type Lineup, type Slot } from '../../lib/strength';
 
@@ -78,12 +79,12 @@ export interface Record38 {
   points: number;
 }
 
-export function badges(row: Record38, position: number): { icon: string; label: string }[] {
-  const out: { icon: string; label: string }[] = [];
-  if (row.won === 38) out.push({ icon: '⭐', label: '38-0: the perfect season' });
-  if (position === 1) out.push({ icon: '🏆', label: 'Champions' });
-  if (row.lost === 0 && row.won < 38) out.push({ icon: '🛡️', label: 'Invincibles: unbeaten' });
-  if (row.points >= 100) out.push({ icon: '💯', label: 'Centurions: 100+ points' });
+export function badges(row: Record38, position: number): { icon: string; label: Key }[] {
+  const out: { icon: string; label: Key }[] = [];
+  if (row.won === 38) out.push({ icon: '⭐', label: 'road.badge.perfect' });
+  if (position === 1) out.push({ icon: '🏆', label: 'road.badge.champions' });
+  if (row.lost === 0 && row.won < 38) out.push({ icon: '🛡️', label: 'road.badge.invincible' });
+  if (row.points >= 100) out.push({ icon: '💯', label: 'road.badge.centurion' });
   return out;
 }
 

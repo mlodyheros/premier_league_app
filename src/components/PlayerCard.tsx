@@ -1,5 +1,9 @@
 import type { ComponentChildren } from 'preact';
 import type { Player } from '../data/types';
+import { t } from '../i18n';
+import { countryName } from '../i18n/countries';
+import { posFull, posLabel } from '../i18n/labels';
+import { formatInt } from '../lib/format';
 import { Avatar, ClubChip } from './Avatar';
 
 /** A player's identity and record, with room for a value or a question below. */
@@ -20,21 +24,24 @@ export function PlayerCard({
         <div class="pcard__id">
           <h3 class="pcard__name">{player.name}</h3>
           <p class="pcard__meta">
-            <ClubChip code={player.club} /> · {player.pos} · <span title={player.nat}>{player.flag}</span> · {player.age}
+            <ClubChip code={player.club} /> · <abbr title={posFull(player.pos)}>{posLabel(player.pos)}</abbr> ·{' '}
+            <span title={countryName(player.nat)}>{player.flag}</span> · {player.age}
           </p>
         </div>
       </div>
       {!compact && (
         <dl class="pcard__stats">
           <div>
-            <dt>This season</dt>
-            <dd>
-              {s.minutes}′ · {s.goals}G {s.assists}A
-            </dd>
+            <dt>{t('card.thisSeason')}</dt>
+            <dd>{t('card.statline', { minutes: formatInt(s.minutes), goals: s.goals, assists: s.assists })}</dd>
           </div>
           <div>
-            <dt>PL, last 4 seasons</dt>
-            <dd>{s.plSeasons ? `${s.plMinutes.toLocaleString('en')}′ · ${s.plGoals}G ${s.plAssists}A` : 'none'}</dd>
+            <dt>{t('card.plHistory')}</dt>
+            <dd>
+              {s.plSeasons
+                ? t('card.statline', { minutes: formatInt(s.plMinutes), goals: s.plGoals, assists: s.plAssists })
+                : t('card.none')}
+            </dd>
           </div>
         </dl>
       )}

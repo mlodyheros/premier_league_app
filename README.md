@@ -20,6 +20,13 @@ time, and scores, streaks and settings live in the browser's local storage.
 
 Every game has a shareable result and keeps personal bests in the browser.
 
+**Languages:** English and Polish. The ⚙ Settings dialog switches language
+(first visit follows the browser), switches the value source, and resets scores
+and progress. The **How it works** page explains the model, its accuracy and
+limits, the players it disagrees with Transfermarkt about most, and how every
+game and the season simulation work. Its figures come from the exported data and
+the simulation's own constants, so they update with the data.
+
 ## Run it
 
 Needs Node.js 20.19 or newer.
@@ -93,12 +100,26 @@ src/
   games/<game>/      logic.ts (pure rules) and <Game>.tsx (UI), one folder per game
   lib/strength.ts    ratings, formations, positional fit, squad strength
   lib/season.ts      the match model and 38-game season simulation
+  i18n/              en.ts (reference), pl.ts (typed against it), countries, labels
   pages/             home, how it works
 tests/               Vitest unit tests
 ```
 
 Games reach data only through `src/data/`, so the data source can change without
 touching them.
+
+## Translations
+
+All text lives in [`src/i18n/en.ts`](src/i18n/en.ts) and
+[`src/i18n/pl.ts`](src/i18n/pl.ts). `pl.ts` is typed against the English keys,
+so a missing translation fails the build, and a test checks that both languages
+use the same `{placeholders}`. Plural forms follow `Intl.PluralRules`, which
+gives Polish its three forms (1 minuta, 3 minuty, 7 minut). Money, decimals and
+dates follow the language too: `€45.5M` / `45,5 mln €`, `84.3` / `84,3`.
+
+To add a language, copy `pl.ts`, translate it, register it in `LANGS` and
+`DICTS` in [`src/i18n/index.ts`](src/i18n/index.ts), and add country names in
+[`src/i18n/countries.ts`](src/i18n/countries.ts).
 
 ## How Guess the Player works
 

@@ -6,8 +6,11 @@ import { StatsPanel } from '../../components/StatsPanel';
 import { ValueCompare } from '../../components/ValueCompare';
 import { useDataset } from '../../data/store';
 import type { Player } from '../../data/types';
-import { SOURCE_LABEL, SOURCE_SHORT, valueOf, valueSource } from '../../data/valueSource';
-import { formatEur } from '../../lib/format';
+import { shareValues, sourceShort, valueOf, valueSource, valuesPhrase } from '../../data/valueSource';
+import { t, tj } from '../../i18n';
+import { continentName, countryName } from '../../i18n/countries';
+import { posFull, posLabel, shareNote } from '../../i18n/labels';
+import { formatDate, formatEur } from '../../lib/format';
 import { dayNumber, msUntilTomorrow, pick, previousDayKey, todayKey } from '../../lib/rng';
 import { shareText, siteUrl } from '../../lib/share';
 import { loadStats, recordResult, saveStats } from '../../lib/stats';
@@ -106,33 +109,35 @@ export function GuessGame() {
   return (
     <section class="game guess">
       <div class="game__head">
-        <h1>Guess the Player</h1>
+        <h1>{t('game.guess.title')}</h1>
         <div class="tabs" role="tablist">
           <button role="tab" aria-selected={mode === 'daily'} onClick={() => switchMode('daily')}>
-            Daily #{dayNumber(day)}
+            {t('guess.daily', { n: dayNumber(day) })}
           </button>
           <button role="tab" aria-selected={mode === 'unlimited'} onClick={() => switchMode('unlimited')}>
-            Unlimited
+            {t('guess.unlimited')}
           </button>
         </div>
       </div>
 
       <p class="lede">
-        Find the hidden Premier League player in {MAX_GUESSES} guesses.{' '}
-        <span class="legend">
-          <Tile mark="hit">exact</Tile>
-          <Tile mark="near">close</Tile>
-        </span>{' '}
-        Position is close within the same line, nationality within the same continent, age within 2
-        years, and value within 25% ({SOURCE_LABEL[source]} values).
+        {tj('guess.lede', {
+          max: MAX_GUESSES,
+          legend: (
+            <span class="legend">
+              <Tile mark="hit">{t('guess.exact')}</Tile> <Tile mark="near">{t('guess.close')}</Tile>
+            </span>
+          ),
+          values: valuesPhrase(source),
+        })}
       </p>
 
       {!over && (
         <div class="guess__input">
-          <PlayerSearch onPick={guess} exclude={guessedIds} placeholder={`Guess ${guesses.length + 1} of ${MAX_GUESSES}…`} />
+          <PlayerSearch onPick={guess} exclude={guessedIds} placeholder={t('guess.placeholder', { n: guesses.length + 1, max: MAX_GUESSES })} />
           {mode === 'unlimited' && guesses.length > 0 && (
             <button class="btn btn--ghost" onClick={giveUp}>
-              Give up
+              {t('guess.giveUp')}
             </button>
           )}
         </div>
@@ -162,18 +167,18 @@ export function GuessGame() {
             checked={!!round.hard}
             onChange={(e) => setRound(newUnlimitedRound(players, (e.target as HTMLInputElement).checked))}
           />
-          Hard mode: the answer can be any of the {players.length} players, not just well-known ones
+          {t('guess.hard', { n: players.length })}
         </label>
       )}
 
       {rows.length > 0 && (
-        <div class="guess__board" role="table" aria-label="Your guesses">
+        <div class="guess__board" role="table" aria-label={t('guess.board')}>
           <div class="guess__cols" role="row" aria-hidden="true">
-            <span>Club</span>
-            <span>Pos</span>
-            <span>Nat</span>
-            <span>Age</span>
-            <span>{SOURCE_SHORT[source]}</span>
+            <span>{t('guess.col.club')}</span>
+            <span>{t('guess.col.pos')}</span>
+            <span>{t('guess.col.nat')}</span>
+            <span>{t('guess.col.age')}</span>
+            <span>{t('guess.col.value', { source: sourceShort(source) })}</span>
           </div>
           {rows.map(({ g, f }) => (
             <GuessRow player={g} f={f} />
@@ -185,8 +190,8 @@ export function GuessGame() {
 }
 
 function Tile({ mark, children, dir }: { mark: Mark; children: ComponentChildren; dir?: 'up' | 'down' | null }) {
-  const label = mark === 'hit' ? 'correct' : mark === 'near' ? 'close' : 'wrong';
-  const hint = dir === 'up' ? ', higher' : dir === 'down' ? ', lower' : '';
+  const label = t(`guess.mark.${mark}`);
+  const hint = dir === 'up' ? t('guess.higher') : dir === 'down' ? t('guess.lower') : '';
   return (
     <span class={`tile tile--${mark}`} role="cell" aria-label={`${label}${hint}`}>
       <span class="tile__v">{children}</span>
@@ -205,12 +210,18 @@ function GuessRow({ player, f }: { player: Player; f: Feedback }) {
       </div>
       <div class="guess__tiles">
         <Tile mark={f.club}>{meta.clubs[player.club].short}</Tile>
-        <Tile mark={f.pos}>{player.pos}</Tile>
+        <Tile mark={f.pos}>
+          <abbr title={posFull(player.pos)}>{posLabel(player.pos)}</abbr>
+        </Tile>
         <Tile mark={f.nat}>
-          <span class="flag" title={player.nat}>{player.flag}</span>
+          <span class="flag" title={`${countryName(player.nat)} · ${continentName(player.continent)}`}>
+            {player.flag}
+          </span>
         </Tile>
         <Tile mark={f.age.mark} dir={f.age.dir}>{player.age}</Tile>
-        <Tile mark={f.value.mark} dir={f.value.dir}>{formatEur(valueOf(player))}</Tile>
+        <Tile mark={f.value.mark} dir={f.value.dir}>
+          {formatEur(valueOf(player), undefined, true)}
+        </Tile>
       </div>
     </div>
   );
@@ -220,8 +231,8 @@ function useCountdown(active: boolean): string {
   const [ms, setMs] = useState(msUntilTomorrow);
   useEffect(() => {
     if (!active) return;
-    const t = setInterval(() => setMs(msUntilTomorrow()), 1000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setMs(msUntilTomorrow()), 1000);
+    return () => clearInterval(timer);
   }, [active]);
   const s = Math.floor(ms / 1000);
   const hh = String(Math.floor(s / 3600)).padStart(2, '0');
@@ -248,44 +259,43 @@ function EndPanel({ won, gaveUp, target, feedback, mode, day, stats, onNext }: E
   const tries = won ? feedback.length : 'X';
 
   async function share() {
-    const title = mode === 'daily' ? `PL Guess #${dayNumber(day)}` : 'PL Guess (unlimited)';
-    const text = `${title} ${tries}/${MAX_GUESSES} · ${SOURCE_SHORT[valueSource.value]} values\n${shareGrid(feedback)}\n${siteUrl()}#/guess`;
-    const result = await shareText(text);
-    setShared(result === 'copied' ? 'Copied to clipboard' : result === 'shared' ? 'Shared' : 'Could not share');
+    const title = mode === 'daily' ? t('guess.shareDaily', { n: dayNumber(day) }) : t('guess.shareUnlimited');
+    const text = `${title} ${tries}/${MAX_GUESSES} · ${shareValues()}\n${shareGrid(feedback)}\n${siteUrl()}#/guess`;
+    setShared(shareNote(await shareText(text)));
   }
 
   return (
     <div class={`end ${won ? 'end--win' : 'end--lose'}`}>
-      <p class="end__title">{won ? `Got it in ${feedback.length}!` : gaveUp ? 'The answer was…' : 'Out of guesses'}</p>
+      <p class="end__title">{won ? t('guess.won', { n: feedback.length }) : gaveUp ? t('guess.gaveUp') : t('guess.lost')}</p>
       <div class="reveal">
         <Avatar player={target} size={56} />
         <div>
           <p class="reveal__name">{target.name}</p>
           <p class="reveal__meta">
-            <ClubChip code={target.club} /> · {target.pos} · {target.flag} {target.nat} · {target.age}
+            <ClubChip code={target.club} /> · {posLabel(target.pos)} · {target.flag} {countryName(target.nat)} · {target.age}
           </p>
         </div>
       </div>
       <ValueCompare player={target} range />
       <div class="end__actions">
         <button class="btn" onClick={share}>
-          Share result
+          {t('common.shareResult')}
         </button>
         {onNext && (
           <button class="btn btn--primary" onClick={onNext}>
-            Next player
+            {t('common.nextPlayer')}
           </button>
         )}
       </div>
       {shared && <p class="end__note" role="status">{shared}</p>}
       {mode === 'daily' && (
         <p class="end__note">
-          Next daily player in <b class="mono">{countdown}</b>
+          {tj('guess.nextDaily', { time: <b class="mono">{countdown}</b> })}
         </p>
       )}
       <StatsPanel stats={stats} highlight={won ? feedback.length : undefined} />
       <p class="end__foot">
-        {meta.clubs[target.club].name} · data from {meta.dataDate}
+        {t('guess.foot', { club: meta.clubs[target.club].name, date: formatDate(meta.dataDate) })}
       </p>
     </div>
   );

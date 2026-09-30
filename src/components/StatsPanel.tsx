@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { GameStats } from '../lib/stats';
 
 /** Played / win % / streaks, and the guess distribution as bars. */
@@ -7,12 +8,12 @@ export function StatsPanel({ stats, highlight }: { stats: GameStats; highlight?:
   return (
     <div class="stats">
       <dl class="stats__tiles">
-        <div><dt>Played</dt><dd>{stats.played}</dd></div>
-        <div><dt>Win %</dt><dd>{winPct}</dd></div>
-        <div><dt>Streak</dt><dd>{stats.streak}</dd></div>
-        <div><dt>Best</dt><dd>{stats.bestStreak}</dd></div>
+        <div><dt>{t('stats.played')}</dt><dd>{stats.played}</dd></div>
+        <div><dt>{t('stats.winPct')}</dt><dd>{winPct}</dd></div>
+        <div><dt>{t('stats.streak')}</dt><dd>{stats.streak}</dd></div>
+        <div><dt>{t('stats.best')}</dt><dd>{stats.bestStreak}</dd></div>
       </dl>
-      <ol class="stats__dist" aria-label="Wins by number of guesses">
+      <ol class="stats__dist" aria-label={t('stats.dist')}>
         {stats.distribution.map((n, i) => (
           <li>
             <span class="stats__n">{i + 1}</span>

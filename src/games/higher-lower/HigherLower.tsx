@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { PlayerCard } from '../../components/PlayerCard';
 import { useDataset } from '../../data/store';
 import type { Player } from '../../data/types';
-import { SOURCE_LABEL, SOURCE_SHORT, valueOf, valueSource } from '../../data/valueSource';
+import { shareValues, valueOf, valueSource, valuesPhrase } from '../../data/valueSource';
+import { t, tj } from '../../i18n';
+import { shareNote } from '../../i18n/labels';
 import { formatEur } from '../../lib/format';
 import { getBest, submitBest } from '../../lib/records';
 import { pick } from '../../lib/rng';
@@ -82,9 +84,8 @@ export function HigherLower() {
   }
 
   async function share() {
-    const text = `Higher or Lower · streak ${streak} ${streak >= 10 ? '🔥' : '⚽'} · ${SOURCE_SHORT[source]} values\n${siteUrl()}#/higher-lower`;
-    const r = await shareText(text);
-    setNote(r === 'copied' ? 'Copied to clipboard' : r === 'shared' ? 'Shared' : 'Could not share');
+    const head = t('hl.share', { n: streak, icon: streak >= 10 ? '🔥' : '⚽', values: shareValues(source) });
+    setNote(shareNote(await shareText(`${head}\n${siteUrl()}#/higher-lower`)));
   }
 
   const revealed = phase !== 'ask';
@@ -92,21 +93,20 @@ export function HigherLower() {
   return (
     <section class="game hl">
       <div class="game__head">
-        <h1>Higher or Lower</h1>
+        <h1>{t('game.hl.title')}</h1>
         <div class="scorebug" aria-live="polite">
           <span>
-            <small>Streak</small>
+            <small>{t('common.streak')}</small>
             <b>{streak}</b>
           </span>
           <span>
-            <small>Best</small>
+            <small>{t('common.best')}</small>
             <b>{best}</b>
           </span>
         </div>
       </div>
       <p class="lede">
-        Is the second player worth more or less than the first on <b>{SOURCE_LABEL[source]}</b> values? Pairs get
-        closer as your streak grows.
+        {tj('hl.lede', { values: <b>{valuesPhrase(source)}</b> })}
       </p>
 
       <div class="hl__pair">
@@ -115,7 +115,7 @@ export function HigherLower() {
         </PlayerCard>
 
         <div class="hl__vs" aria-hidden="true">
-          VS
+          {t('hl.vs')}
         </div>
 
         <PlayerCard player={challenger}>
@@ -127,10 +127,10 @@ export function HigherLower() {
           ) : (
             <div class="hl__buttons">
               <button class="btn btn--primary" onClick={() => call('higher')}>
-                ▲ Higher
+                {t('hl.higher')}
               </button>
               <button class="btn btn--magenta" onClick={() => call('lower')}>
-                ▼ Lower
+                {t('hl.lower')}
               </button>
             </div>
           )}
@@ -139,17 +139,22 @@ export function HigherLower() {
 
       {phase === 'over' && (
         <div class="end end--lose">
-          <p class="end__title">{newBest ? 'New best!' : 'Game over'}</p>
+          <p class="end__title">{newBest ? t('common.newBest') : t('common.gameOver')}</p>
           <p class="end__note">
-            {challenger.name} is worth {formatEur(valueOf(challenger, source))}, {current.name}{' '}
-            {formatEur(valueOf(current, source))}. Your streak: <b>{streak}</b>.
+            {tj('hl.over', {
+              b: challenger.name,
+              bv: formatEur(valueOf(challenger, source)),
+              a: current.name,
+              av: formatEur(valueOf(current, source)),
+              streak: <b>{streak}</b>,
+            })}
           </p>
           <div class="end__actions">
             <button class="btn btn--primary" onClick={restart}>
-              Play again
+              {t('common.playAgain')}
             </button>
             <button class="btn" onClick={share}>
-              Share
+              {t('common.share')}
             </button>
           </div>
           {note && <p class="end__note" role="status">{note}</p>}

@@ -1,23 +1,28 @@
+import { t } from '../i18n';
 import { href, route } from '../router';
+import { Settings } from './Settings';
 import { ValueToggle } from './ValueToggle';
 
 export function Header() {
   return (
     <header class="site-header">
       <div class="site-header__inner">
-        <a class="brand" href={href('')} aria-label="PL Games home">
+        <a class="brand" href={href('')} aria-label={t('nav.home')}>
           <span class="brand__ball" aria-hidden="true">●</span>
           <span>PL<b>Games</b></span>
         </a>
-        <nav class="site-nav" aria-label="Main">
+        <nav class="site-nav" aria-label={t('nav.main')}>
           <a href={href('')} aria-current={route.value === '' ? 'page' : undefined}>
-            Games
+            {t('nav.games')}
           </a>
           <a href={href('how')} aria-current={route.value === 'how' ? 'page' : undefined}>
-            How it works
+            {t('nav.how')}
           </a>
         </nav>
-        <ValueToggle />
+        <div class="site-header__tools">
+          <ValueToggle />
+          <Settings />
+        </div>
       </div>
     </header>
   );

@@ -31,13 +31,3 @@ export function withUserTeam(clubs: readonly Team[], strength: number, name = 'Y
 export function clubsBeaten(clubs: readonly Team[], strength: number): number {
   return clubs.filter((t) => t.strength < strength).length;
 }
-
-/** "1 in 12,400" style odds; "never" when too small to show. */
-export function formatOdds(p: number): string {
-  if (p <= 0 || !Number.isFinite(1 / p)) return 'practically never';
-  if (p >= 0.5) return `${Math.round(p * 100)}%`;
-  const n = 1 / p;
-  if (n > 1e12) return 'less than 1 in a trillion';
-  const rounded = n < 100 ? Math.round(n) : Number(n.toPrecision(3));
-  return `1 in ${rounded.toLocaleString('en')}`;
-}

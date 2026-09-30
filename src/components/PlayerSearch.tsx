@@ -1,6 +1,8 @@
 import { useMemo, useRef, useState } from 'preact/hooks';
 import { useDataset } from '../data/store';
 import type { Player } from '../data/types';
+import { t } from '../i18n';
+import { posLabel } from '../i18n/labels';
 import { fold } from '../lib/format';
 import { Avatar } from './Avatar';
 
@@ -15,7 +17,7 @@ interface Props {
 }
 
 /** Accent-insensitive autocomplete over every player, keyboard friendly. */
-export function PlayerSearch({ onPick, exclude, placeholder = 'Type a player…', disabled }: Props) {
+export function PlayerSearch({ onPick, exclude, placeholder = t('search.placeholder'), disabled }: Props) {
   const { players, meta } = useDataset();
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
@@ -91,7 +93,7 @@ export function PlayerSearch({ onPick, exclude, placeholder = 'Type a player…'
       />
       {results.length === 0 && fold(query.trim()).length >= 2 && (
         <p class="search__empty" role="status">
-          No player matching “{query.trim()}” in this season's squads.
+          {t('search.empty', { query: query.trim() })}
         </p>
       )}
       {results.length > 0 && (
@@ -111,7 +113,7 @@ export function PlayerSearch({ onPick, exclude, placeholder = 'Type a player…'
               <Avatar player={p} size={28} />
               <span class="search__name">{p.name}</span>
               <span class="search__meta">
-                {meta.clubs[p.club].short} · {p.pos}
+                {meta.clubs[p.club].short} · {posLabel(p.pos)}
               </span>
             </li>
           ))}

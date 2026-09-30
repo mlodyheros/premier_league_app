@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'preact/hooks';
 import { PlayerCard } from '../../components/PlayerCard';
 import { ValueCompare } from '../../components/ValueCompare';
 import { useDataset } from '../../data/store';
-import { SOURCE_LABEL, SOURCE_SHORT, valueOf, valueSource } from '../../data/valueSource';
+import { shareValues, valueOf, valuePhrase, valueSource, valuesPhrase } from '../../data/valueSource';
+import { t, tj } from '../../i18n';
+import { shareNote } from '../../i18n/labels';
 import { formatEur, formatPct } from '../../lib/format';
 import { getBest, submitBest } from '../../lib/records';
 import { shuffled } from '../../lib/rng';
@@ -63,10 +65,8 @@ export function PriceTag() {
   }
 
   async function share() {
-    const r = await shareText(
-      `Price Tag ${total}/${ROUNDS * MAX_POINTS} · ${SOURCE_SHORT[source]} values\n${points.map(emoji).join('')}\n${siteUrl()}#/price-tag`,
-    );
-    setNote(r === 'copied' ? 'Copied to clipboard' : r === 'shared' ? 'Shared' : 'Could not share');
+    const head = t('pt.share', { total, max: ROUNDS * MAX_POINTS, values: shareValues(source) });
+    setNote(shareNote(await shareText(`${head}\n${points.map(emoji).join('')}\n${siteUrl()}#/price-tag`)));
   }
 
   const actual = valueOf(player, source);
@@ -75,30 +75,29 @@ export function PriceTag() {
   return (
     <section class="game pt">
       <div class="game__head">
-        <h1>Price Tag</h1>
+        <h1>{t('game.price.title')}</h1>
         <div class="scorebug">
           <span>
-            <small>Score</small>
+            <small>{t('common.score')}</small>
             <b>{total}</b>
           </span>
           <span>
-            <small>Best</small>
+            <small>{t('common.best')}</small>
             <b>{best ?? '–'}</b>
           </span>
         </div>
       </div>
       <p class="lede">
-        Slide to the <b>{SOURCE_LABEL[source]}</b> value you think each player has. Up to {MAX_POINTS} points a player:
-        spot on scores 100, three times out scores nothing.
+        {tj('pt.lede', { value: <b>{valuePhrase(source)}</b>, max: MAX_POINTS })}
       </p>
 
       {switched && (
         <p class="notice-inline">
-          This round keeps {SOURCE_LABEL[source]} values. The switch applies from your next round.
+          {t('pt.locked', { values: valuesPhrase(source) })}
         </p>
       )}
 
-      <ol class="progress" aria-label="Rounds">
+      <ol class="progress" aria-label={t('common.rounds')}>
         {Array.from({ length: ROUNDS }, (_, i) => (
           <li class={i < points.length ? (points[i] >= 60 ? 'ok' : points[i] >= 30 ? 'mid' : 'no') : i === index ? 'now' : ''} />
         ))}
@@ -118,24 +117,23 @@ export function PriceTag() {
               max={1}
               step={0.001}
               value={slider}
-              aria-label="Your valuation"
+              aria-label={t('pt.aria')}
               aria-valuetext={formatEur(guess)}
               onInput={(e) => setSlider(Number((e.target as HTMLInputElement).value))}
             />
             <div class="pt__scale" aria-hidden="true">
-              <span>€500K</span>
-              <span>€5M</span>
-              <span>€50M</span>
-              <span>€250M</span>
+              {[500_000, 5_000_000, 50_000_000, 250_000_000].map((v) => (
+                <span>{formatEur(v)}</span>
+              ))}
             </div>
             <div class="pt__nudge">
-              <button class="btn btn--ghost" onClick={() => setSlider((s) => Math.max(0, s - 0.004))} aria-label="Lower">
+              <button class="btn btn--ghost" onClick={() => setSlider((s) => Math.max(0, s - 0.004))} aria-label={t('pt.less')}>
                 −
               </button>
               <button class="btn btn--primary" onClick={lockIn}>
-                Lock it in
+                {t('pt.lock')}
               </button>
-              <button class="btn btn--ghost" onClick={() => setSlider((s) => Math.min(1, s + 0.004))} aria-label="Higher">
+              <button class="btn btn--ghost" onClick={() => setSlider((s) => Math.min(1, s + 0.004))} aria-label={t('pt.more')}>
                 +
               </button>
             </div>
@@ -143,13 +141,18 @@ export function PriceTag() {
         ) : (
           <div class="pt__reveal">
             <p class={`bm__verdict ${lastPoints! >= 60 ? 'good' : lastPoints! >= 30 ? '' : 'bad'}`}>
-              {emoji(lastPoints!)} {lastPoints} points · you said {formatEur(guesses[index])}, it's {formatEur(actual)} (
-              {formatPct(guesses[index] / actual - 1)})
+              {t('pt.reveal', {
+                emoji: emoji(lastPoints!),
+                points: lastPoints!,
+                guess: formatEur(guesses[index]),
+                actual: formatEur(actual),
+                pct: formatPct(guesses[index] / actual - 1),
+              })}
             </p>
             <ValueCompare player={player} />
             {!finished && (
               <button class="btn btn--primary" onClick={nextPlayer}>
-                Next player →
+                {t('common.nextPlayerArrow')}
               </button>
             )}
           </div>
@@ -159,15 +162,16 @@ export function PriceTag() {
       {finished && (
         <div class={`end ${total >= 300 ? 'end--win' : 'end--lose'}`}>
           <p class="end__title">
-            {total}/{ROUNDS * MAX_POINTS} {newBest ? '· new best!' : ''}
+            {total}/{ROUNDS * MAX_POINTS}
+            {newBest ? t('common.newBestSuffix') : ''}
           </p>
           <p class="end__note pt__emoji">{points.map(emoji).join(' ')}</p>
           <div class="end__actions">
             <button class="btn btn--primary" onClick={restart}>
-              Play again
+              {t('common.playAgain')}
             </button>
             <button class="btn" onClick={share}>
-              Share
+              {t('common.share')}
             </button>
           </div>
           {note && <p class="end__note" role="status">{note}</p>}

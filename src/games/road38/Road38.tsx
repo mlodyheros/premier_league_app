@@ -2,9 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { Avatar } from '../../components/Avatar';
 import { Pitch } from '../../components/Pitch';
 import { useDataset } from '../../data/store';
-import { SOURCE_LABEL, SOURCE_SHORT, valueOf, valueSource, type ValueSource } from '../../data/valueSource';
-import { formatEur, ordinal } from '../../lib/format';
-import { clubTeams, formatOdds, USER_TEAM_ID, withUserTeam } from '../../lib/league';
+import { shareValues, valueOf, valueSource, valuesPhrase, type ValueSource } from '../../data/valueSource';
+import { t, tj } from '../../i18n';
+import { posLabel, shareNote } from '../../i18n/labels';
+import { formatDecimal, formatEur, formatOdds, ordinal } from '../../lib/format';
+import { clubTeams, USER_TEAM_ID, withUserTeam } from '../../lib/league';
 import { getBest, submitBest } from '../../lib/records';
 import { pick } from '../../lib/rng';
 import { perfectSeasonOdds, simulateSeason, type MatchResult, type TableRow } from '../../lib/season';
@@ -122,7 +124,7 @@ export function Road38() {
     const without = draftedIds(lineup);
     const clubs = clubTeams(players, meta, source, without);
     const { league, replaced } = withUserTeam(clubs, strength);
-    const opponents = league.filter((t) => t.id !== USER_TEAM_ID).map((t) => t.strength);
+    const opponents = league.filter((team) => team.id !== USER_TEAM_ID).map((team) => team.strength);
     const odds = perfectSeasonOdds(strength, opponents);
     const season = simulateSeason(league, USER_TEAM_ID, Math.random);
     const row = userRow(season.table, USER_TEAM_ID);
@@ -158,9 +160,16 @@ export function Road38() {
   async function share(season: SavedSeason) {
     const row = userRow(season.table, USER_TEAM_ID);
     const icons = badges(row, season.position).map((b) => b.icon).join('');
-    const text = `Road to 38-0 · ${row.won}-${row.drawn}-${row.lost} · ${row.points} pts · ${ordinal(season.position)} ${icons}\n${resultsGrid(season.results)}\n${SOURCE_SHORT[season.source]} values · ${siteUrl()}#/road38`;
-    const r = await shareText(text);
-    setNote(r === 'copied' ? 'Copied to clipboard' : r === 'shared' ? 'Shared' : 'Could not share');
+    const head = t('road.share', {
+      w: row.won,
+      d: row.drawn,
+      l: row.lost,
+      pts: row.points,
+      pos: ordinal(season.position),
+      icons,
+    });
+    const text = `${head}\n${resultsGrid(season.results)}\n${shareValues(season.source)} · ${siteUrl()}#/road38`;
+    setNote(shareNote(await shareText(text)));
   }
 
   const shownClub = spinning ?? state.club;
@@ -168,29 +177,30 @@ export function Road38() {
   return (
     <section class="game road">
       <div class="game__head">
-        <h1>Road to 38-0</h1>
+        <h1>{t('game.road.title')}</h1>
         <div class="scorebug">
           <span>
-            <small>OVR</small>
-            <b>{strength ? strength.toFixed(1) : '–'}</b>
+            <small>{t('common.ovr')}</small>
+            <b>{strength ? formatDecimal(strength) : '–'}</b>
           </span>
           <span>
-            <small>Best pts</small>
+            <small>{t('road.bestPts')}</small>
             <b>{best ?? '–'}</b>
           </span>
         </div>
       </div>
       <p class="lede">
-        Spin a club, take one of its players for an open position, and spin again until your XI is full. You have{' '}
-        {RESPINS} re-spins. Then play a 38-game season against the real league. Ratings use <b>{SOURCE_LABEL[source]}</b>{' '}
-        values, and every player you take leaves his club weaker.
+        {tj('road.lede', {
+          respins: t('road.respins', { count: RESPINS }),
+          values: <b>{valuesPhrase(source)}</b>,
+        })}
       </p>
 
       {!state.season && (
         <>
           <div class="controls">
             <label>
-              Formation
+              {t('budget.formation')}
               <select
                 value={state.formation}
                 disabled={Object.keys(state.picks).length > 0}
@@ -202,7 +212,7 @@ export function Road38() {
               </select>
             </label>
             <span class="controls__info">
-              {11 - open.length}/11 picked · {state.respins} re-spin{state.respins === 1 ? '' : 's'} left
+              {t('road.progress', { picked: 11 - open.length, count: state.respins })}
             </span>
           </div>
 
@@ -230,17 +240,17 @@ export function Road38() {
                       <span>{meta.clubs[shownClub].name}</span>
                     </div>
                   ) : (
-                    <p class="picker__hint">Spin to draw your {open.length === 11 ? 'first' : 'next'} club.</p>
+                    <p class="picker__hint">{t(open.length === 11 ? 'road.spinFirst' : 'road.spinNext')}</p>
                   )}
                   <div class="spinner__actions">
                     {!state.club && (
                       <button class="btn btn--primary" onClick={() => spin(false)} disabled={!!spinning}>
-                        {spinning ? 'Spinning…' : 'Spin'}
+                        {spinning ? t('road.spinning') : t('road.spin')}
                       </button>
                     )}
                     {state.club && !spinning && (
                       <button class="btn" onClick={() => spin(true)} disabled={state.respins === 0}>
-                        Re-spin ({state.respins})
+                        {t('road.respin', { n: state.respins })}
                       </button>
                     )}
                   </div>
@@ -250,9 +260,7 @@ export function Road38() {
               {state.club && !spinning && (
                 <>
                   <p class="picker__hint">
-                    {selectedSlot
-                      ? `Showing players for ${selectedSlot.type}. Tap the position again to see everyone.`
-                      : 'Pick a player. He goes to his best open position, or tap a glowing position first.'}
+                    {selectedSlot ? t('road.showingSlot', { pos: posLabel(selectedSlot.type) }) : t('road.pickHint')}
                   </p>
                   <ul class="picker__list">
                     {list.map((c) => (
@@ -262,7 +270,7 @@ export function Road38() {
                           <span class="prow__name">
                             {c.player.name}
                             <small>
-                              {c.player.pos} → {c.slot.type} · {formatEur(valueOf(c.player, source))}
+                              {posLabel(c.player.pos)} → {posLabel(c.slot.type)} · {formatEur(valueOf(c.player, source))}
                             </small>
                           </span>
                           <span class="prow__ovr">{Math.round(c.rating)}</span>
@@ -275,11 +283,9 @@ export function Road38() {
 
               {complete && (
                 <div class="kickoff">
-                  <p>
-                    Your XI is complete: <b>{strength.toFixed(1)} OVR</b>.
-                  </p>
+                  <p>{tj('road.complete', { ovr: <b>{formatDecimal(strength)}</b> })}</p>
                   <button class="btn btn--primary btn--big" onClick={kickOff}>
-                    Kick off the season ⚽
+                    {t('road.kickoff')}
                   </button>
                 </div>
               )}
@@ -318,71 +324,74 @@ function SeasonView({
         <p class="season__record">
           {row.won}-{row.drawn}-{row.lost}
         </p>
-        <p class="end__title">
-          {row.points} pts · {ordinal(season.position)}
-        </p>
+        <p class="end__title">{t('road.result', { pts: row.points, pos: ordinal(season.position) })}</p>
         {earned.length > 0 && (
           <ul class="badges">
             {earned.map((b) => (
               <li>
-                <span aria-hidden="true">{b.icon}</span> {b.label}
+                <span aria-hidden="true">{b.icon}</span> {t(b.label)}
               </li>
             ))}
           </ul>
         )}
         <p class="end__note">
-          Your {season.strength.toFixed(1)} OVR XI had a <b>{formatOdds(season.odds)}</b> chance of going 38-0. It took{' '}
-          {season.replaced}'s place in the league. Goals {row.goalsFor}–{row.goalsAgainst}.
+          {tj('road.note', {
+            ovr: formatDecimal(season.strength),
+            odds: <b>{formatOdds(season.odds)}</b>,
+            club: season.replaced,
+            gf: row.goalsFor,
+            ga: row.goalsAgainst,
+          })}
         </p>
-        <ol class="strip" aria-label="Results in order">
+        <ol class="strip" aria-label={t('road.results')}>
           {season.results.map((r, i) => (
             <li
               class={`strip__m strip__m--${r.outcome}`}
-              title={`${i + 1}. ${r.home ? 'vs' : 'at'} ${r.opponent} ${r.goalsFor}-${r.goalsAgainst}`}
+              title={`${i + 1}. ${t(r.home ? 'road.home' : 'road.away', { opp: r.opponent })} ${r.goalsFor}-${r.goalsAgainst}`}
             >
               <span class="sr-only">
-                {r.home ? 'vs' : 'at'} {r.opponent} {r.goalsFor}-{r.goalsAgainst}
+                {t(r.home ? 'road.home' : 'road.away', { opp: r.opponent })} {r.goalsFor}-{r.goalsAgainst}
               </span>
             </li>
           ))}
         </ol>
         <div class="end__actions">
           <button class="btn btn--primary" onClick={onNew}>
-            New draft
+            {t('road.newDraft')}
           </button>
           <button class="btn" onClick={() => onShare(season)}>
-            Share
+            {t('common.share')}
           </button>
         </div>
         {note && <p class="end__note" role="status">{note}</p>}
-        <p class="end__foot">Your XI: {names}</p>
+        <p class="end__foot">{t('road.yourXiList', { names })}</p>
       </div>
 
       <details class="table-wrap" open>
-        <summary>Final table</summary>
+        <summary>{t('road.table')}</summary>
         <table class="league">
           <thead>
             <tr>
               <th>#</th>
-              <th class="l">Team</th>
-              <th>W</th>
-              <th>D</th>
-              <th>L</th>
-              <th>GD</th>
-              <th>Pts</th>
+              <th class="l">{t('road.col.team')}</th>
+              <th>{t('road.col.w')}</th>
+              <th>{t('road.col.d')}</th>
+              <th>{t('road.col.l')}</th>
+              <th>{t('road.col.gd')}</th>
+              <th>{t('road.col.pts')}</th>
             </tr>
           </thead>
           <tbody>
-            {season.table.map((t, i) => (
-              <tr class={t.id === USER_TEAM_ID ? 'you' : ''}>
+            {season.table.map((team, i) => (
+              <tr class={team.id === USER_TEAM_ID ? 'you' : ''}>
                 <td>{i + 1}</td>
-                <td class="l">{t.name}</td>
-                <td>{t.won}</td>
-                <td>{t.drawn}</td>
-                <td>{t.lost}</td>
-                <td>{t.goalsFor - t.goalsAgainst > 0 ? '+' : ''}{t.goalsFor - t.goalsAgainst}</td>
+                <td class="l">{team.id === USER_TEAM_ID ? t('road.yourXi') : team.name}</td>
+                <td>{team.won}</td>
+                <td>{team.drawn}</td>
+                <td>{team.lost}</td>
+                <td>{team.goalsFor - team.goalsAgainst > 0 ? '+' : ''}{team.goalsFor - team.goalsAgainst}</td>
                 <td>
-                  <b>{t.points}</b>
+                  <b>{team.points}</b>
                 </td>
               </tr>
             ))}

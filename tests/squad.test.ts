@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 import type { Meta, Player } from '../src/data/types';
 import { affordable, options, spent } from '../src/games/budget/logic';
 import { badges, candidates, resultsGrid, spinnableClubs } from '../src/games/road38/logic';
-import { clubTeams, formatOdds, withUserTeam } from '../src/lib/league';
+import { formatOdds } from '../src/lib/format';
+import { clubTeams, withUserTeam } from '../src/lib/league';
 import { mulberry32 } from '../src/lib/rng';
 import {
   expectedPoints,
@@ -125,9 +126,10 @@ describe('season simulation', () => {
   });
 
   it('formats odds for people', () => {
-    expect(formatOdds(0.5)).toBe('50%');
-    expect(formatOdds(1 / 12345)).toBe('1 in 12,300');
-    expect(formatOdds(0)).toBe('practically never');
+    expect(formatOdds(0.5, 'en')).toBe('50%');
+    expect(formatOdds(1 / 12345, 'en')).toBe('1 in 12,300');
+    expect(formatOdds(0, 'en')).toBe('practically zero');
+    expect(formatOdds(1 / 12345, 'pl').replace(/\s/g, ' ')).toBe('1 do 12 300');
   });
 });
 

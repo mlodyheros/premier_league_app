@@ -1,6 +1,7 @@
 /** Beat the Model: does the model rate a player over or under Transfermarkt? */
 import type { Player } from '../../data/types';
 import { modelGap } from '../../data/valueSource';
+import type { Key } from '../../i18n';
 import { formatEur } from '../../lib/format';
 
 export const ROUNDS = 10;
@@ -45,23 +46,28 @@ export function drawRound(players: readonly Player[], rand: () => number = Math.
   return out;
 }
 
+export interface Note {
+  key: Key;
+  params?: Record<string, string | number>;
+}
+
 /**
- * Plain-language notes on what the model had to go on. They describe inputs
- * the model uses (age curve, minutes, last fee, Champions League games,
- * evidence tier); they do not claim to decompose the estimate exactly.
+ * Plain-language notes on what the model had to go on, as translation keys.
+ * They describe inputs the model uses (age curve, minutes, last fee, Champions
+ * League games, evidence tier); they do not claim to decompose the estimate.
  */
-export function modelNotes(p: Player, gameweek: number): string[] {
-  const notes: string[] = [];
+export function modelNotes(p: Player, gameweek: number): Note[] {
+  const notes: Note[] = [];
   const s = p.stats;
   const available = gameweek * 90;
-  if (p.tier === 2) notes.push('No record in any league the model covers, so it leans on age, position, club and fee.');
-  else if (p.tier === 1) notes.push('No Premier League record yet: the model reads his record in other big leagues.');
-  if (p.fee && p.fee >= p.tm * 1.3) notes.push(`A club paid ${formatEur(p.fee)} for him, and the model weighs the last fee.`);
-  if (available > 0 && s.minutes === 0) notes.push('No minutes yet this season.');
-  else if (available > 0 && s.minutes < available * 0.3) notes.push(`Only ${s.minutes} minutes so far this season.`);
-  else if (available > 0 && s.minutes >= available * 0.85) notes.push('An ever-present this season.');
-  if (p.age >= 30) notes.push(`At ${p.age}, the model's age curve is bending down.`);
-  else if (p.age <= 21) notes.push(`At ${p.age}, the market may be paying for potential the numbers can't show yet.`);
-  if (s.clMinutes >= 450) notes.push(`${s.clMinutes} Champions League minutes last season, which the model counts.`);
+  if (p.tier === 2) notes.push({ key: 'note.tier2' });
+  else if (p.tier === 1) notes.push({ key: 'note.tier1' });
+  if (p.fee && p.fee >= p.tm * 1.3) notes.push({ key: 'note.fee', params: { fee: formatEur(p.fee) } });
+  if (available > 0 && s.minutes === 0) notes.push({ key: 'note.noMinutes' });
+  else if (available > 0 && s.minutes < available * 0.3) notes.push({ key: 'note.fewMinutes', params: { count: s.minutes } });
+  else if (available > 0 && s.minutes >= available * 0.85) notes.push({ key: 'note.everPresent' });
+  if (p.age >= 30) notes.push({ key: 'note.older', params: { age: p.age } });
+  else if (p.age <= 21) notes.push({ key: 'note.young', params: { age: p.age } });
+  if (s.clMinutes >= 450) notes.push({ key: 'note.cl', params: { count: s.clMinutes } });
   return notes.slice(0, 3);
 }

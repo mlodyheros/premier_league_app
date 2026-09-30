@@ -1,5 +1,7 @@
 import type { ValueSource } from '../data/valueSource';
 import { fit, slotRating, type Formation, type Lineup, type Slot } from '../lib/strength';
+import { t } from '../i18n';
+import { posLabel } from '../i18n/labels';
 import { Avatar } from './Avatar';
 
 interface Props {
@@ -16,7 +18,7 @@ interface Props {
 /** A vertical pitch with the formation's slots, filled or empty. */
 export function Pitch({ formation, lineup, source, selected, highlight, onSlot }: Props) {
   return (
-    <div class="pitch" role="group" aria-label={`Formation ${formation.label}`}>
+    <div class="pitch" role="group" aria-label={t('pitch.formation', { name: formation.label })}>
       <div class="pitch__lines" aria-hidden="true">
         <span class="pitch__half" />
         <span class="pitch__circle" />
@@ -33,7 +35,9 @@ export function Pitch({ formation, lineup, source, selected, highlight, onSlot }
           selected === slot.id ? 'slot--selected' : '',
           !p && highlight?.has(slot.id) ? 'slot--hint' : '',
         ].join(' ');
-        const label = p ? `${slot.type}: ${p.name}, rating ${eff}` : `${slot.type}: empty`;
+        const label = p
+          ? t('pitch.filled', { pos: posLabel(slot.type), name: p.name, rating: eff ?? 0 })
+          : t('pitch.empty', { pos: posLabel(slot.type) });
         return (
           <button
             type="button"
@@ -51,7 +55,7 @@ export function Pitch({ formation, lineup, source, selected, highlight, onSlot }
                 <span class={`slot__ovr ${offPos ? 'slot__ovr--off' : ''}`}>{eff}</span>
               </>
             ) : (
-              <span class="slot__pos">{slot.type}</span>
+              <span class="slot__pos">{posLabel(slot.type)}</span>
             )}
           </button>
         );

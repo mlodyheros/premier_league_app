@@ -1,5 +1,6 @@
 /** The global Transfermarkt ↔ model switch, remembered across reloads. */
 import { effect, signal } from '@preact/signals';
+import { t } from '../i18n';
 import { readJson, writeJson } from '../lib/storage';
 import type { Player } from './types';
 
@@ -11,12 +12,14 @@ export const valueSource = signal<ValueSource>(readJson<ValueSource>(KEY) === 'm
 
 effect(() => writeJson(KEY, valueSource.value));
 
-export const SOURCE_LABEL: Record<ValueSource, string> = {
-  tm: 'Transfermarkt',
-  model: 'Model',
-};
-
-export const SOURCE_SHORT: Record<ValueSource, string> = { tm: 'TM', model: 'Model' };
+/** "Transfermarkt values" / "wartości modelu", for use inside sentences. */
+export const valuesPhrase = (s: ValueSource = valueSource.value) => t(`values.${s}`);
+/** "Transfermarkt value" / "wartość według modelu", singular. */
+export const valuePhrase = (s: ValueSource = valueSource.value) => t(`value.${s}`);
+/** "TM" / "Model", for column headers. */
+export const sourceShort = (s: ValueSource = valueSource.value) => t(`short.${s}`);
+/** "TM values" / "wartości TM", for share texts. */
+export const shareValues = (s: ValueSource = valueSource.value) => t(`shareValues.${s}`);
 
 export function valueOf(player: Player, source: ValueSource = valueSource.value): number {
   return source === 'tm' ? player.tm : player.model;

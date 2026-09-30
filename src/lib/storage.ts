@@ -20,3 +20,20 @@ export function writeJson(key: string, value: unknown): void {
     /* storage unavailable */
   }
 }
+
+/** Settings kept when progress is reset. */
+const KEEP = new Set(['lang', 'valueSource']);
+
+/** Delete every score, streak and game in progress; keep the settings. */
+export function clearProgress(): void {
+  try {
+    const doomed: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(PREFIX) && !KEEP.has(key.slice(PREFIX.length))) doomed.push(key);
+    }
+    doomed.forEach((k) => localStorage.removeItem(k));
+  } catch {
+    /* storage unavailable */
+  }
+}
