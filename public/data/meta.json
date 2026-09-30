@@ -1,0 +1,167 @@
+{
+  "season": "2026/27",
+  "dataDate": "2026-09-24",
+  "gameweek": 5,
+  "exportedAt": "2026-09-30T23:11:11+00:00",
+  "source": {
+    "name": "pl-value-predictor",
+    "url": "https://github.com/mlodyheros/pl-value-predictor"
+  },
+  "players": 540,
+  "model": {
+    "kind": "Linear regression on log(1 + value), weighted by √value",
+    "features": 25,
+    "scoring": "out-of-fold (5-fold), averaged over 20 random splits",
+    "cvR2Log": 0.831,
+    "cvMaeEur": 5910000,
+    "cvRmseEur": 8540000,
+    "cvTopDecileMaeEur": 13100000,
+    "cvTopDecileRatio": 0.92,
+    "rangeLevel": 0.8,
+    "tiers": {
+      "0": {
+        "key": "pl_history",
+        "label": "backed by Premier League history",
+        "players": 424,
+        "rangeLow": 0.55,
+        "rangeHigh": 1.5
+      },
+      "1": {
+        "key": "non_pl_history",
+        "label": "backed by other leagues only",
+        "players": 60,
+        "rangeLow": 0.47,
+        "rangeHigh": 1.63
+      },
+      "2": {
+        "key": "no_history",
+        "label": "no recent playing record in any covered league",
+        "players": 56,
+        "rangeLow": 0.3,
+        "rangeHigh": 1.8
+      }
+    }
+  },
+  "clubs": {
+    "ARS": {
+      "name": "Arsenal",
+      "short": "Arsenal",
+      "primary": "#EF0107",
+      "secondary": "#FFFFFF"
+    },
+    "AVL": {
+      "name": "Aston Villa",
+      "short": "Villa",
+      "primary": "#670E36",
+      "secondary": "#95BFE5"
+    },
+    "BOU": {
+      "name": "AFC Bournemouth",
+      "short": "Bournemouth",
+      "primary": "#DA291C",
+      "secondary": "#111111"
+    },
+    "BRE": {
+      "name": "Brentford",
+      "short": "Brentford",
+      "primary": "#E30613",
+      "secondary": "#FFFFFF"
+    },
+    "BHA": {
+      "name": "Brighton & Hove Albion",
+      "short": "Brighton",
+      "primary": "#0057B8",
+      "secondary": "#FFFFFF"
+    },
+    "CHE": {
+      "name": "Chelsea",
+      "short": "Chelsea",
+      "primary": "#034694",
+      "secondary": "#FFFFFF"
+    },
+    "COV": {
+      "name": "Coventry City",
+      "short": "Coventry",
+      "primary": "#6EB6E6",
+      "secondary": "#0B2240"
+    },
+    "CRY": {
+      "name": "Crystal Palace",
+      "short": "Palace",
+      "primary": "#1B458F",
+      "secondary": "#C4122E"
+    },
+    "EVE": {
+      "name": "Everton",
+      "short": "Everton",
+      "primary": "#003399",
+      "secondary": "#FFFFFF"
+    },
+    "FUL": {
+      "name": "Fulham",
+      "short": "Fulham",
+      "primary": "#F5F5F5",
+      "secondary": "#111111"
+    },
+    "HUL": {
+      "name": "Hull City",
+      "short": "Hull",
+      "primary": "#F5A12D",
+      "secondary": "#111111"
+    },
+    "IPS": {
+      "name": "Ipswich Town",
+      "short": "Ipswich",
+      "primary": "#0044A9",
+      "secondary": "#FFFFFF"
+    },
+    "LEE": {
+      "name": "Leeds United",
+      "short": "Leeds",
+      "primary": "#F5F5F5",
+      "secondary": "#1D428A"
+    },
+    "LIV": {
+      "name": "Liverpool",
+      "short": "Liverpool",
+      "primary": "#C8102E",
+      "secondary": "#F6EB61"
+    },
+    "MCI": {
+      "name": "Manchester City",
+      "short": "Man City",
+      "primary": "#6CABDD",
+      "secondary": "#1C2C5B"
+    },
+    "MUN": {
+      "name": "Manchester United",
+      "short": "Man Utd",
+      "primary": "#DA291C",
+      "secondary": "#FBE122"
+    },
+    "NEW": {
+      "name": "Newcastle United",
+      "short": "Newcastle",
+      "primary": "#241F20",
+      "secondary": "#FFFFFF"
+    },
+    "NFO": {
+      "name": "Nottingham Forest",
+      "short": "Forest",
+      "primary": "#DD0000",
+      "secondary": "#FFFFFF"
+    },
+    "SUN": {
+      "name": "Sunderland",
+      "short": "Sunderland",
+      "primary": "#EB172B",
+      "secondary": "#FFFFFF"
+    },
+    "TOT": {
+      "name": "Tottenham Hotspur",
+      "short": "Spurs",
+      "primary": "#F5F5F5",
+      "secondary": "#132257"
+    }
+  }
+}
