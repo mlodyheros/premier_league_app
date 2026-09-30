@@ -1,7 +1,12 @@
 import type { FunctionComponent } from 'preact';
 import { Header } from './components/Header';
 import { dataset, loadError } from './data/store';
+import { BeatModel } from './games/beat-model/BeatModel';
+import { BudgetXI } from './games/budget/BudgetXI';
 import { GuessGame } from './games/guess/GuessGame';
+import { HigherLower } from './games/higher-lower/HigherLower';
+import { PriceTag } from './games/price-tag/PriceTag';
+import { Road38 } from './games/road38/Road38';
 import { Home } from './pages/Home';
 import { HowItWorks } from './pages/HowItWorks';
 import { route } from './router';
@@ -9,6 +14,11 @@ import { route } from './router';
 const PAGES: Record<string, FunctionComponent> = {
   '': Home,
   guess: GuessGame,
+  road38: Road38,
+  'higher-lower': HigherLower,
+  budget: BudgetXI,
+  'beat-model': BeatModel,
+  'price-tag': PriceTag,
   how: HowItWorks,
 };
 

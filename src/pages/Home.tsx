@@ -1,5 +1,7 @@
 import { useDataset } from '../data/store';
 import { SOURCE_LABEL, valueSource } from '../data/valueSource';
+import { getBest } from '../lib/records';
+import { loadStats } from '../lib/stats';
 import { href } from '../router';
 
 interface GameCard {
@@ -8,7 +10,14 @@ interface GameCard {
   blurb: string;
   tag: string;
   ready: boolean;
+  /** Personal best to show on the card, if any. */
+  best?: () => string | null;
 }
+
+const fmt = (key: string, suffix = '', digits = 0) => () => {
+  const v = getBest(key);
+  return v === null ? null : `Best ${v.toFixed(digits)}${suffix}`;
+};
 
 export const GAMES: GameCard[] = [
   {
@@ -17,41 +26,50 @@ export const GAMES: GameCard[] = [
     blurb: 'Wordle for the Premier League. Club, position, nationality, age and value clues.',
     tag: 'Daily',
     ready: true,
+    best: () => {
+      const s = loadStats('guess-daily', 8);
+      return s.played ? `Daily streak: ${s.streak}` : null;
+    },
   },
   {
     path: 'road38',
     title: 'Road to 38-0',
     blurb: 'Spin a club, pick a player, fill your XI, then simulate a whole season.',
     tag: 'Squad',
-    ready: false,
+    ready: true,
+    best: () => fmt(`road:pts:${valueSource.value}`, ' pts')(),
   },
   {
     path: 'higher-lower',
     title: 'Higher or Lower',
     blurb: 'Two players. Who is worth more? Keep the streak alive.',
     tag: 'Streak',
-    ready: false,
+    ready: true,
+    best: () => fmt(`hl:${valueSource.value}`, ' streak')(),
   },
   {
     path: 'budget',
     title: 'Budget XI',
     blurb: 'Build the strongest XI you can without breaking the bank.',
     tag: 'Squad',
-    ready: false,
+    ready: true,
+    best: () => fmt(`budget:300000000:${valueSource.value}`, ' OVR (€300M)', 1)(),
   },
   {
     path: 'beat-model',
     title: 'Beat the Model',
     blurb: 'Does the model rate this player above or below Transfermarkt?',
     tag: 'Model',
-    ready: false,
+    ready: true,
+    best: fmt('beat-model', '/10'),
   },
   {
     path: 'price-tag',
     title: 'Price Tag',
     blurb: 'Slide to the price you think a player is worth. Closer is better.',
     tag: 'Value',
-    ready: false,
+    ready: true,
+    best: () => fmt(`price-tag:${valueSource.value}`, '/500')(),
   },
 ];
 
@@ -98,7 +116,10 @@ function CardBody({ g }: { g: GameCard }) {
       <span class="card__tag">{g.ready ? g.tag : 'Coming soon'}</span>
       <h2>{g.title}</h2>
       <p>{g.blurb}</p>
-      {g.ready && <span class="card__go" aria-hidden="true">Play →</span>}
+      <span class="card__foot">
+        {g.ready && <span class="card__go" aria-hidden="true">Play →</span>}
+        {g.best?.() && <span class="card__best">{g.best()}</span>}
+      </span>
     </>
   );
 }

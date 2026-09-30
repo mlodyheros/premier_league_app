@@ -1,0 +1,213 @@
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import type { Meta, Player } from '../src/data/types';
+import { affordable, options, spent } from '../src/games/budget/logic';
+import { badges, candidates, resultsGrid, spinnableClubs } from '../src/games/road38/logic';
+import { clubTeams, formatOdds, withUserTeam } from '../src/lib/league';
+import { mulberry32 } from '../src/lib/rng';
+import {
+  expectedPoints,
+  perfectSeasonOdds,
+  poisson,
+  simulateSeason,
+  winProbability,
+  type Team,
+} from '../src/lib/season';
+import { clubStrength, fit, FORMATIONS, rating, teamStrength, valueScore, type Lineup } from '../src/lib/strength';
+
+const players: Player[] = JSON.parse(readFileSync('public/data/players.json', 'utf8'));
+const meta: Meta = JSON.parse(readFileSync('public/data/meta.json', 'utf8'));
+const byName = (n: string) => players.find((p) => p.name === n)!;
+
+describe('ratings', () => {
+  it('stay within 40-99 on both value sources', () => {
+    for (const p of players) {
+      for (const s of ['tm', 'model'] as const) {
+        const r = rating(p, s);
+        expect(r).toBeGreaterThanOrEqual(40);
+        expect(r).toBeLessThanOrEqual(99);
+      }
+    }
+  });
+
+  it('put a star above a squad player', () => {
+    expect(rating(byName('Erling Haaland'), 'tm')).toBeGreaterThan(95);
+    const cheapest = players.reduce((a, b) => (a.tm < b.tm ? a : b));
+    expect(rating(cheapest, 'tm')).toBeLessThan(65);
+  });
+
+  it('score value on a clamped log scale', () => {
+    expect(valueScore(200_000_000)).toBe(1);
+    expect(valueScore(500_000)).toBe(0);
+    expect(valueScore(20_000_000)).toBeCloseTo(0.565, 2);
+  });
+
+  it('never let a goalkeeper play outfield', () => {
+    const gk = players.find((p) => p.pos === 'GK')!;
+    expect(fit(gk, 'ST')).toBe(0);
+    expect(fit(gk, 'GK')).toBe(1);
+  });
+});
+
+describe('club strength', () => {
+  it('ranks the richest squads above the promoted ones', () => {
+    const clubs = clubTeams(players, meta, 'tm');
+    const top = clubs.reduce((a, b) => (a.strength > b.strength ? a : b));
+    const bottom = clubs.reduce((a, b) => (a.strength < b.strength ? a : b));
+    expect(['Man City', 'Arsenal', 'Liverpool']).toContain(top.name);
+    expect(['Hull', 'Coventry', 'Ipswich', 'Sunderland']).toContain(bottom.name);
+  });
+
+  it('drops when players are drafted away', () => {
+    const city = players.filter((p) => p.club === 'MCI').sort((a, b) => b.tm - a.tm);
+    const before = clubStrength(players, 'MCI', 'tm');
+    const after = clubStrength(players, 'MCI', 'tm', new Set(city.slice(0, 3).map((p) => p.id)));
+    expect(after).toBeLessThan(before);
+  });
+
+  it('puts your XI in place of the weakest club', () => {
+    const clubs = clubTeams(players, meta, 'tm');
+    const { league, replaced } = withUserTeam(clubs, 85);
+    expect(league).toHaveLength(20);
+    expect(league.some((t) => t.id === replaced.id)).toBe(false);
+  });
+});
+
+describe('season simulation', () => {
+  const teams: Team[] = Array.from({ length: 20 }, (_, i) => ({ id: `T${i}`, name: `Team ${i}`, strength: 65 + i }));
+
+  it('plays 38 games per team with consistent totals', () => {
+    const s = simulateSeason(teams, 'T19', mulberry32(7));
+    expect(s.results).toHaveLength(38);
+    for (const row of s.table) {
+      expect(row.played).toBe(38);
+      expect(row.won + row.drawn + row.lost).toBe(38);
+      expect(row.points).toBe(row.won * 3 + row.drawn);
+    }
+    const gf = s.table.reduce((a, r) => a + r.goalsFor, 0);
+    const ga = s.table.reduce((a, r) => a + r.goalsAgainst, 0);
+    expect(gf).toBe(ga);
+    expect(s.position).toBe(s.table.findIndex((r) => r.id === 'T19') + 1);
+  });
+
+  it('is reproducible with a seed', () => {
+    const a = simulateSeason(teams, 'T3', mulberry32(42));
+    const b = simulateSeason(teams, 'T3', mulberry32(42));
+    expect(a.table).toEqual(b.table);
+  });
+
+  it('alternates home and away for the focus team', () => {
+    const s = simulateSeason(teams, 'T0', mulberry32(3));
+    expect(s.results.filter((r) => r.home)).toHaveLength(19);
+    s.results.forEach((r, i) => expect(r.home).toBe(i % 2 === 0));
+  });
+
+  it('gives the stronger side the better odds, and sums to one', () => {
+    const p = winProbability(90, 75, true);
+    expect(p.win).toBeGreaterThan(p.loss);
+    expect(p.win + p.draw + p.loss).toBeCloseTo(1, 6);
+    expect(winProbability(80, 80, true).win).toBeGreaterThan(winProbability(80, 80, false).win);
+  });
+
+  it('makes 38-0 rarer against stronger opposition', () => {
+    const weak = perfectSeasonOdds(92, Array(19).fill(70));
+    const strong = perfectSeasonOdds(92, Array(19).fill(85));
+    expect(weak).toBeGreaterThan(strong);
+    expect(strong).toBeGreaterThan(0);
+    expect(expectedPoints(92, Array(19).fill(70))).toBeGreaterThan(expectedPoints(92, Array(19).fill(85)));
+  });
+
+  it('samples Poisson goals with the right mean', () => {
+    const rand = mulberry32(1);
+    let total = 0;
+    for (let i = 0; i < 20000; i++) total += poisson(1.4, rand);
+    expect(total / 20000).toBeCloseTo(1.4, 1);
+  });
+
+  it('formats odds for people', () => {
+    expect(formatOdds(0.5)).toBe('50%');
+    expect(formatOdds(1 / 12345)).toBe('1 in 12,300');
+    expect(formatOdds(0)).toBe('practically never');
+  });
+});
+
+describe('Road to 38-0', () => {
+  const f = FORMATIONS[0];
+
+  it('can spin every club on an empty team sheet', () => {
+    expect(spinnableClubs(players, Object.keys(meta.clubs), f, {}, 'tm')).toHaveLength(20);
+  });
+
+  it('offers only players who fit an open slot, best first', () => {
+    const lineup: Lineup = {};
+    for (const s of f.slots.filter((s) => s.type !== 'GK')) lineup[s.id] = players.find((p) => p.club === 'COV')!;
+    const list = candidates(players, 'ARS', f, lineup, 'tm');
+    expect(list.length).toBeGreaterThan(0);
+    expect(list.every((c) => c.slot.type === 'GK' && c.player.pos === 'GK')).toBe(true);
+    for (let i = 1; i < list.length; i++) expect(list[i - 1].rating).toBeGreaterThanOrEqual(list[i].rating);
+  });
+
+  it('awards badges for the season', () => {
+    expect(badges({ won: 38, drawn: 0, lost: 0, points: 114 }, 1).map((b) => b.icon)).toEqual(['⭐', '🏆', '💯']);
+    expect(badges({ won: 25, drawn: 13, lost: 0, points: 88 }, 2).map((b) => b.icon)).toEqual(['🛡️']);
+  });
+
+  it('shares 38 results in two rows', () => {
+    const results = Array.from({ length: 38 }, (_, i) => ({
+      opponent: 'X',
+      home: i % 2 === 0,
+      goalsFor: 1,
+      goalsAgainst: 0,
+      outcome: 'W' as const,
+    }));
+    const rows = resultsGrid(results).split('\n');
+    expect(rows).toHaveLength(2);
+    expect([...rows[0]].length).toBe(19);
+  });
+});
+
+describe('Budget XI', () => {
+  const f = FORMATIONS[0];
+  const st = f.slots.find((s) => s.type === 'ST')!;
+
+  it('refunds the current occupant when swapping', () => {
+    const haaland = byName('Erling Haaland');
+    const lineup: Lineup = { [st.id]: haaland };
+    expect(spent(lineup, 'tm')).toBe(haaland.tm);
+    expect(affordable(haaland, st, lineup, 220_000_000, 'tm')).toBe(true);
+    expect(affordable(haaland, st, {}, 219_000_000, 'tm')).toBe(false);
+  });
+
+  it('lists no one twice and flags what you cannot afford', () => {
+    const haaland = byName('Erling Haaland');
+    const lw = f.slots.find((s) => s.type === 'LW')!;
+    const opts = options(players, lw, { [st.id]: haaland }, 300_000_000, 'tm', 'rating');
+    expect(opts.some((o) => o.player.id === haaland.id)).toBe(false);
+    expect(opts.filter((o) => !o.affordable).every((o) => o.price > 300_000_000 - haaland.tm)).toBe(true);
+  });
+
+  it('scores a full XI as the mean effective rating', () => {
+    const lineup: Lineup = {};
+    const used = new Set<number>();
+    for (const s of f.slots) {
+      const p = players.find((x) => x.pos === s.type && !used.has(x.id))!;
+      used.add(p.id);
+      lineup[s.id] = p;
+    }
+    const mean = f.slots.reduce((a, s) => a + rating(lineup[s.id]!, 'tm'), 0) / 11;
+    expect(teamStrength(f, lineup, 'tm')).toBeCloseTo(mean, 1);
+  });
+});
+
+describe('Budget XI list order', () => {
+  it('lists affordable players before unaffordable ones on every sort', () => {
+    const f = FORMATIONS[0];
+    const rw = f.slots.find((s) => s.type === 'RW')!;
+    for (const sort of ['rating', 'bargain', 'cheap', 'dear'] as const) {
+      const opts = options(players, rw, {}, 9_000_000, 'tm', sort);
+      const firstUnaffordable = opts.findIndex((o) => !o.affordable);
+      expect(firstUnaffordable).toBeGreaterThan(0);
+      expect(opts.slice(firstUnaffordable).every((o) => !o.affordable)).toBe(true);
+    }
+  });
+});

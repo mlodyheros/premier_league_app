@@ -9,10 +9,16 @@ remembered between visits.
 A static site: no server and no accounts. The data is exported to JSON ahead of
 time, and scores, streaks and settings live in the browser's local storage.
 
-| Game | Status |
+| Game | What you do |
 |---|---|
-| **Guess the Player**: Wordle-style, daily and unlimited | ✅ |
-| Road to 38-0 · Higher or Lower · Budget XI · Beat the Model · Price Tag | planned |
+| **Guess the Player** | Wordle-style: find the hidden player from club, position, nationality, age and value clues. Daily and unlimited. |
+| **Road to 38-0** | Spin a club, draft one of its players, fill an XI, then play a 38-game season against the real league. |
+| **Higher or Lower** | Is the next player worth more or less? Pairs get closer as the streak grows. |
+| **Budget XI** | Build the strongest XI under €150M, €300M or €500M. |
+| **Beat the Model** | Does the model rate the player over or under his Transfermarkt value? Ten a round. |
+| **Price Tag** | Slide to the value you think a player has. Five a round, up to 100 points each. |
+
+Every game has a shareable result and keeps personal bests in the browser.
 
 ## Run it
 
@@ -84,7 +90,9 @@ src/
   data/              types, loading (store.ts), the value-source switch
   lib/               seeded randomness, formatting, storage, stats, sharing
   components/        header and toggle, avatars, search, value comparison, stats
-  games/guess/       logic.ts (pure rules) and GuessGame.tsx (UI)
+  games/<game>/      logic.ts (pure rules) and <Game>.tsx (UI), one folder per game
+  lib/strength.ts    ratings, formations, positional fit, squad strength
+  lib/season.ts      the match model and 38-game season simulation
   pages/             home, how it works
 tests/               Vitest unit tests
 ```
@@ -108,6 +116,31 @@ The **daily** player is the same for everyone. The pool of well-known players is
 shuffled with a fixed seed and walked one player per day, so no one repeats until
 the pool runs out. The pool can change when the data is updated. **Unlimited**
 draws at random. Its hard mode draws from all 540 players.
+
+## Ratings and the season simulation
+
+Road to 38-0 and Budget XI rate players from 40 to 99. Half the rating is
+**performance** (the exported `perf`); the other half is **value** on the active
+source, on a log scale from €1m to €200m. On that scale Haaland (€220m) scores
+1.0, a €100m player 0.87 and a €20m player 0.57, so stars stand out. A player out
+of position loses a share of his rating (a winger at striker keeps 87%, a centre-back
+at full-back 85%; a goalkeeper can only play in goal).
+
+- **Your XI's strength** is the mean rating of its eleven, after those penalties.
+- **A real club's strength** is the mean rating of its best 16 players: clubs
+  rotate, while your XI plays every minute. Players you draft leave their clubs.
+- **Your XI joins the league** in place of the weakest club, and every team plays
+  every other home and away.
+- **Each match** draws goals from a Poisson distribution. The expected goals
+  start at 1.45 a side, get ×1.12 at home (÷1.12 away), and move with the
+  strength gap: a stronger side's goals rise by 3.5% per rating point, a weaker
+  side's fall by 10.5%. Favourites therefore win 2-0 and 3-0 far more often than
+  7-0.
+
+With these settings a simulated real league averages 2.7 goals a game, with
+a champion on 95–97 points and a goal difference around +70. The **38-0 odds** shown for an XI are exact: the
+product of its win probabilities in all 38 fixtures. A 90-rated XI has about a
+1 in 300,000 chance; a 93 about 1 in 7,000. No real club has ever done it.
 
 ## Data and credits
 
