@@ -6,7 +6,7 @@ export const en = {
   'app.loading': 'Loading squads…',
   'app.loadError': "Couldn't load the player data ({error}). Try reloading.",
   'app.footer':
-    'Values: Transfermarkt and the pl-value model, data from {date}. An unofficial fan project, not affiliated with the Premier League, its clubs or Transfermarkt.',
+    'Values: Transfermarkt and the pl-value model, data from {date}. Club crests are trademarks of their clubs. An unofficial fan project, not affiliated with the Premier League, its clubs or Transfermarkt.',
   'nav.home': 'PL Games home',
   'nav.games': 'Games',
   'nav.how': 'How it works',
@@ -368,5 +368,5 @@ export const en = {
     "The 38-0 odds shown for an XI are exact: the product of its win probabilities in all 38 fixtures. No real Premier League club has ever won every game of a season.",
   'how.credits.title': 'Credits',
   'how.credits.body':
-    'Model and data: {repo}. Sources: Transfermarkt, the Fantasy Premier League API, vaastav\'s FPL archive, Understat and the Transfermarkt datasets on Kaggle; the data belongs to them. No logos, crests or photos are used: players get generated badges in their club\'s colours. This is an unofficial fan project, not affiliated with the Premier League, its clubs or Transfermarkt.',
+    'Model and data: {repo}. Sources: Transfermarkt, the Fantasy Premier League API, vaastav\'s FPL archive, Understat and the Transfermarkt datasets on Kaggle; the data belongs to them. Club crests are trademarks of their clubs and are shown only to identify them; no player photos are used. This is an unofficial fan project, not affiliated with the Premier League, its clubs or Transfermarkt.',
 } satisfies Record<string, Entry>;

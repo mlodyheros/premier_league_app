@@ -72,6 +72,9 @@ What the export adds:
   whichever value source is active.
 - **`known`**: whether a player is recognisable enough to be a daily answer
   (worth €25m+, or €10m+ with 4,000+ Premier League minutes).
+- When clubs change (promotion and relegation), fetch the new crests with
+  `python3 pipeline/fetch_crests.py` (the export warns about any missing one),
+  then add the club to `pipeline/reference.py`.
 - Club colours, flags and continents, from the hand-written
   [`pipeline/reference.py`](pipeline/reference.py). A new club or nationality
   stops the export with a message saying what to add there.
@@ -169,8 +172,12 @@ Player data and values come from
 [pl-value-predictor](https://github.com/mlodyheros/pl-value-predictor), which
 draws on the Fantasy Premier League API, Understat and Transfermarkt. Market
 values are Transfermarkt's estimates, shown for non-commercial, educational
-use. No logos, crests, photos or other images from the Premier League, its
-clubs or Transfermarkt are used: players get generated badges in their club's
-colours. This is an unofficial fan project, not affiliated with any of them.
+use. Club crests in [`public/crests/`](public/crests) are the badges the Premier
+League serves to Fantasy Premier League (`resources.premierleague.com`), bundled
+so the site never contacts their servers. They are trademarks of their clubs,
+shown only to identify them; no player photos are used. This is an unofficial
+fan project, not affiliated with the Premier League, its clubs or Transfermarkt.
+If a rights holder objects, delete `public/crests/`: every crest falls back to
+a swatch in the club's colours.
 
 Code: [MIT](LICENSE).

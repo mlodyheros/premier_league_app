@@ -296,6 +296,10 @@ def main() -> None:
         json.dumps(players, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
     )
     (OUT_DIR / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2, allow_nan=False))
+    crest_dir = OUT_DIR.parent / "crests"
+    missing = sorted(code for code in CLUBS if not (crest_dir / f"{code}.svg").exists())
+    if missing:
+        print(f"Warning: no crest for {', '.join(missing)}; run pipeline/fetch_crests.py")
     known = sum(p["known"] for p in players)
     print(
         f"Exported {len(players)} players ({known} in the daily pool), "

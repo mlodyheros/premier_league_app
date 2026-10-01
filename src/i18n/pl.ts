@@ -6,7 +6,7 @@ export const pl: Dictionary = {
   'app.loading': 'Wczytywanie kadr…',
   'app.loadError': 'Nie udało się wczytać danych o piłkarzach ({error}). Spróbuj odświeżyć stronę.',
   'app.footer':
-    'Wartości: Transfermarkt i model pl-value, dane z {date}. Nieoficjalny projekt kibicowski, niezwiązany z Premier League, jej klubami ani z Transfermarkt.',
+    'Wartości: Transfermarkt i model pl-value, dane z {date}. Herby są znakami towarowymi klubów. Nieoficjalny projekt kibicowski, niezwiązany z Premier League, jej klubami ani z Transfermarkt.',
   'nav.home': 'PL Games – strona główna',
   'nav.games': 'Gry',
   'nav.how': 'Jak to działa',
@@ -387,5 +387,5 @@ export const pl: Dictionary = {
     'Szansa na 38-0 pokazywana dla jedenastki jest dokładna: to iloczyn prawdopodobieństw wygranej we wszystkich 38 meczach. Żaden prawdziwy klub Premier League nigdy nie wygrał wszystkich meczów sezonu.',
   'how.credits.title': 'Autorzy i źródła',
   'how.credits.body':
-    'Model i dane: {repo}. Źródła: Transfermarkt, API Fantasy Premier League, archiwum FPL vaastava, Understat oraz zbiory danych Transfermarkt na Kaggle; dane należą do nich. Nie używamy logo, herbów ani zdjęć: piłkarze mają generowane odznaki w barwach klubu. To nieoficjalny projekt kibicowski, niezwiązany z Premier League, jej klubami ani z Transfermarkt.',
+    'Model i dane: {repo}. Źródła: Transfermarkt, API Fantasy Premier League, archiwum FPL vaastava, Understat oraz zbiory danych Transfermarkt na Kaggle; dane należą do nich. Herby klubów są ich znakami towarowymi i służą tu wyłącznie do ich oznaczenia; nie używamy zdjęć piłkarzy. To nieoficjalny projekt kibicowski, niezwiązany z Premier League, jej klubami ani z Transfermarkt.',
 };

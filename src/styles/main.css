@@ -819,3 +819,39 @@ abbr[title] { text-decoration: none; cursor: help; }
 .examples__col h3 { margin: 0 0 2px; }
 .examples .pcard__foot { display: grid; gap: 8px; margin-top: 10px; }
 .examples .bm__notes { font-size: 0.82rem; }
+
+/* ================= Club crests ================= */
+.crest { display: inline-block; flex-shrink: 0; object-fit: contain; vertical-align: middle; }
+.crest--swatch { border-radius: 4px; border: 2px solid; }
+.club-chip .crest { margin-right: 1px; }
+.avatar { position: relative; }
+.avatar__crest {
+  position: absolute;
+  right: -18%;
+  bottom: -14%;
+  display: grid;
+  place-items: center;
+  padding: 1px;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+  line-height: 0;
+}
+.tile__club { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; max-width: 100%; }
+.tile__club small { font-size: 0.66rem; font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crest-row {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 8px 6px;
+  max-width: 420px;
+  margin-bottom: 18px;
+  opacity: 0.9;
+}
+.crest-row .crest { width: 100%; max-width: 28px; height: auto; aspect-ratio: 1; justify-self: center; }
+@media (min-width: 760px) { .crest-row { grid-template-columns: repeat(20, minmax(0, 1fr)); max-width: 760px; } }
+.crest-row .crest { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4)); }
+.spinner__club .crest { filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5)); }
+.spinner--on .spinner__club .crest { transform: scale(0.92); }
+.league__team { display: inline-flex; align-items: center; gap: 7px; }
+.league__you { width: 18px; text-align: center; color: var(--green); }
+.search__list .avatar__crest, .prow .avatar__crest { right: -12%; bottom: -10%; }

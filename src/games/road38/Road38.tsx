@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { Avatar } from '../../components/Avatar';
+import { Avatar, Crest } from '../../components/Avatar';
 import { Pitch } from '../../components/Pitch';
 import { useDataset } from '../../data/store';
 import { shareValues, valueOf, valueSource, valuesPhrase, type ValueSource } from '../../data/valueSource';
@@ -231,12 +231,7 @@ export function Road38() {
                 <div class={`spinner ${spinning ? 'spinner--on' : ''}`} aria-live="polite">
                   {shownClub ? (
                     <div class="spinner__club">
-                      <i
-                        style={{
-                          background: meta.clubs[shownClub].primary,
-                          borderColor: meta.clubs[shownClub].secondary,
-                        }}
-                      />
+                      <Crest code={shownClub} size={48} />
                       <span>{meta.clubs[shownClub].name}</span>
                     </div>
                   ) : (
@@ -385,7 +380,16 @@ function SeasonView({
             {season.table.map((team, i) => (
               <tr class={team.id === USER_TEAM_ID ? 'you' : ''}>
                 <td>{i + 1}</td>
-                <td class="l">{team.id === USER_TEAM_ID ? t('road.yourXi') : team.name}</td>
+                <td class="l">
+                  <span class="league__team">
+                    {team.id === USER_TEAM_ID ? (
+                      <span class="league__you" aria-hidden="true">★</span>
+                    ) : (
+                      <Crest code={team.id} size={18} />
+                    )}
+                    {team.id === USER_TEAM_ID ? t('road.yourXi') : team.name}
+                  </span>
+                </td>
                 <td>{team.won}</td>
                 <td>{team.drawn}</td>
                 <td>{team.lost}</td>

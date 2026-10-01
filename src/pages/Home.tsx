@@ -1,3 +1,4 @@
+import { Crest } from '../components/Avatar';
 import { useDataset } from '../data/store';
 import { valuesPhrase } from '../data/valueSource';
 import { t, tj, type Key } from '../i18n';
@@ -44,6 +45,11 @@ export function Home() {
   return (
     <section class="home">
       <div class="hero">
+        <div class="crest-row" aria-hidden="true">
+          {Object.keys(meta.clubs).map((code) => (
+            <Crest code={code} size={28} />
+          ))}
+        </div>
         <p class="eyebrow">{t('home.eyebrow', { season: meta.season, players: meta.players, gw: meta.gameweek })}</p>
         <h1>
           {t('home.title')} <em>{t('home.titleEm')}</em>

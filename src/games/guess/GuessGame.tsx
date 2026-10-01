@@ -1,6 +1,6 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
-import { Avatar, ClubChip } from '../../components/Avatar';
+import { Avatar, ClubChip, Crest } from '../../components/Avatar';
 import { PlayerSearch } from '../../components/PlayerSearch';
 import { StatsPanel } from '../../components/StatsPanel';
 import { ValueCompare } from '../../components/ValueCompare';
@@ -209,7 +209,12 @@ function GuessRow({ player, f }: { player: Player; f: Feedback }) {
         <span>{player.name}</span>
       </div>
       <div class="guess__tiles">
-        <Tile mark={f.club}>{meta.clubs[player.club].short}</Tile>
+        <Tile mark={f.club}>
+          <span class="tile__club">
+            <Crest code={player.club} size={20} />
+            <small>{meta.clubs[player.club].short}</small>
+          </span>
+        </Tile>
         <Tile mark={f.pos}>
           <abbr title={posFull(player.pos)}>{posLabel(player.pos)}</abbr>
         </Tile>
