@@ -1,22 +1,22 @@
 {
   "season": "2026/27",
-  "dataDate": "2026-09-24",
+  "dataDate": "2026-10-01",
   "gameweek": 5,
-  "exportedAt": "2026-10-01T02:28:36+00:00",
+  "exportedAt": "2026-10-01T14:38:45+00:00",
   "source": {
     "name": "pl-value-predictor",
-    "url": "https://github.com/mlodyheros/pl-value-predictor"
+    "url": "https://github.com/mlodyheros/pl-value"
   },
   "players": 540,
   "model": {
     "kind": "Linear regression on log(1 + value), weighted by √value",
     "features": 25,
     "scoring": "out-of-fold (5-fold), averaged over 20 random splits",
-    "cvR2Log": 0.831,
-    "cvMaeEur": 5910000,
-    "cvRmseEur": 8540000,
-    "cvTopDecileMaeEur": 13100000,
-    "cvTopDecileRatio": 0.92,
+    "cvR2Log": 0.83,
+    "cvMaeEur": 5940000,
+    "cvRmseEur": 8470000,
+    "cvTopDecileMaeEur": 12690000,
+    "cvTopDecileRatio": 0.926,
     "rangeLevel": 0.8,
     "tiers": {
       "0": {
@@ -24,32 +24,32 @@
         "label": "backed by Premier League history",
         "players": 424,
         "rangeLow": 0.55,
-        "rangeHigh": 1.5
+        "rangeHigh": 1.49
       },
       "1": {
         "key": "non_pl_history",
         "label": "backed by other leagues only",
         "players": 60,
-        "rangeLow": 0.47,
-        "rangeHigh": 1.63
+        "rangeLow": 0.52,
+        "rangeHigh": 1.66
       },
       "2": {
         "key": "no_history",
         "label": "no recent playing record in any covered league",
         "players": 56,
-        "rangeLow": 0.3,
-        "rangeHigh": 1.8
+        "rangeLow": 0.29,
+        "rangeHigh": 1.74
       }
     },
     "diagnostics": {
-      "typicalMiss": 0.279,
-      "inRange": 430,
-      "ratioUnder5m": 1.73,
+      "typicalMiss": 0.283,
+      "inRange": 431,
+      "ratioUnder5m": 1.8,
       "ratioOver20m": 0.95,
-      "typicalMissNoRecord": 0.479,
-      "typicalMissWithRecord": 0.266,
-      "totalModelEur": 13150830000,
-      "totalTmEur": 13159125000
+      "typicalMissNoRecord": 0.526,
+      "typicalMissWithRecord": 0.273,
+      "totalModelEur": 13155880000,
+      "totalTmEur": 13158125000
     }
   },
   "clubs": {
