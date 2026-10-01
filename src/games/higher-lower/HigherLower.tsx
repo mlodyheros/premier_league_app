@@ -6,6 +6,7 @@ import { shareValues, valueOf, valueSource, valuesPhrase } from '../../data/valu
 import { t, tj } from '../../i18n';
 import { shareNote } from '../../i18n/labels';
 import { formatEur } from '../../lib/format';
+import { trackEvent } from '../../lib/analytics';
 import { getBest, submitBest } from '../../lib/records';
 import { pick } from '../../lib/rng';
 import { shareText, siteUrl } from '../../lib/share';
@@ -64,6 +65,7 @@ export function HigherLower() {
     } else {
       setTimeout(() => {
         const isNew = submitBest(`hl:${source}`, streak);
+        trackEvent(`hl/${source}/streak-${streak < 10 ? streak : Math.floor(streak / 5) * 5}`);
         setNewBest(isNew && streak > 0);
         setBest(getBest(`hl:${source}`) ?? 0);
         setPhase('over');

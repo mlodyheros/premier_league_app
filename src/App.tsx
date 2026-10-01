@@ -9,6 +9,7 @@ import { HigherLower } from './games/higher-lower/HigherLower';
 import { PriceTag } from './games/price-tag/PriceTag';
 import { Road38 } from './games/road38/Road38';
 import { lang, t, type Key } from './i18n';
+import { trackPage } from './lib/analytics';
 import { formatDate } from './lib/format';
 import { Home } from './pages/Home';
 import { HowItWorks } from './pages/HowItWorks';
@@ -28,6 +29,8 @@ const PAGES: Record<string, { page: FunctionComponent; title?: Key }> = {
 export function App() {
   const entry = PAGES[route.value] ?? PAGES[''];
   const Page = entry.page;
+
+  useEffect(() => trackPage(route.value), [route.value]);
 
   useEffect(() => {
     document.title = entry.title ? t('title.page', { page: t(entry.title) }) : t('title.home');

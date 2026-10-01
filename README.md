@@ -12,11 +12,14 @@ time, and scores, streaks and settings live in the browser's local storage.
 | Game | What you do |
 |---|---|
 | **Guess the Player** | Wordle-style: find the hidden player from club, position, nationality, age and value clues. Daily and unlimited. |
-| **Road to 38-0** | Spin a club, draft one of its players, fill an XI, then play a 38-game season against the real league. |
+| **Road to 38-0** | Spin a club, draft one of its players, fill an XI, then play a 38-game season against the real league. Realistic or arcade mode. |
 | **Higher or Lower** | Is the next player worth more or less? Pairs get closer as the streak grows. |
 | **Budget XI** | Build the strongest XI under €150M, €300M or €500M. |
-| **Beat the Model** | Does the model rate the player over or under his Transfermarkt value? Ten a round. |
-| **Price Tag** | Slide to the value you think a player has. Five a round, up to 100 points each. |
+| **Beat the Model** | Does the model rate the player over or under his Transfermarkt value? Ten a round; daily and practice. |
+| **Price Tag** | Slide to the value you think a player has. Five a round, up to 100 points each; daily and practice. |
+
+The daily rounds (Guess the Player, Beat the Model, Price Tag) are the same for
+everyone on a given date, can be played once, and keep a daily streak.
 
 Every game has a shareable result and keeps personal bests in the browser.
 
@@ -78,6 +81,32 @@ What the export adds:
 - Club colours, flags and continents, from the hand-written
   [`pipeline/reference.py`](pipeline/reference.py). A new club or nationality
   stops the export with a message saying what to add there.
+
+## Share previews
+
+Links to the site show `public/og.png` (1200×630: title, games, crests). After
+the clubs change, regenerate it locally with `npm run og-image`; it uses macOS
+system fonts, so the PNG is committed instead of built in CI. The address it is
+served from is `VITE_SITE_URL` in [`.env`](.env).
+
+## Visit statistics (optional)
+
+The site can count visits with [GoatCounter](https://www.goatcounter.com):
+open source, free for non-commercial sites, no cookies and no personal data, so
+no consent banner is needed. It is off until you give it a site code:
+
+1. Create a free account at goatcounter.com; the code is the `xyz` in
+   `xyz.goatcounter.com`.
+2. In the GitHub repository: Settings → Secrets and variables → Actions →
+   Variables → New repository variable `GOATCOUNTER_CODE` = your code.
+3. Push (or re-run the Deploy workflow).
+
+Counting is skipped on localhost and for browsers that send Do Not Track, and
+players can switch it off in Settings. Besides page views it records a few
+anonymous game events, such as `road/arcade/ovr-88/pos-1/w-30` or
+`beat/daily/score-7`. The Road to 38-0 events are meant for tuning its
+difficulty on real drafts: if arcade titles come too easily or 38-0 never
+happens, adjust `DIFFICULTY` in [`src/lib/season.ts`](src/lib/season.ts).
 
 ## Deploy
 
@@ -165,6 +194,11 @@ With these settings a simulated real league averages 2.7 goals a game, with
 a champion on 95–97 points and a goal difference around +70. The **38-0 odds** shown for an XI are exact: the
 product of its win probabilities in all 38 fixtures. A 90-rated XI has about a
 1 in 300,000 chance; a 93 about 1 in 7,000. No real club has ever done it.
+
+**Arcade mode** (an option in Road to 38-0) gives your XI +5 and a steeper
+curve (+5% / −15% per point). There a typical draft (85) wins the title about a
+third of the time with 38-0 odds near 1 in 10,000, a strong one (88) about 1 in
+240, and a top-1% draft (91) about 1 in 27. Bests are kept per mode.
 
 ## Data and credits
 

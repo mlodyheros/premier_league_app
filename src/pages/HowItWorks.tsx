@@ -6,8 +6,9 @@ import type { Player } from '../data/types';
 import { modelGap } from '../data/valueSource';
 import { modelNotes } from '../games/beat-model/logic';
 import { t, tj, type Key } from '../i18n';
-import { formatDate, formatDecimal, formatEur } from '../lib/format';
-import { BASE_GOALS, HOME_ADVANTAGE, K_DOWN, K_UP } from '../lib/season';
+import { formatDate, formatDecimal, formatEur, formatOdds } from '../lib/format';
+import { clubTeams, withUserTeam } from '../lib/league';
+import { BASE_GOALS, DIFFICULTY, HOME_ADVANTAGE, K_DOWN, K_UP, perfectSeasonOdds } from '../lib/season';
 import { FIT, SQUAD_DEPTH } from '../lib/strength';
 
 /** Players shown as examples of disagreement must be worth at least this much. */
@@ -46,6 +47,11 @@ const GAME_NOTES: [Key, Key][] = [
 ];
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
+/** A rate per point as a percentage, without a trailing ",0": 3.5, 5, 10.5. */
+const perPoint = (k: number) => {
+  const v = Math.round(k * 1000) / 10;
+  return formatDecimal(v, Number.isInteger(v) ? 0 : 1);
+};
 
 export function HowItWorks() {
   const { players, meta } = useDataset();
@@ -65,6 +71,17 @@ export function HowItWorks() {
       top: players.reduce((a, b) => (b.tm > a.tm ? b : a)),
     };
   }, [players]);
+
+  /** 38-0 odds of an 88-rated XI in each mode, against today's squads. */
+  const odds = useMemo(() => {
+    const clubs = clubTeams(players, meta, 'tm');
+    const of = (mode: keyof typeof DIFFICULTY) => {
+      const { model, bonus } = DIFFICULTY[mode];
+      const { league } = withUserTeam(clubs, 88 + bonus);
+      return perfectSeasonOdds(88 + bonus, league.slice(1).map((team) => team.strength), model);
+    };
+    return { real: of('realistic'), arcade: of('arcade') };
+  }, [players, meta]);
 
   return (
     <article class="how prose">
@@ -185,11 +202,20 @@ export function HowItWorks() {
           {t('how.sim.match', {
             base: formatDecimal(BASE_GOALS, 2),
             home: formatDecimal(HOME_ADVANTAGE, 2),
-            up: formatDecimal(K_UP * 100, 1),
-            down: formatDecimal(K_DOWN * 100, 1),
+            up: perPoint(K_UP),
+            down: perPoint(K_DOWN),
           })}
         </p>
         <p>{t('how.sim.odds')}</p>
+        <p>
+          {t('how.sim.arcade', {
+            bonus: DIFFICULTY.arcade.bonus,
+            up: perPoint(DIFFICULTY.arcade.model.up),
+            down: perPoint(DIFFICULTY.arcade.model.down),
+            arcade: formatOdds(odds.arcade),
+            real: formatOdds(odds.real),
+          })}
+        </p>
       </section>
 
       <section id="credits">

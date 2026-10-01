@@ -9,12 +9,38 @@
  * 7-0, as in real football, instead of running up cricket scores.
  */
 
-export const BASE_GOALS = 1.45;
-export const HOME_ADVANTAGE = 1.12;
-/** Sensitivity of a side's expected goals to its strength advantage, per rating point. */
-export const K_UP = 0.035;
-/** ...and to its strength deficit. */
-export const K_DOWN = 0.105;
+export interface MatchModel {
+  /** League-average expected goals per side. */
+  base: number;
+  /** Multiplier for the home side (the away side is divided by it). */
+  home: number;
+  /** Sensitivity of a side's expected goals to its strength advantage, per rating point. */
+  up: number;
+  /** ...and to its strength deficit. */
+  down: number;
+}
+
+/** Tuned so a simulated real league looks like the Premier League (~2.7 goals a game, champion ~95 pts). */
+export const REALISTIC: MatchModel = { base: 1.45, home: 1.12, up: 0.035, down: 0.105 };
+
+export type Difficulty = 'realistic' | 'arcade';
+
+/**
+ * How a draft is simulated. Realistic: the league's own model, no help.
+ * Arcade: a steeper curve, and your XI plays every match at its peak (+5).
+ * Tuned on the real squads so that, in arcade, a typical draft (85) wins the
+ * title about a third of the time with 38-0 odds near 1 in 10,000, a strong
+ * one (88) about 1 in 240, and a top-1% one (91) about 1 in 27.
+ */
+export const DIFFICULTY: Record<Difficulty, { model: MatchModel; bonus: number }> = {
+  realistic: { model: REALISTIC, bonus: 0 },
+  arcade: { model: { base: 1.45, home: 1.12, up: 0.05, down: 0.15 }, bonus: 5 },
+};
+
+export const BASE_GOALS = REALISTIC.base;
+export const HOME_ADVANTAGE = REALISTIC.home;
+export const K_UP = REALISTIC.up;
+export const K_DOWN = REALISTIC.down;
 
 export interface Team {
   id: string;
@@ -49,10 +75,10 @@ export interface Season {
   position: number;
 }
 
-export function expectedGoals(attack: number, defence: number, home: boolean): number {
+export function expectedGoals(attack: number, defence: number, home: boolean, m: MatchModel = REALISTIC): number {
   const gap = attack - defence;
-  const k = gap >= 0 ? K_UP : K_DOWN;
-  return BASE_GOALS * Math.exp(k * gap) * (home ? HOME_ADVANTAGE : 1 / HOME_ADVANTAGE);
+  const k = gap >= 0 ? m.up : m.down;
+  return m.base * Math.exp(k * gap) * (home ? m.home : 1 / m.home);
 }
 
 /** Knuth's Poisson sampler; fine for the small means of football scores. */
@@ -100,15 +126,20 @@ export function sortTable(rows: TableRow[]): TableRow[] {
  * Play a full double round-robin. The focus team's fixtures alternate home and
  * away, in a shuffled order, so its results read like a real season.
  */
-export function simulateSeason(teams: Team[], focusId: string, rand: () => number): Season {
+export function simulateSeason(
+  teams: Team[],
+  focusId: string,
+  rand: () => number,
+  m: MatchModel = REALISTIC,
+): Season {
   const rows = new Map(teams.map((t) => [t.id, emptyRow(t)]));
   const results: MatchResult[] = [];
 
   for (const home of teams) {
     for (const away of teams) {
       if (home.id === away.id) continue;
-      const hg = poisson(expectedGoals(home.strength, away.strength, true), rand);
-      const ag = poisson(expectedGoals(away.strength, home.strength, false), rand);
+      const hg = poisson(expectedGoals(home.strength, away.strength, true, m), rand);
+      const ag = poisson(expectedGoals(away.strength, home.strength, false, m), rand);
       record(rows.get(home.id)!, hg, ag);
       record(rows.get(away.id)!, ag, hg);
       if (home.id === focusId || away.id === focusId) {
@@ -152,26 +183,31 @@ function fixtureOrder(results: MatchResult[], rand: () => number): MatchResult[]
  * Chance of winning every one of the fixtures (home and away against each
  * opponent): the exact odds of 38-0 for a team of this strength.
  */
-export function perfectSeasonOdds(strength: number, opponents: readonly number[]): number {
+export function perfectSeasonOdds(strength: number, opponents: readonly number[], m: MatchModel = REALISTIC): number {
   return opponents.reduce(
-    (p, opp) => p * winProbability(strength, opp, true).win * winProbability(strength, opp, false).win,
+    (p, opp) => p * winProbability(strength, opp, true, m).win * winProbability(strength, opp, false, m).win,
     1,
   );
 }
 
 /** Expected points over the season against these opponents, home and away. */
-export function expectedPoints(strength: number, opponents: readonly number[]): number {
+export function expectedPoints(strength: number, opponents: readonly number[], m: MatchModel = REALISTIC): number {
   return opponents.reduce((sum, opp) => {
-    const h = winProbability(strength, opp, true);
-    const a = winProbability(strength, opp, false);
+    const h = winProbability(strength, opp, true, m);
+    const a = winProbability(strength, opp, false, m);
     return sum + 3 * (h.win + a.win) + h.draw + a.draw;
   }, 0);
 }
 
 /** Win / draw / loss probabilities for one match, by exact Poisson sums. */
-export function winProbability(attack: number, defence: number, home: boolean): { win: number; draw: number; loss: number } {
-  const lf = expectedGoals(attack, defence, home);
-  const la = expectedGoals(defence, attack, !home);
+export function winProbability(
+  attack: number,
+  defence: number,
+  home: boolean,
+  m: MatchModel = REALISTIC,
+): { win: number; draw: number; loss: number } {
+  const lf = expectedGoals(attack, defence, home, m);
+  const la = expectedGoals(defence, attack, !home, m);
   const pmf = (l: number, k: number) => {
     let f = 1;
     for (let i = 2; i <= k; i++) f *= i;

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'preact/hooks';
 import { valueSource, type ValueSource } from '../data/valueSource';
 import { lang, LANGS, t } from '../i18n';
+import { analyticsAvailable, analyticsEnabled } from '../lib/analytics';
 import { clearProgress } from '../lib/storage';
 
 /** The gear button and its dialog: language, value source, and resetting progress. */
@@ -90,6 +91,16 @@ export function Settings() {
           <fieldset>
             <legend>{t('settings.data')}</legend>
             <p class="settings__help">{t('settings.dataHelp')}</p>
+            {analyticsAvailable && (
+              <label class="check">
+                <input
+                  type="checkbox"
+                  checked={analyticsEnabled.value}
+                  onChange={(e) => (analyticsEnabled.value = (e.target as HTMLInputElement).checked)}
+                />
+                {t('settings.analytics')}
+              </label>
+            )}
             <button type="button" class="btn btn--ghost btn--danger" onClick={reset}>
               {t('settings.reset')}
             </button>

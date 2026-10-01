@@ -40,6 +40,7 @@ export const en = {
   'settings.valueModel': "pl-value model's estimate",
   'settings.data': 'Your data',
   'settings.dataHelp': 'Scores, streaks and games in progress are kept only in this browser.',
+  'settings.analytics': 'Count my visits anonymously (GoatCounter: no cookies, no personal data)',
   'settings.reset': 'Reset scores and progress',
   'settings.resetConfirm': 'Delete all your scores, streaks and games in progress? This cannot be undone.',
   'settings.resetDone': 'Scores and progress cleared.',
@@ -58,6 +59,11 @@ export const en = {
   'common.newBest': 'New best!',
   'common.newBestSuffix': ' · new best!',
   'common.gameOver': 'Game over',
+  'mode.daily': 'Daily #{n}',
+  'mode.practice': 'Practice',
+  'mode.doneToday': "Today's round is done. A new one in",
+  'mode.streak': 'daily streak {n}',
+  'mode.practiceHint': 'Practice rounds are random and never count towards the daily streak.',
   'share.copied': 'Copied to clipboard',
   'share.shared': 'Shared',
   'share.failed': 'Could not share',
@@ -194,7 +200,6 @@ export const en = {
   'bm.poor': 'The model is harder to read than it looks.',
   'bm.random': 'Guessing at random scores 5 on average.',
   'bm.howLink': 'How the model works',
-  'bm.share': 'Beat the Model {score}/{rounds}',
   'note.tier2': 'No record in any league the model covers, so it leans on age, position, club and fee.',
   'note.tier1': 'No Premier League record yet: the model reads his record in other big leagues.',
   'note.fee': 'A club paid {fee} for him, and the model weighs the last fee.',
@@ -214,7 +219,6 @@ export const en = {
   'pt.more': 'Higher',
   'pt.lock': 'Lock it in',
   'pt.reveal': "{emoji} {points} points · you said {guess}, it's {actual} ({pct})",
-  'pt.share': 'Price Tag {total}/{max} · {values}',
 
   // ---------- Budget XI ----------
   'budget.lede':
@@ -250,6 +254,12 @@ export const en = {
     'Spin a club, take one of its players for an open position, and spin again until your XI is full. {respins} Then play a 38-game season against the real league. Ratings use {values}, and every player you take leaves his club weaker.',
   'road.respins': { one: 'You have {count} re-spin.', other: 'You have {count} re-spins.' },
   'road.progress': { one: '{picked}/11 picked · {count} re-spin left', other: '{picked}/11 picked · {count} re-spins left' },
+  'road.mode': 'Mode',
+  'road.mode.realistic': 'Realistic',
+  'road.mode.arcade': 'Arcade',
+  'road.mode.help.realistic': "The real league's own model. 38-0 is a once-in-a-lifetime dream.",
+  'road.mode.help.arcade': 'Your XI plays every match at its peak (+{bonus}) and strength gaps count for more. 38-0 is hard, but possible.',
+  'road.boost': ' (+{n} in arcade)',
   'road.bestPts': 'Best pts',
   'road.spinFirst': 'Spin to draw your first club.',
   'road.spinNext': 'Spin to draw your next club.',
@@ -261,7 +271,7 @@ export const en = {
   'road.complete': 'Your XI is complete: {ovr} OVR.',
   'road.kickoff': 'Kick off the season ⚽',
   'road.result': '{pts} pts · {pos}',
-  'road.note': "Your {ovr} OVR XI's chance of going 38-0: {odds}. It took {club}'s place in the league. Goals {gf}–{ga}.",
+  'road.note': "Chance of 38-0 for your {ovr} OVR XI{boost}: {odds}. It took {club}'s place in the league. Goals {gf}–{ga}.",
   'road.results': 'Results in order',
   'road.home': 'vs {opp}',
   'road.away': 'at {opp}',
@@ -366,6 +376,8 @@ export const en = {
     "Each match draws goals from a Poisson distribution. Expected goals start at {base} a side, are multiplied by {home} at home (divided away), and move with the rating gap: a stronger side's goals rise by {up}% per point, a weaker side's fall by {down}%. Favourites win 2-0 and 3-0 far more often than 7-0.",
   'how.sim.odds':
     "The 38-0 odds shown for an XI are exact: the product of its win probabilities in all 38 fixtures. No real Premier League club has ever won every game of a season.",
+  'how.sim.arcade':
+    "Arcade mode in Road to 38-0 gives your XI +{bonus} and a steeper curve (+{up}% / −{down}% per point). With today's squads an 88-rated XI then has a {arcade} chance of going 38-0, against {real} in realistic mode.",
   'how.credits.title': 'Credits',
   'how.credits.body':
     'Model and data: {repo}. Sources: Transfermarkt, the Fantasy Premier League API, vaastav\'s FPL archive, Understat and the Transfermarkt datasets on Kaggle; the data belongs to them. Club crests are trademarks of their clubs and are shown only to identify them; no player photos are used. This is an unofficial fan project, not affiliated with the Premier League, its clubs or Transfermarkt.',

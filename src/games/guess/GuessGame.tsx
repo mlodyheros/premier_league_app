@@ -11,7 +11,9 @@ import { t, tj } from '../../i18n';
 import { continentName, countryName } from '../../i18n/countries';
 import { posFull, posLabel, shareNote } from '../../i18n/labels';
 import { formatDate, formatEur } from '../../lib/format';
-import { dayNumber, msUntilTomorrow, pick, previousDayKey, todayKey } from '../../lib/rng';
+import { useCountdown } from '../../hooks/useCountdown';
+import { trackEvent } from '../../lib/analytics';
+import { dayNumber, pick, previousDayKey, todayKey } from '../../lib/rng';
 import { shareText, siteUrl } from '../../lib/share';
 import { loadStats, recordResult, saveStats } from '../../lib/stats';
 import { readJson, writeJson } from '../../lib/storage';
@@ -91,6 +93,7 @@ export function GuessGame() {
     );
     saveStats(statsKey, next);
     setStats(next);
+    trackEvent(`guess/${mode}/${won ? `won-${guesses.length}` : round.gaveUp ? 'gave-up' : 'lost'}`);
     setRound((r) => ({ ...r, recorded: true }));
   }, [over]);
 
@@ -230,20 +233,6 @@ function GuessRow({ player, f }: { player: Player; f: Feedback }) {
       </div>
     </div>
   );
-}
-
-function useCountdown(active: boolean): string {
-  const [ms, setMs] = useState(msUntilTomorrow);
-  useEffect(() => {
-    if (!active) return;
-    const timer = setInterval(() => setMs(msUntilTomorrow()), 1000);
-    return () => clearInterval(timer);
-  }, [active]);
-  const s = Math.floor(ms / 1000);
-  const hh = String(Math.floor(s / 3600)).padStart(2, '0');
-  const mm = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
-  const ss = String(s % 60).padStart(2, '0');
-  return `${hh}:${mm}:${ss}`;
 }
 
 interface EndProps {

@@ -22,7 +22,7 @@ export function writeJson(key: string, value: unknown): void {
 }
 
 /** Settings kept when progress is reset. */
-const KEEP = new Set(['lang', 'valueSource']);
+const KEEP = new Set(['lang', 'valueSource', 'analytics']);
 
 /** Delete every score, streak and game in progress; keep the settings. */
 export function clearProgress(): void {

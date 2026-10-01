@@ -40,6 +40,7 @@ export const pl: Dictionary = {
   'settings.valueModel': 'Wycena modelu pl-value',
   'settings.data': 'Twoje dane',
   'settings.dataHelp': 'Wyniki, serie i rozpoczęte gry są zapisane tylko w tej przeglądarce.',
+  'settings.analytics': 'Licz moje wizyty anonimowo (GoatCounter: bez cookies i danych osobowych)',
   'settings.reset': 'Wyzeruj wyniki i postępy',
   'settings.resetConfirm': 'Usunąć wszystkie wyniki, serie i rozpoczęte gry? Tego nie da się cofnąć.',
   'settings.resetDone': 'Wyniki i postępy wyczyszczone.',
@@ -58,6 +59,11 @@ export const pl: Dictionary = {
   'common.newBest': 'Nowy rekord!',
   'common.newBestSuffix': ' · nowy rekord!',
   'common.gameOver': 'Koniec gry',
+  'mode.daily': 'Dzienna #{n}',
+  'mode.practice': 'Trening',
+  'mode.doneToday': 'Dzisiejsza runda rozegrana. Nowa za',
+  'mode.streak': 'seria dzienna {n}',
+  'mode.practiceHint': 'Rundy treningowe są losowe i nie liczą się do serii dziennej.',
   'share.copied': 'Skopiowano do schowka',
   'share.shared': 'Udostępniono',
   'share.failed': 'Nie udało się udostępnić',
@@ -194,7 +200,6 @@ export const pl: Dictionary = {
   'bm.poor': 'Model trudniej przejrzeć, niż się wydaje.',
   'bm.random': 'Losowe odpowiedzi dają średnio 5 punktów.',
   'bm.howLink': 'Jak działa model',
-  'bm.share': 'Pokonaj model {score}/{rounds}',
   'note.tier2': 'Brak występów w ligach, które obejmuje model, więc opiera się na wieku, pozycji, klubie i kwocie transferu.',
   'note.tier1': 'Jeszcze bez występów w Premier League: model czyta jego dorobek z innych dużych lig.',
   'note.fee': 'Klub zapłacił za niego {fee}, a model bierze pod uwagę ostatnią kwotę transferu.',
@@ -224,7 +229,6 @@ export const pl: Dictionary = {
   'pt.more': 'Więcej',
   'pt.lock': 'Zatwierdź',
   'pt.reveal': '{emoji} {points} pkt · twoja wycena {guess}, a naprawdę {actual} ({pct})',
-  'pt.share': 'Wyceń piłkarza {total}/{max} · {values}',
 
   // ---------- Budget XI ----------
   'budget.lede':
@@ -270,6 +274,12 @@ export const pl: Dictionary = {
     many: 'Wybrano {picked}/11 · zostało {count} losowań',
     other: 'Wybrano {picked}/11 · zostało {count} losowania',
   },
+  'road.mode': 'Tryb',
+  'road.mode.realistic': 'Realistyczny',
+  'road.mode.arcade': 'Arkadowy',
+  'road.mode.help.realistic': 'Model prawdziwej ligi. 38-0 to marzenie raz na całe życie.',
+  'road.mode.help.arcade': 'Twoja jedenastka gra każdy mecz na szczycie formy (+{bonus}), a różnice w sile znaczą więcej. 38-0 jest trudne, ale możliwe.',
+  'road.boost': ', +{n} w trybie arkadowym',
   'road.bestPts': 'Rekord pkt',
   'road.spinFirst': 'Zakręć, żeby wylosować pierwszy klub.',
   'road.spinNext': 'Zakręć, żeby wylosować następny klub.',
@@ -281,7 +291,7 @@ export const pl: Dictionary = {
   'road.complete': 'Jedenastka gotowa: {ovr} OVR.',
   'road.kickoff': 'Rozpocznij sezon ⚽',
   'road.result': '{pts} pkt · {pos} miejsce',
-  'road.note': 'Szansa twojej jedenastki ({ovr} OVR) na 38-0: {odds}. W lidze zajęła miejsce klubu {club}. Bramki {gf}–{ga}.',
+  'road.note': 'Szansa twojej jedenastki ({ovr} OVR{boost}) na 38-0: {odds}. W lidze zajęła miejsce klubu {club}. Bramki {gf}–{ga}.',
   'road.results': 'Wyniki po kolei',
   'road.home': '{opp} (u siebie)',
   'road.away': '{opp} (na wyjeździe)',
@@ -385,6 +395,8 @@ export const pl: Dictionary = {
     'W każdym meczu gole losowane są z rozkładu Poissona. Oczekiwana liczba goli to na start {base} na drużynę, mnożona przez {home} u siebie (dzielona na wyjeździe) i zależna od różnicy ocen: gole silniejszej drużyny rosną o {up}% na punkt, a słabszej spadają o {down}%. Faworyci znacznie częściej wygrywają 2:0 i 3:0 niż 7:0.',
   'how.sim.odds':
     'Szansa na 38-0 pokazywana dla jedenastki jest dokładna: to iloczyn prawdopodobieństw wygranej we wszystkich 38 meczach. Żaden prawdziwy klub Premier League nigdy nie wygrał wszystkich meczów sezonu.',
+  'how.sim.arcade':
+    'Tryb arkadowy w Drodze do 38-0 daje twojej jedenastce +{bonus} i bardziej stromą krzywą (+{up}% / −{down}% na punkt). Przy obecnych kadrach jedenastka z oceną 88 ma wtedy szansę {arcade} na 38-0, a w trybie realistycznym {real}.',
   'how.credits.title': 'Autorzy i źródła',
   'how.credits.body':
     'Model i dane: {repo}. Źródła: Transfermarkt, API Fantasy Premier League, archiwum FPL vaastava, Understat oraz zbiory danych Transfermarkt na Kaggle; dane należą do nich. Herby klubów są ich znakami towarowymi i służą tu wyłącznie do ich oznaczenia; nie używamy zdjęć piłkarzy. To nieoficjalny projekt kibicowski, niezwiązany z Premier League, jej klubami ani z Transfermarkt.',

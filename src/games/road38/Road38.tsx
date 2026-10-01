@@ -9,7 +9,15 @@ import { formatDecimal, formatEur, formatOdds, ordinal } from '../../lib/format'
 import { clubTeams, USER_TEAM_ID, withUserTeam } from '../../lib/league';
 import { getBest, submitBest } from '../../lib/records';
 import { pick } from '../../lib/rng';
-import { perfectSeasonOdds, simulateSeason, type MatchResult, type TableRow } from '../../lib/season';
+import { trackEvent } from '../../lib/analytics';
+import {
+  DIFFICULTY,
+  perfectSeasonOdds,
+  simulateSeason,
+  type Difficulty,
+  type MatchResult,
+  type TableRow,
+} from '../../lib/season';
 import { shareText, siteUrl } from '../../lib/share';
 import { readJson, writeJson } from '../../lib/storage';
 import { formationByKey, FORMATIONS, teamStrength, type Lineup, type Slot } from '../../lib/strength';
@@ -27,6 +35,7 @@ import {
 
 interface SavedSeason {
   source: ValueSource;
+  difficulty?: Difficulty;
   strength: number;
   odds: number;
   replaced: string;
@@ -42,6 +51,7 @@ interface State {
   respins: number;
   club: string | null;
   season: SavedSeason | null;
+  difficulty?: Difficulty;
 }
 
 interface Totals {
@@ -54,8 +64,13 @@ const KEY = 'road:state';
 const TOTALS_KEY = 'road:totals';
 const SPIN_MS = 900;
 
-function fresh(formation = '433'): State {
-  return { formation, picks: {}, respins: RESPINS, club: null, season: null };
+function fresh(formation = '433', difficulty: Difficulty = 'realistic'): State {
+  return { formation, picks: {}, respins: RESPINS, club: null, season: null, difficulty };
+}
+
+/** Realistic keeps the original key, so bests from before modes existed still count. */
+function bestKeyFor(source: ValueSource, difficulty: Difficulty): string {
+  return difficulty === 'realistic' ? `road:pts:${source}` : `road:pts:${source}:${difficulty}`;
 }
 
 export function Road38() {
@@ -78,7 +93,8 @@ export function Road38() {
   const open = openSlots(formation, lineup);
   const complete = open.length === 0;
   const strength = teamStrength(formation, lineup, source);
-  const bestKey = `road:pts:${source}`;
+  const difficulty: Difficulty = state.difficulty ?? 'realistic';
+  const bestKey = bestKeyFor(source, difficulty);
   const best = getBest(bestKey);
 
   const selectedSlot = formation.slots.find((s) => s.id === selected && !lineup[s.id]) ?? null;
@@ -123,11 +139,13 @@ export function Road38() {
   function kickOff() {
     const without = draftedIds(lineup);
     const clubs = clubTeams(players, meta, source, without);
-    const { league, replaced } = withUserTeam(clubs, strength);
+    const { model, bonus } = DIFFICULTY[difficulty];
+    const { league, replaced } = withUserTeam(clubs, strength + bonus);
     const opponents = league.filter((team) => team.id !== USER_TEAM_ID).map((team) => team.strength);
-    const odds = perfectSeasonOdds(strength, opponents);
-    const season = simulateSeason(league, USER_TEAM_ID, Math.random);
+    const odds = perfectSeasonOdds(strength + bonus, opponents, model);
+    const season = simulateSeason(league, USER_TEAM_ID, Math.random, model);
     const row = userRow(season.table, USER_TEAM_ID);
+    trackEvent(`road/${difficulty}/ovr-${Math.floor(strength)}/pos-${season.position}/w-${row.won}`);
 
     submitBest(bestKey, row.points);
     const totals = readJson<Totals>(TOTALS_KEY) ?? { seasons: 0, titles: 0, perfect: 0 };
@@ -141,6 +159,7 @@ export function Road38() {
       ...s,
       season: {
         source,
+        difficulty,
         strength,
         odds,
         replaced: replaced.name,
@@ -152,7 +171,7 @@ export function Road38() {
   }
 
   function newDraft() {
-    setState(fresh(state.formation));
+    setState(fresh(state.formation, difficulty));
     setSelected(null);
     setNote(null);
   }
@@ -166,7 +185,7 @@ export function Road38() {
       l: row.lost,
       pts: row.points,
       pos: ordinal(season.position),
-      icons,
+      icons: season.difficulty === 'arcade' ? `${icons} · ${t('road.mode.arcade')}` : icons,
     });
     const text = `${head}\n${resultsGrid(season.results)}\n${shareValues(season.source)} · ${siteUrl()}#/road38`;
     setNote(shareNote(await shareText(text)));
@@ -204,10 +223,23 @@ export function Road38() {
               <select
                 value={state.formation}
                 disabled={Object.keys(state.picks).length > 0}
-                onChange={(e) => setState(fresh((e.target as HTMLSelectElement).value))}
+                onChange={(e) => setState(fresh((e.target as HTMLSelectElement).value, difficulty))}
               >
                 {FORMATIONS.map((f) => (
                   <option value={f.key}>{f.label}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              {t('road.mode')}
+              <select
+                value={difficulty}
+                onChange={(e) =>
+                  setState((st) => ({ ...st, difficulty: (e.target as HTMLSelectElement).value as Difficulty }))
+                }
+              >
+                {(Object.keys(DIFFICULTY) as Difficulty[]).map((d) => (
+                  <option value={d}>{t(`road.mode.${d}`)}</option>
                 ))}
               </select>
             </label>
@@ -215,6 +247,8 @@ export function Road38() {
               {t('road.progress', { picked: 11 - open.length, count: state.respins })}
             </span>
           </div>
+
+          <p class="mode-help">{t(`road.mode.help.${difficulty}`, { bonus: DIFFICULTY.arcade.bonus })}</p>
 
           <div class="squad-layout">
             <Pitch
@@ -316,6 +350,7 @@ function SeasonView({
   return (
     <div class="season">
       <div class={`end ${season.position === 1 ? 'end--win' : 'end--lose'}`}>
+        {season.difficulty === 'arcade' && <span class="mode-chip">{t('road.mode.arcade')}</span>}
         <p class="season__record">
           {row.won}-{row.drawn}-{row.lost}
         </p>
@@ -332,6 +367,7 @@ function SeasonView({
         <p class="end__note">
           {tj('road.note', {
             ovr: formatDecimal(season.strength),
+            boost: season.difficulty === 'arcade' ? t('road.boost', { n: DIFFICULTY.arcade.bonus }) : '',
             odds: <b>{formatOdds(season.odds)}</b>,
             club: season.replaced,
             gf: row.goalsFor,
