@@ -21,20 +21,24 @@ export interface MatchModel {
 }
 
 /** Tuned so a simulated real league looks like the Premier League (~2.7 goals a game, champion ~95 pts). */
-export const REALISTIC: MatchModel = { base: 1.45, home: 1.12, up: 0.035, down: 0.105 };
+export const REALISTIC: MatchModel = { base: 1.45, home: 1.12, up: 0.055, down: 0.165 };
 
 export type Difficulty = 'realistic' | 'arcade';
 
 /**
  * How a draft is simulated. Realistic: the league's own model, no help.
- * Arcade: a steeper curve, and your XI plays every match at its peak (+5).
- * Tuned on the real squads so that, in arcade, a typical draft (85) wins the
- * title about a third of the time with 38-0 odds near 1 in 10,000, a strong
- * one (88) about 1 in 240, and a top-1% one (91) about 1 in 27.
+ * Arcade: a steeper curve, and your XI plays every match at its peak (+3).
+ * Tuned on the real squads and simulated drafts so that, in arcade, a typical
+ * draft (~81.5) wins the title about a third of the time with 38-0 odds near
+ * 1 in 7,500, a strong one (~83) about 1 in 200, and the best (~84.5) about
+ * 1 in 30.
  */
+
+/** A strong draft's strength, used to quote example odds. */
+export const STRONG_DRAFT = 83;
 export const DIFFICULTY: Record<Difficulty, { model: MatchModel; bonus: number }> = {
   realistic: { model: REALISTIC, bonus: 0 },
-  arcade: { model: { base: 1.45, home: 1.12, up: 0.05, down: 0.15 }, bonus: 5 },
+  arcade: { model: { base: 1.45, home: 1.12, up: 0.09, down: 0.27 }, bonus: 3 },
 };
 
 export const BASE_GOALS = REALISTIC.base;

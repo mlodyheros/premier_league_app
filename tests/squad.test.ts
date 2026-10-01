@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Meta, Player } from '../src/data/types';
 import { affordable, options, spent } from '../src/games/budget/logic';
-import { badges, candidates, resultsGrid, spinnableClubs } from '../src/games/road38/logic';
+import { badges, byName as alphabetical, candidates, drawSpin, resultsGrid, spinnableClubs } from '../src/games/road38/logic';
 import { formatOdds } from '../src/lib/format';
 import { clubTeams, withUserTeam } from '../src/lib/league';
 import { mulberry32 } from '../src/lib/rng';
@@ -14,27 +14,47 @@ import {
   winProbability,
   type Team,
 } from '../src/lib/season';
-import { clubStrength, fit, FORMATIONS, rating, teamStrength, valueScore, type Lineup } from '../src/lib/strength';
+import { clubStrength, fit, FORMATIONS, rating, setRatingPool, teamStrength, valueScore, type Lineup } from '../src/lib/strength';
 
 const players: Player[] = JSON.parse(readFileSync('public/data/players.json', 'utf8'));
 const meta: Meta = JSON.parse(readFileSync('public/data/meta.json', 'utf8'));
 const byName = (n: string) => players.find((p) => p.name === n)!;
+setRatingPool(players);
 
 describe('ratings', () => {
-  it('stay within 40-99 on both value sources', () => {
+  it('stay within 52-91 on both value sources', () => {
     for (const p of players) {
       for (const s of ['tm', 'model'] as const) {
         const r = rating(p, s);
-        expect(r).toBeGreaterThanOrEqual(40);
-        expect(r).toBeLessThanOrEqual(99);
+        expect(r).toBeGreaterThanOrEqual(52);
+        expect(r).toBeLessThanOrEqual(91);
       }
     }
   });
 
-  it('put a star above a squad player', () => {
-    expect(rating(byName('Erling Haaland'), 'tm')).toBeGreaterThan(95);
-    const cheapest = players.reduce((a, b) => (a.tm < b.tm ? a : b));
-    expect(rating(cheapest, 'tm')).toBeLessThan(65);
+  it('spread like FIFA ratings: one 91, about ten 88+, a median in the low 70s', () => {
+    const rs = players.map((p) => rating(p, 'tm')).sort((a, b) => a - b);
+    expect(rs.filter((r) => r >= 88).length).toBeLessThanOrEqual(12);
+    expect(rs[Math.floor(rs.length / 2)]).toBeGreaterThanOrEqual(71);
+    expect(rs[Math.floor(rs.length / 2)]).toBeLessThanOrEqual(75);
+    expect(rating(byName('Erling Haaland'), 'tm')).toBe(91);
+  });
+
+  it('rate veterans on what they do now, not on their resale price', () => {
+    // €15m at 35 is cheap because nobody resells him, not because he is weak.
+    expect(rating(byName('Virgil van Dijk'), 'tm')).toBeGreaterThanOrEqual(82);
+    expect(rating(byName('Bruno Fernandes'), 'tm')).toBeGreaterThanOrEqual(84);
+  });
+
+  it('do not rate unproven prospects as stars because they are expensive', () => {
+    const prospect = byName('Vitor Reis'); // €30m at 20, barely played
+    expect(prospect.tm).toBeGreaterThanOrEqual(20_000_000);
+    expect(rating(prospect, 'tm')).toBeLessThan(72);
+  });
+
+  it('keep the order of stars sensible', () => {
+    expect(rating(byName('Bukayo Saka'), 'tm')).toBeGreaterThan(rating(byName('Morgan Gibbs-White'), 'tm'));
+    expect(rating(byName('Declan Rice'), 'tm')).toBeGreaterThanOrEqual(88);
   });
 
   it('score value on a clamped log scale', () => {
@@ -211,5 +231,41 @@ describe('Budget XI list order', () => {
       expect(firstUnaffordable).toBeGreaterThan(0);
       expect(opts.slice(firstUnaffordable).every((o) => !o.affordable)).toBe(true);
     }
+  });
+});
+
+describe('Road to 38-0 draft modes', () => {
+  const f = FORMATIONS[0];
+  const clubs = Object.keys(meta.clubs);
+
+  it('draws a club and a position the club can fill', () => {
+    const rand = mulberry32(4);
+    for (let i = 0; i < 50; i++) {
+      const spin = drawSpin(players, clubs, f, {}, 'position', rand)!;
+      const slot = f.slots.find((s) => s.id === spin.slot)!;
+      expect(slot).toBeDefined();
+      expect(players.some((p) => p.club === spin.club && fit(p, slot.type) > 0)).toBe(true);
+    }
+  });
+
+  it('only draws open positions, and never repeats the spin on a re-spin', () => {
+    const lineup: Lineup = { gk: players.find((p) => p.pos === 'GK')! };
+    const rand = mulberry32(9);
+    for (let i = 0; i < 50; i++) {
+      const first = drawSpin(players, clubs, f, lineup, 'blind', rand)!;
+      expect(first.slot).not.toBe('gk');
+      const again = drawSpin(players, clubs, f, lineup, 'blind', rand, first)!;
+      expect(again.club === first.club && again.slot === first.slot).toBe(false);
+    }
+  });
+
+  it('draws no position in standard mode', () => {
+    expect(drawSpin(players, clubs, f, {}, 'standard', mulberry32(1))!.slot).toBeNull();
+  });
+
+  it('lists a blind draft alphabetically, so the order gives no ratings away', () => {
+    const list = alphabetical(candidates(players, 'ARS', f, {}, 'tm'));
+    const names = list.map((c) => c.player.name);
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
   });
 });

@@ -5,12 +5,14 @@ import { useDataset } from '../../data/store';
 import type { Player } from '../../data/types';
 import { shareValues, valueSource, valuesPhrase } from '../../data/valueSource';
 import { t, tj } from '../../i18n';
-import { posLabel, shareNote } from '../../i18n/labels';
+import { posLabel } from '../../i18n/labels';
 import { fold, formatDecimal, formatEur, formatOdds } from '../../lib/format';
 import { clubsBeaten, clubTeams, withUserTeam } from '../../lib/league';
+import { celebrate } from '../../lib/motion';
 import { getBest, submitBest } from '../../lib/records';
 import { expectedPoints, perfectSeasonOdds } from '../../lib/season';
 import { shareText, siteUrl } from '../../lib/share';
+import { notifyShare } from '../../components/Toast';
 import { readJson, writeJson } from '../../lib/storage';
 import { formationByKey, FORMATIONS, teamStrength, type Lineup, type Slot } from '../../lib/strength';
 import { BUDGETS, DEFAULT_BUDGET, grade, isComplete, options, spent, type SortKey } from './logic';
@@ -37,7 +39,6 @@ export function BudgetXI() {
   const [selected, setSelected] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<SortKey>('rating');
-  const [note, setNote] = useState<string | null>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
 
   const formation = formationByKey(formationKey);
@@ -57,7 +58,9 @@ export function BudgetXI() {
 
   useEffect(() => {
     if (complete) {
-      setNewBest(submitBest(bestKey, strength));
+      const isNew = submitBest(bestKey, strength);
+      setNewBest(isNew);
+      if (isNew && strength >= 83) celebrate(strength >= 85);
     } else {
       setNewBest(false);
     }
@@ -130,7 +133,7 @@ export function BudgetXI() {
       grade: grade(strength),
       values: shareValues(source),
     });
-    setNote(shareNote(await shareText(`${head}\n${formation.label}: ${lines.join(', ')}\n${siteUrl()}#/budget`)));
+    notifyShare(await shareText(`${head}\n${formation.label}: ${lines.join(', ')}\n${siteUrl()}#/budget`));
   }
 
   return (
@@ -264,7 +267,6 @@ export function BudgetXI() {
               {t('budget.tryRoad')}
             </a>
           </div>
-          {note && <p class="end__note" role="status">{note}</p>}
         </div>
       )}
     </section>

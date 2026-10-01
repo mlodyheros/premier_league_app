@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { Avatar, Crest } from '../../components/Avatar';
 import { Pitch } from '../../components/Pitch';
+import { notifyShare } from '../../components/Toast';
 import { useDataset } from '../../data/store';
 import { shareValues, valueOf, valueSource, valuesPhrase, type ValueSource } from '../../data/valueSource';
+import { useCountUp } from '../../hooks/useCountUp';
 import { t, tj } from '../../i18n';
-import { posLabel, shareNote } from '../../i18n/labels';
+import { posLabel } from '../../i18n/labels';
+import { trackEvent } from '../../lib/analytics';
 import { formatDecimal, formatEur, formatOdds, ordinal } from '../../lib/format';
 import { clubTeams, USER_TEAM_ID, withUserTeam } from '../../lib/league';
+import { buzz, celebrate, reducedMotion } from '../../lib/motion';
 import { getBest, submitBest } from '../../lib/records';
 import { pick } from '../../lib/rng';
-import { trackEvent } from '../../lib/analytics';
 import {
   DIFFICULTY,
   perfectSeasonOdds,
@@ -20,22 +23,29 @@ import {
 } from '../../lib/season';
 import { shareText, siteUrl } from '../../lib/share';
 import { readJson, writeJson } from '../../lib/storage';
-import { formationByKey, FORMATIONS, teamStrength, type Lineup, type Slot } from '../../lib/strength';
+import { formationByKey, FORMATIONS, rating, teamStrength, type Lineup, type Slot } from '../../lib/strength';
 import {
   badges,
+  byName,
   candidates,
   draftedIds,
+  drawSpin,
+  drawsPosition,
+  DRAFT_MODES,
   fillableSlots,
+  hidesRatings,
   openSlots,
   resultsGrid,
   RESPINS,
-  spinnableClubs,
   userRow,
+  type DraftMode,
+  type Spin,
 } from './logic';
 
 interface SavedSeason {
   source: ValueSource;
   difficulty?: Difficulty;
+  draft?: DraftMode;
   strength: number;
   odds: number;
   replaced: string;
@@ -49,9 +59,12 @@ interface State {
   /** slot id -> player name */
   picks: Record<string, string>;
   respins: number;
-  club: string | null;
+  spin: Spin | null;
   season: SavedSeason | null;
   difficulty?: Difficulty;
+  draft?: DraftMode;
+  /** Saved by older versions, before positions could be drawn. */
+  club?: string | null;
 }
 
 interface Totals {
@@ -62,77 +75,104 @@ interface Totals {
 
 const KEY = 'road:state';
 const TOTALS_KEY = 'road:totals';
-const SPIN_MS = 900;
+/** The reel slows down: the gaps between frames, in ms. */
+const REEL = [55, 55, 60, 65, 70, 80, 90, 105, 125, 150, 185, 230, 290];
 
-function fresh(formation = '433', difficulty: Difficulty = 'realistic'): State {
-  return { formation, picks: {}, respins: RESPINS, club: null, season: null, difficulty };
+function fresh(formation = '433', difficulty: Difficulty = 'realistic', draft: DraftMode = 'standard'): State {
+  return { formation, picks: {}, respins: RESPINS, spin: null, season: null, difficulty, draft };
 }
 
-/** Realistic keeps the original key, so bests from before modes existed still count. */
-function bestKeyFor(source: ValueSource, difficulty: Difficulty): string {
-  return difficulty === 'realistic' ? `road:pts:${source}` : `road:pts:${source}:${difficulty}`;
+function load(): State {
+  const saved = readJson<State>(KEY);
+  if (!saved) return fresh();
+  // Older saves kept only the club.
+  if (saved.spin === undefined) saved.spin = saved.club ? { club: saved.club, slot: null } : null;
+  return saved;
+}
+
+/** Realistic standard keeps the original key, so bests from before modes existed still count. */
+function bestKeyFor(source: ValueSource, difficulty: Difficulty, draft: DraftMode): string {
+  let key = `road:pts:${source}`;
+  if (difficulty !== 'realistic') key += `:${difficulty}`;
+  if (draft !== 'standard') key += `:${draft}`;
+  return key;
 }
 
 export function Road38() {
   const { players, meta } = useDataset();
   const source = valueSource.value;
-  const byName = useMemo(() => new Map(players.map((p) => [p.name, p])), [players]);
+  const playerByName = useMemo(() => new Map(players.map((p) => [p.name, p])), [players]);
   const clubCodes = useMemo(() => Object.keys(meta.clubs), [meta]);
 
-  const [state, setState] = useState<State>(() => readJson<State>(KEY) ?? fresh());
+  const [state, setState] = useState<State>(load);
   const [selected, setSelected] = useState<string | null>(null);
-  const [spinning, setSpinning] = useState<string | null>(null);
-  const [note, setNote] = useState<string | null>(null);
-  const spinTimer = useRef<number | undefined>(undefined);
+  const [reel, setReel] = useState<Spin | null>(null);
+  const [landed, setLanded] = useState(false);
+  const [justPlayed, setJustPlayed] = useState(false);
+  const timers = useRef<number[]>([]);
 
   useEffect(() => writeJson(KEY, state), [state]);
-  useEffect(() => () => clearInterval(spinTimer.current), []);
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   const formation = formationByKey(state.formation);
-  const lineup: Lineup = Object.fromEntries(Object.entries(state.picks).map(([s, n]) => [s, byName.get(n)]));
+  const lineup: Lineup = Object.fromEntries(Object.entries(state.picks).map(([s, n]) => [s, playerByName.get(n)]));
   const open = openSlots(formation, lineup);
   const complete = open.length === 0;
   const strength = teamStrength(formation, lineup, source);
   const difficulty: Difficulty = state.difficulty ?? 'realistic';
-  const bestKey = bestKeyFor(source, difficulty);
+  const draft: DraftMode = state.draft ?? 'standard';
+  const blind = hidesRatings(draft);
+  const bestKey = bestKeyFor(source, difficulty, draft);
   const best = getBest(bestKey);
+  const started = Object.keys(state.picks).length > 0 || !!state.spin;
+  const spinning = reel !== null;
 
-  const selectedSlot = formation.slots.find((s) => s.id === selected && !lineup[s.id]) ?? null;
-  const list = state.club ? candidates(players, state.club, formation, lineup, source, selectedSlot) : [];
-  const hint = state.club ? fillableSlots(players, state.club, formation, lineup) : undefined;
+  // In the position modes the drawn slot is the only one that can be filled.
+  const drawnSlot = state.spin?.slot ? (formation.slots.find((s) => s.id === state.spin!.slot) ?? null) : null;
+  const chosenSlot = drawnSlot ?? formation.slots.find((s) => s.id === selected && !lineup[s.id]) ?? null;
+  const rawList = state.spin ? candidates(players, state.spin.club, formation, lineup, source, chosenSlot) : [];
+  const list = blind ? byName(rawList) : rawList;
+  const hint = drawnSlot
+    ? new Set([drawnSlot.id])
+    : state.spin
+      ? fillableSlots(players, state.spin.club, formation, lineup)
+      : undefined;
 
   function spin(isRespin: boolean) {
     if (spinning) return;
-    const pool = spinnableClubs(players, clubCodes, formation, lineup, source).filter(
-      (c) => !isRespin || c !== state.club,
-    );
-    if (!pool.length) return;
-    const landing = pick(pool);
+    const landing = drawSpin(players, clubCodes, formation, lineup, draft, Math.random, isRespin ? state.spin : null);
+    if (!landing) return;
     setSelected(null);
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    setLanded(false);
+    buzz('tap');
     const finish = () => {
-      setSpinning(null);
-      setState((s) => ({ ...s, club: landing, respins: isRespin ? s.respins - 1 : s.respins }));
+      setReel(null);
+      setLanded(true);
+      buzz('good');
+      setState((s) => ({ ...s, spin: landing, respins: isRespin ? s.respins - 1 : s.respins }));
     };
-    if (reduce) return finish();
-    const started = Date.now();
-    spinTimer.current = window.setInterval(() => {
-      if (Date.now() - started >= SPIN_MS) {
-        clearInterval(spinTimer.current);
-        finish();
-      } else {
-        setSpinning(pick(clubCodes));
-      }
-    }, 70);
+    if (reducedMotion()) return finish();
+    const positions = open.map((s) => s.id);
+    let at = 0;
+    timers.current = REEL.map((gap) => {
+      at += gap;
+      return window.setTimeout(
+        () => setReel({ club: pick(clubCodes), slot: drawsPosition(draft) ? pick(positions) : null }),
+        at,
+      );
+    });
+    timers.current.push(window.setTimeout(finish, at + 200));
   }
 
   function choose(playerName: string, slot: Slot) {
-    setState((s) => ({ ...s, picks: { ...s.picks, [slot.id]: playerName }, club: null }));
+    buzz('tap');
+    setState((s) => ({ ...s, picks: { ...s.picks, [slot.id]: playerName }, spin: null }));
     setSelected(null);
+    setLanded(false);
   }
 
   function onSlot(slot: Slot) {
-    if (lineup[slot.id] || !state.club) return;
+    if (lineup[slot.id] || !state.spin || drawnSlot) return;
     setSelected(selected === slot.id ? null : slot.id);
   }
 
@@ -145,7 +185,7 @@ export function Road38() {
     const odds = perfectSeasonOdds(strength + bonus, opponents, model);
     const season = simulateSeason(league, USER_TEAM_ID, Math.random, model);
     const row = userRow(season.table, USER_TEAM_ID);
-    trackEvent(`road/${difficulty}/ovr-${Math.floor(strength)}/pos-${season.position}/w-${row.won}`);
+    trackEvent(`road/${difficulty}/${draft}/ovr-${Math.floor(strength)}/pos-${season.position}/w-${row.won}`);
 
     submitBest(bestKey, row.points);
     const totals = readJson<Totals>(TOTALS_KEY) ?? { seasons: 0, titles: 0, perfect: 0 };
@@ -155,11 +195,14 @@ export function Road38() {
       perfect: totals.perfect + (row.won === 38 ? 1 : 0),
     });
 
+    setJustPlayed(true);
+    window.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });
     setState((s) => ({
       ...s,
       season: {
         source,
         difficulty,
+        draft,
         strength,
         odds,
         replaced: replaced.name,
@@ -171,27 +214,30 @@ export function Road38() {
   }
 
   function newDraft() {
-    setState(fresh(state.formation, difficulty));
+    setState(fresh(state.formation, difficulty, draft));
     setSelected(null);
-    setNote(null);
+    setJustPlayed(false);
   }
 
   async function share(season: SavedSeason) {
     const row = userRow(season.table, USER_TEAM_ID);
     const icons = badges(row, season.position).map((b) => b.icon).join('');
+    const modes = [
+      season.draft && season.draft !== 'standard' ? t(`road.draft.${season.draft}`) : '',
+      season.difficulty === 'arcade' ? t('road.mode.arcade') : '',
+    ].filter(Boolean);
     const head = t('road.share', {
       w: row.won,
       d: row.drawn,
       l: row.lost,
       pts: row.points,
       pos: ordinal(season.position),
-      icons: season.difficulty === 'arcade' ? `${icons} · ${t('road.mode.arcade')}` : icons,
+      icons: [icons, ...modes].filter(Boolean).join(' · '),
     });
-    const text = `${head}\n${resultsGrid(season.results)}\n${shareValues(season.source)} · ${siteUrl()}#/road38`;
-    setNote(shareNote(await shareText(text)));
+    notifyShare(await shareText(`${head}\n${resultsGrid(season.results)}\n${shareValues(season.source)} · ${siteUrl()}#/road38`));
   }
 
-  const shownClub = spinning ?? state.club;
+  const shown = reel ?? state.spin;
 
   return (
     <section class="game road">
@@ -200,7 +246,7 @@ export function Road38() {
         <div class="scorebug">
           <span>
             <small>{t('common.ovr')}</small>
-            <b>{strength ? formatDecimal(strength) : '–'}</b>
+            <b>{blind && !state.season ? '?' : strength ? formatDecimal(strength) : '–'}</b>
           </span>
           <span>
             <small>{t('road.bestPts')}</small>
@@ -222,11 +268,23 @@ export function Road38() {
               {t('budget.formation')}
               <select
                 value={state.formation}
-                disabled={Object.keys(state.picks).length > 0}
-                onChange={(e) => setState(fresh((e.target as HTMLSelectElement).value, difficulty))}
+                disabled={started}
+                onChange={(e) => setState(fresh((e.target as HTMLSelectElement).value, difficulty, draft))}
               >
                 {FORMATIONS.map((f) => (
                   <option value={f.key}>{f.label}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              {t('road.draft')}
+              <select
+                value={draft}
+                disabled={started}
+                onChange={(e) => setState(fresh(state.formation, difficulty, (e.target as HTMLSelectElement).value as DraftMode))}
+              >
+                {DRAFT_MODES.map((d) => (
+                  <option value={d}>{t(`road.draft.${d}`)}</option>
                 ))}
               </select>
             </label>
@@ -243,41 +301,50 @@ export function Road38() {
                 ))}
               </select>
             </label>
-            <span class="controls__info">
-              {t('road.progress', { picked: 11 - open.length, count: state.respins })}
-            </span>
           </div>
-
-          <p class="mode-help">{t(`road.mode.help.${difficulty}`, { bonus: DIFFICULTY.arcade.bonus })}</p>
+          <p class="mode-help">
+            {t(`road.draft.help.${draft}`)} {t(`road.mode.help.${difficulty}`, { bonus: DIFFICULTY.arcade.bonus })}
+          </p>
+          <p class="controls__info">{t('road.progress', { picked: 11 - open.length, count: state.respins })}</p>
 
           <div class="squad-layout">
             <Pitch
               formation={formation}
               lineup={lineup}
               source={source}
-              selected={selectedSlot?.id}
+              selected={chosenSlot?.id}
               highlight={hint}
               onSlot={onSlot}
+              hideRatings={blind}
             />
 
             <div class="picker">
               {!complete && (
-                <div class={`spinner ${spinning ? 'spinner--on' : ''}`} aria-live="polite">
-                  {shownClub ? (
-                    <div class="spinner__club">
-                      <Crest code={shownClub} size={48} />
-                      <span>{meta.clubs[shownClub].name}</span>
+                <div class={`spinner ${spinning ? 'spinner--on' : ''} ${landed ? 'spinner--landed' : ''}`} aria-live="polite">
+                  {shown ? (
+                    <div class="spinner__reel" key={`${shown.club}-${shown.slot}-${spinning}`}>
+                      <Crest code={shown.club} size={56} />
+                      <div class="spinner__text">
+                        <span class="spinner__club">{meta.clubs[shown.club].name}</span>
+                        {shown.slot && (
+                          <span class="spinner__slot">
+                            {t('road.drawnSlot', {
+                              pos: posLabel(formation.slots.find((s) => s.id === shown.slot)?.type ?? 'CM'),
+                            })}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <p class="picker__hint">{t(open.length === 11 ? 'road.spinFirst' : 'road.spinNext')}</p>
                   )}
                   <div class="spinner__actions">
-                    {!state.club && (
-                      <button class="btn btn--primary" onClick={() => spin(false)} disabled={!!spinning}>
+                    {!state.spin && (
+                      <button class="btn btn--primary btn--spin" onClick={() => spin(false)} disabled={spinning}>
                         {spinning ? t('road.spinning') : t('road.spin')}
                       </button>
                     )}
-                    {state.club && !spinning && (
+                    {state.spin && !spinning && (
                       <button class="btn" onClick={() => spin(true)} disabled={state.respins === 0}>
                         {t('road.respin', { n: state.respins })}
                       </button>
@@ -286,23 +353,29 @@ export function Road38() {
                 </div>
               )}
 
-              {state.club && !spinning && (
+              {state.spin && !spinning && (
                 <>
                   <p class="picker__hint">
-                    {selectedSlot ? t('road.showingSlot', { pos: posLabel(selectedSlot.type) }) : t('road.pickHint')}
+                    {drawnSlot
+                      ? t('road.pickForSlot', { pos: posLabel(drawnSlot.type) })
+                      : chosenSlot
+                        ? t('road.showingSlot', { pos: posLabel(chosenSlot.type) })
+                        : t('road.pickHint')}
                   </p>
                   <ul class="picker__list">
-                    {list.map((c) => (
-                      <li>
+                    {list.map((c, i) => (
+                      <li style={{ '--i': i }}>
                         <button class="prow" onClick={() => choose(c.player.name, c.slot)}>
                           <Avatar player={c.player} size={30} />
                           <span class="prow__name">
                             {c.player.name}
                             <small>
-                              {posLabel(c.player.pos)} → {posLabel(c.slot.type)} · {formatEur(valueOf(c.player, source))}
+                              {posLabel(c.player.pos)}
+                              {!drawnSlot && <> → {posLabel(c.slot.type)}</>}
+                              {!blind && <> · {formatEur(valueOf(c.player, source))}</>}
                             </small>
                           </span>
-                          <span class="prow__ovr">{Math.round(c.rating)}</span>
+                          {!blind && <span class="prow__ovr">{Math.round(c.rating)}</span>}
                         </button>
                       </li>
                     ))}
@@ -312,8 +385,10 @@ export function Road38() {
 
               {complete && (
                 <div class="kickoff">
-                  <p>{tj('road.complete', { ovr: <b>{formatDecimal(strength)}</b> })}</p>
-                  <button class="btn btn--primary btn--big" onClick={kickOff}>
+                  <p>
+                    {blind ? t('road.completeBlind') : tj('road.complete', { ovr: <b>{formatDecimal(strength)}</b> })}
+                  </p>
+                  <button class="btn btn--primary btn--big btn--pulse" onClick={kickOff}>
                     {t('road.kickoff')}
                   </button>
                 </div>
@@ -323,7 +398,16 @@ export function Road38() {
         </>
       )}
 
-      {state.season && <SeasonView season={state.season} onShare={share} onNew={newDraft} note={note} lineup={lineup} />}
+      {state.season && (
+        <SeasonView
+          season={state.season}
+          lineup={lineup}
+          formation={formation}
+          animate={justPlayed}
+          onShare={share}
+          onNew={newDraft}
+        />
+      )}
     </section>
   );
 }
@@ -331,30 +415,49 @@ export function Road38() {
 function SeasonView({
   season,
   lineup,
+  formation,
+  animate,
   onShare,
   onNew,
-  note,
 }: {
   season: SavedSeason;
   lineup: Lineup;
+  formation: ReturnType<typeof formationByKey>;
+  animate: boolean;
   onShare: (s: SavedSeason) => void;
   onNew: () => void;
-  note: string | null;
 }) {
   const row = userRow(season.table, USER_TEAM_ID);
   const earned = badges(row, season.position);
-  const names = Object.values(lineup)
-    .flatMap((p) => (p ? [p.short] : []))
-    .join(', ');
+  const won = useCountUp(row.won, animate, 1400);
+  const drawn = useCountUp(row.drawn, animate, 1400);
+  const lost = useCountUp(row.lost, animate, 1400);
+  const points = useCountUp(row.points, animate, 1600);
+
+  useEffect(() => {
+    if (!animate) return;
+    const timer = setTimeout(() => {
+      if (season.position === 1) celebrate(row.won === 38 || row.lost === 0);
+      buzz(season.position === 1 ? 'good' : 'tap');
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [animate]);
+
+  const modes = [
+    season.draft && season.draft !== 'standard' ? t(`road.draft.${season.draft}`) : null,
+    season.difficulty === 'arcade' ? t('road.mode.arcade') : null,
+  ].filter(Boolean);
 
   return (
-    <div class="season">
+    <div class={`season ${animate ? 'season--fresh' : ''}`}>
       <div class={`end ${season.position === 1 ? 'end--win' : 'end--lose'}`}>
-        {season.difficulty === 'arcade' && <span class="mode-chip">{t('road.mode.arcade')}</span>}
-        <p class="season__record">
-          {row.won}-{row.drawn}-{row.lost}
+        {modes.map((m) => (
+          <span class="mode-chip">{m}</span>
+        ))}
+        <p class="season__record" aria-label={`${row.won}-${row.drawn}-${row.lost}`}>
+          {Math.round(won)}-{Math.round(drawn)}-{Math.round(lost)}
         </p>
-        <p class="end__title">{t('road.result', { pts: row.points, pos: ordinal(season.position) })}</p>
+        <p class="end__title">{t('road.result', { pts: Math.round(points), pos: ordinal(season.position) })}</p>
         {earned.length > 0 && (
           <ul class="badges">
             {earned.map((b) => (
@@ -378,6 +481,7 @@ function SeasonView({
           {season.results.map((r, i) => (
             <li
               class={`strip__m strip__m--${r.outcome}`}
+              style={{ '--i': i }}
               title={`${i + 1}. ${t(r.home ? 'road.home' : 'road.away', { opp: r.opponent })} ${r.goalsFor}-${r.goalsAgainst}`}
             >
               <span class="sr-only">
@@ -394,8 +498,24 @@ function SeasonView({
             {t('common.share')}
           </button>
         </div>
-        {note && <p class="end__note" role="status">{note}</p>}
-        <p class="end__foot">{t('road.yourXiList', { names })}</p>
+      </div>
+
+      <div class="xi-reveal">
+        <h2>{t('road.yourXi')}</h2>
+        <ul>
+          {[...formation.slots].reverse().map((slot, i) => {
+            const p = lineup[slot.id];
+            if (!p) return null;
+            return (
+              <li style={{ '--i': i }}>
+                <span class="xi-reveal__pos">{posLabel(slot.type)}</span>
+                <Avatar player={p} size={28} />
+                <span class="xi-reveal__name">{p.name}</span>
+                <span class="xi-reveal__ovr">{rating(p, season.source)}</span>
+              </li>
+            );
+          })}
+        </ul>
       </div>
 
       <details class="table-wrap" open>
@@ -419,7 +539,9 @@ function SeasonView({
                 <td class="l">
                   <span class="league__team">
                     {team.id === USER_TEAM_ID ? (
-                      <span class="league__you" aria-hidden="true">★</span>
+                      <span class="league__you" aria-hidden="true">
+                        ★
+                      </span>
                     ) : (
                       <Crest code={team.id} size={18} />
                     )}
@@ -429,7 +551,10 @@ function SeasonView({
                 <td>{team.won}</td>
                 <td>{team.drawn}</td>
                 <td>{team.lost}</td>
-                <td>{team.goalsFor - team.goalsAgainst > 0 ? '+' : ''}{team.goalsFor - team.goalsAgainst}</td>
+                <td>
+                  {team.goalsFor - team.goalsAgainst > 0 ? '+' : ''}
+                  {team.goalsFor - team.goalsAgainst}
+                </td>
                 <td>
                   <b>{team.points}</b>
                 </td>

@@ -13,10 +13,12 @@ interface Props {
   /** Empty slots worth drawing attention to (e.g. ones the current club can fill). */
   highlight?: ReadonlySet<string>;
   onSlot?: (slot: Slot) => void;
+  /** Blind drafts: show who, not how good. */
+  hideRatings?: boolean;
 }
 
 /** A vertical pitch with the formation's slots, filled or empty. */
-export function Pitch({ formation, lineup, source, selected, highlight, onSlot }: Props) {
+export function Pitch({ formation, lineup, source, selected, highlight, onSlot, hideRatings = false }: Props) {
   return (
     <div class="pitch" role="group" aria-label={t('pitch.formation', { name: formation.label })}>
       <div class="pitch__lines" aria-hidden="true">
@@ -36,10 +38,13 @@ export function Pitch({ formation, lineup, source, selected, highlight, onSlot }
           !p && highlight?.has(slot.id) ? 'slot--hint' : '',
         ].join(' ');
         const label = p
-          ? t('pitch.filled', { pos: posLabel(slot.type), name: p.name, rating: eff ?? 0 })
+          ? hideRatings
+            ? `${posLabel(slot.type)}: ${p.name}`
+            : t('pitch.filled', { pos: posLabel(slot.type), name: p.name, rating: eff ?? 0 })
           : t('pitch.empty', { pos: posLabel(slot.type) });
         return (
           <button
+            key={`${slot.id}-${p?.id ?? 'empty'}`}
             type="button"
             class={cls}
             style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
@@ -52,7 +57,7 @@ export function Pitch({ formation, lineup, source, selected, highlight, onSlot }
               <>
                 <Avatar player={p} size={38} />
                 <span class="slot__name">{p.short}</span>
-                <span class={`slot__ovr ${offPos ? 'slot__ovr--off' : ''}`}>{eff}</span>
+                {!hideRatings && <span class={`slot__ovr ${offPos ? 'slot__ovr--off' : ''}`}>{eff}</span>}
               </>
             ) : (
               <span class="slot__pos">{posLabel(slot.type)}</span>

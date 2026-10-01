@@ -96,3 +96,61 @@ export function resultsGrid(results: readonly MatchResult[]): string {
 export function userRow(table: readonly TableRow[], id: string): TableRow {
   return table.find((r) => r.id === id)!;
 }
+
+/**
+ * How much the draft tells you, from easiest to hardest:
+ * - standard: spin a club, take any of its players for any open position;
+ * - position: the spin also draws the position you must fill;
+ * - blind: drawn position, and no ratings or prices: names only.
+ */
+export type DraftMode = 'standard' | 'position' | 'blind';
+export const DRAFT_MODES: DraftMode[] = ['standard', 'position', 'blind'];
+
+export function drawsPosition(mode: DraftMode): boolean {
+  return mode !== 'standard';
+}
+
+export function hidesRatings(mode: DraftMode): boolean {
+  return mode === 'blind';
+}
+
+export interface Spin {
+  club: string;
+  /** The open slot to fill, in the modes that draw one. */
+  slot: string | null;
+}
+
+/**
+ * Draw the next spin. In the position modes the club and the slot are drawn
+ * together, from the pairs where the club has someone who can play there.
+ * `avoid` (the current spin, on a re-spin) is never drawn again.
+ */
+export function drawSpin(
+  players: readonly Player[],
+  clubs: readonly string[],
+  formation: Formation,
+  lineup: Lineup,
+  mode: DraftMode,
+  rand: () => number,
+  avoid?: Spin | null,
+): Spin | null {
+  if (!drawsPosition(mode)) {
+    const pool = clubs.filter(
+      (c) => c !== avoid?.club && candidates(players, c, formation, lineup, 'tm').length > 0,
+    );
+    return pool.length ? { club: pool[Math.floor(rand() * pool.length)], slot: null } : null;
+  }
+  const pairs: Spin[] = [];
+  for (const club of clubs) {
+    for (const slot of fillableSlots(players, club, formation, lineup)) {
+      if (avoid && avoid.club === club && avoid.slot === slot) continue;
+      pairs.push({ club, slot });
+    }
+  }
+  return pairs.length ? pairs[Math.floor(rand() * pairs.length)] : null;
+}
+
+/** In blind mode the list must not give the ratings away, so it is alphabetical. */
+export function byName(list: Candidate[]): Candidate[] {
+  return list.slice().sort((a, b) => a.player.name.localeCompare(b.player.name));
+}

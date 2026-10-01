@@ -1,37 +1,114 @@
 /**
  * Player ratings and squad strength, shared by Road to 38-0 and Budget XI.
  *
- * A rating blends two halves: how the player performs (the exported `perf`,
- * a percentile within his position group) and what he is worth on the active
- * value source (on a log scale of euros). Price alone would make
- * the squad games "buy the dearest"; performance alone would ignore the market.
+ * An overall rating (OVR) is built in three steps:
+ *
+ * 1. **Ability value.** The market value on the active source, corrected for
+ *    age. Transfermarkt prices young players for their potential and resale,
+ *    and veterans for their lack of it: a 35-year-old regular is cheap but
+ *    still good today. The correction (AGE_FACTOR) turns price into a rough
+ *    "what he is worth on the pitch now".
+ * 2. **Score.** 60% that ability value (log scale), 40% performance (the
+ *    exported `perf`: minutes, bonus points, xGChain, goal involvement, form,
+ *    Champions League games, as a percentile within his position group).
+ * 3. **Scale.** Scores are ranked across the league and mapped onto a
+ *    FIFA-like distribution (RATING_CURVE): the best player ~91, the top 3%
+ *    86+, a median Premier League player ~73, fringe youngsters in the 50s.
+ *    Ranking keeps the order the score gives while making the numbers read
+ *    the way football fans expect.
  */
 import type { Player, PosCode } from '../data/types';
 import { valueOf, type ValueSource } from '../data/valueSource';
 
-export const RATING_MIN = 40;
-export const RATING_MAX = 99;
-const PERF_WEIGHT = 0.5;
+export const RATING_MIN = 52;
+export const RATING_MAX = 91;
+const VALUE_WEIGHT = 0.6;
 
 /** Value scale for ratings: logarithmic between these two prices, clamped. */
 const VALUE_FLOOR = 1_000_000;
 const VALUE_CEILING = 200_000_000;
 
 /**
- * 0-1 value score on a log scale. A log scale (unlike a league percentile)
- * keeps room at the top: €220m Haaland scores 1.0, a €100m player 0.87, a
- * €20m player 0.57, so a side full of stars stands out from one full of
- * good players.
+ * 0-1 value score on a log scale: €200m and above scores 1.0, a €100m player
+ * 0.87, a €20m player 0.57, €1m and below 0.
  */
 export function valueScore(value: number): number {
   const x = Math.log(value / VALUE_FLOOR) / Math.log(VALUE_CEILING / VALUE_FLOOR);
   return Math.min(1, Math.max(0, x));
 }
 
-/** 40-99 overall rating on the given value source. */
+/** Multiplier from market price to "ability now", by age. */
+export const AGE_FACTOR: Record<number, number> = {
+  17: 0.5, 18: 0.52, 19: 0.56, 20: 0.62, 21: 0.7, 22: 0.8, 23: 0.9,
+  24: 1, 25: 1, 26: 1, 27: 1,
+  28: 1.1, 29: 1.25, 30: 1.45, 31: 1.7, 32: 2, 33: 2.4, 34: 2.8, 35: 3.2,
+};
+
+export function ageFactor(age: number): number {
+  return AGE_FACTOR[age] ?? (age < 17 ? 0.5 : 3.4);
+}
+
+/** The 0-1 score a rating is ranked on. */
+export function ratingScore(player: Player, source: ValueSource): number {
+  const ability = valueOf(player, source) * ageFactor(player.age);
+  return VALUE_WEIGHT * valueScore(ability) + (1 - VALUE_WEIGHT) * (player.perf / 100);
+}
+
+/** League percentile -> rating, piecewise linear: a FIFA-like spread. */
+export const RATING_CURVE: [number, number][] = [
+  [0, 52],
+  [0.1, 63],
+  [0.25, 68],
+  [0.5, 73],
+  [0.75, 78],
+  [0.9, 82],
+  [0.97, 86],
+  [0.995, 89],
+  [1, 91],
+];
+
+function curve(q: number): number {
+  for (let i = 1; i < RATING_CURVE.length; i++) {
+    const [q1, r1] = RATING_CURVE[i];
+    if (q <= q1) {
+      const [q0, r0] = RATING_CURVE[i - 1];
+      return r0 + ((r1 - r0) * (q - q0)) / (q1 - q0);
+    }
+  }
+  return RATING_MAX;
+}
+
+/** Every player's score, sorted, per source: the league the ratings rank against. */
+let pool: Record<ValueSource, number[]> | null = null;
+const cache: Record<ValueSource, Map<number, number>> = { tm: new Map(), model: new Map() };
+
+/** Set the league ratings are ranked within. Called once the dataset loads. */
+export function setRatingPool(players: readonly Player[]): void {
+  const sorted = (s: ValueSource) => players.map((p) => ratingScore(p, s)).sort((a, b) => a - b);
+  pool = { tm: sorted('tm'), model: sorted('model') };
+  cache.tm.clear();
+  cache.model.clear();
+}
+
+function rankOf(sorted: number[], score: number): number {
+  let lo = 0;
+  let hi = sorted.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (sorted[mid] < score) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo / Math.max(1, sorted.length - 1);
+}
+
+/** Overall rating (52-91) on the given value source. */
 export function rating(player: Player, source: ValueSource): number {
-  const blend = PERF_WEIGHT * (player.perf / 100) + (1 - PERF_WEIGHT) * valueScore(valueOf(player, source));
-  return Math.round(RATING_MIN + (RATING_MAX - RATING_MIN) * blend);
+  if (!pool) throw new Error('setRatingPool() must run before ratings are read');
+  const hit = cache[source].get(player.id);
+  if (hit !== undefined) return hit;
+  const r = Math.round(curve(rankOf(pool[source], ratingScore(player, source))));
+  cache[source].set(player.id, r);
+  return r;
 }
 
 // ---------- Formations and positional fit ----------

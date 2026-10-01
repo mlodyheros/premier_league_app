@@ -89,10 +89,32 @@ def _fpl_extras(df, bootstrap):
                 "fpl_goals": e["goals_scored"] if e else 0,
                 "fpl_assists": e["assists"] if e else 0,
                 "fpl_ppg": float(e["points_per_game"]) if e else 0.0,
-                "fpl_minutes_live": e["minutes"] if e else 0,
+                "fpl_starts_live": e.get("starts", 0) if e else 0,
+                "fpl_clean_sheets": e.get("clean_sheets", 0) if e else 0,
+                "fpl_saves": e.get("saves", 0) if e else 0,
+                "fpl_conceded": e.get("goals_conceded", 0) if e else 0,
+                "fpl_defcon": e.get("defensive_contribution", 0) if e else 0,
             }
         )
     return pd.DataFrame(rows, index=df.index)
+
+
+def _archive_totals(root: Path, seasons: list[int]) -> dict[int, dict]:
+    """Clean sheets, saves, goals conceded and starts over the completed PL
+    seasons, summed per FPL `code`, from pl-value's cached season archive."""
+    import csv
+
+    totals: dict[int, dict] = {}
+    for year in seasons:
+        path = root / "data" / "raw" / "fpl_archive" / f"players_raw_{year}-{str(year + 1)[-2:]}.csv"
+        if not path.exists():
+            continue
+        with path.open(newline="", encoding="utf-8") as fh:
+            for row in csv.DictReader(fh):
+                t = totals.setdefault(int(row["code"]), {"starts": 0, "cs": 0, "saves": 0, "conceded": 0})
+                for key, col in (("starts", "starts"), ("cs", "clean_sheets"), ("saves", "saves"), ("conceded", "goals_conceded")):
+                    t[key] += int(float(row.get(col) or 0))
+    return totals
 
 
 def _performance(df):
@@ -150,6 +172,9 @@ def build(root: Path) -> tuple[list[dict], dict]:
     src = _load_pl_value(root)
     df, calibration, confidence = src["df"], src["calibration"], src["confidence"]
     df = df.join(_fpl_extras(df, src["bootstrap"]))
+    from backend.config import SEASONS
+
+    archive = _archive_totals(root, SEASONS)
 
     unknown_pos = set(df["position"]) - POSITIONS.keys()
     unknown_nat = set(df["nationality"]) - COUNTRIES.keys()
@@ -166,6 +191,7 @@ def build(root: Path) -> tuple[list[dict], dict]:
 
     players = []
     for pid, row in df.iterrows():
+        hist = archive.get(int(row.fpl_code), {}) if pd.notna(row.fpl_code) and row.has_hist_record else {}
         pos_code, pos_group = POSITIONS[row.position]
         nat_name, nat_code, continent = COUNTRIES[row.nationality]
         low, high = confidence.interval(row.predicted_eur, row.tier, calibration, RANGE_LEVEL)
@@ -201,6 +227,20 @@ def build(root: Path) -> tuple[list[dict], dict]:
                     "plGoals": int(row.hist_goals),
                     "plAssists": int(row.hist_assists),
                     "clMinutes": int(row.cl_minutes_last),
+                    "starts": int(row.fpl_starts),
+                    "cleanSheets": int(row.fpl_clean_sheets),
+                    "saves": int(row.fpl_saves),
+                    "conceded": int(row.fpl_conceded),
+                    "defActions": int(row.fpl_defcon),
+                    "xg": round(float(row.fpl_xg), 2),
+                    "xa": round(float(row.fpl_xa), 2),
+                    "plStarts": int(hist.get("starts", 0)),
+                    "plCleanSheets": int(hist.get("cs", 0)),
+                    "plSaves": int(hist.get("saves", 0)),
+                    "otherSeasons": int(row.nonpl_seasons),
+                    "otherMinutes": int(row.nonpl_minutes),
+                    "otherGoals": int(row.nonpl_goals),
+                    "otherAssists": int(row.nonpl_assists),
                 },
             }
         )

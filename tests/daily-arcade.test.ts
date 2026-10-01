@@ -6,13 +6,15 @@ import { pool as pricePool, ROUNDS } from '../src/games/price-tag/logic';
 import { dailyRand } from '../src/lib/daily';
 import { clubTeams, withUserTeam } from '../src/lib/league';
 import { shuffled } from '../src/lib/rng';
-import { DIFFICULTY, perfectSeasonOdds, simulateSeason } from '../src/lib/season';
+import { DIFFICULTY, perfectSeasonOdds, simulateSeason, STRONG_DRAFT } from '../src/lib/season';
+import { setRatingPool } from '../src/lib/strength';
 import { mulberry32 } from '../src/lib/rng';
 import { emptyStats, recordResult } from '../src/lib/stats';
 
 const players: Player[] = JSON.parse(readFileSync('public/data/players.json', 'utf8'));
 const meta: Meta = JSON.parse(readFileSync('public/data/meta.json', 'utf8'));
 const ids = (ps: Player[]) => ps.map((p) => p.id).join(',');
+setRatingPool(players);
 
 describe('daily rounds', () => {
   it('give everyone the same Beat the Model round on a date, and a new one the next day', () => {
@@ -49,14 +51,14 @@ describe('Road to 38-0 difficulty', () => {
   };
 
   it('makes 38-0 possible in arcade for a strong draft, and a dream in realistic', () => {
-    expect(1 / odds(88, 'arcade')).toBeGreaterThan(50);
-    expect(1 / odds(88, 'arcade')).toBeLessThan(2000);
-    expect(1 / odds(88, 'realistic')).toBeGreaterThan(100_000);
+    expect(1 / odds(STRONG_DRAFT, 'arcade')).toBeGreaterThan(50);
+    expect(1 / odds(STRONG_DRAFT, 'arcade')).toBeLessThan(2000);
+    expect(1 / odds(STRONG_DRAFT, 'realistic')).toBeGreaterThan(100_000);
   });
 
   it('keeps arcade seasons within football (no 38-0 for a weak XI)', () => {
     const { model, bonus } = DIFFICULTY.arcade;
-    const { league } = withUserTeam(clubs, 80 + bonus);
+    const { league } = withUserTeam(clubs, 76 + bonus);
     const s = simulateSeason(league, 'YOU', mulberry32(11), model);
     expect(s.table.find((r) => r.id === 'YOU')!.won).toBeLessThan(38);
   });

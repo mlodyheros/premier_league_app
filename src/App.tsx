@@ -1,6 +1,7 @@
 import type { FunctionComponent } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { Header } from './components/Header';
+import { Toasts } from './components/Toast';
 import { dataset, loadError } from './data/store';
 import { BeatModel } from './games/beat-model/BeatModel';
 import { BudgetXI } from './games/budget/BudgetXI';
@@ -43,14 +44,25 @@ export function App() {
         {loadError.value ? (
           <p class="notice">{t('app.loadError', { error: loadError.value })}</p>
         ) : dataset.value ? (
-          // Keyed on the route so a game remounts (and re-reads its saved state) on each visit.
-          <Page key={route.value} />
+          // Keyed on the route so a game remounts (and re-reads its saved state) on each visit,
+          // and the page animates in.
+          <div class="page" key={route.value}>
+            <Page />
+          </div>
         ) : (
-          <p class="notice" aria-busy="true">
-            {t('app.loading')}
-          </p>
+          <div class="skeleton" aria-busy="true" aria-label={t('app.loading')}>
+            <span class="skeleton__line skeleton__line--title" />
+            <span class="skeleton__line" />
+            <span class="skeleton__line skeleton__line--short" />
+            <div class="skeleton__cards">
+              <span />
+              <span />
+              <span />
+            </div>
+          </div>
         )}
       </main>
+      <Toasts />
       {dataset.value && (
         <footer class="site-footer">
           <p>{t('app.footer', { date: formatDate(dataset.value.meta.dataDate) })}</p>

@@ -7,13 +7,15 @@ import { useDataset } from '../../data/store';
 import type { Player } from '../../data/types';
 import { shareValues, valueOf, valuePhrase, valueSource, valuesPhrase, type ValueSource } from '../../data/valueSource';
 import { t, tj } from '../../i18n';
-import { shareNote } from '../../i18n/labels';
+import { useCountUp } from '../../hooks/useCountUp';
 import { trackEvent } from '../../lib/analytics';
+import { buzz, celebrate } from '../../lib/motion';
 import { dailyRand, dailyStreak, recordDaily, type Mode } from '../../lib/daily';
 import { formatEur, formatPct } from '../../lib/format';
 import { getBest, submitBest } from '../../lib/records';
 import { dayNumber, shuffled, todayKey } from '../../lib/rng';
 import { shareText, siteUrl } from '../../lib/share';
+import { notifyShare } from '../../components/Toast';
 import { readJson, writeJson } from '../../lib/storage';
 import { emoji, eurToSlider, MAX_POINTS, pool, ROUNDS, score, sliderToEur } from './logic';
 
@@ -102,7 +104,6 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
   const bestKey = `price-tag:${source}`;
   const [best, setBest] = useState(() => getBest(bestKey));
   const [newBest, setNewBest] = useState(false);
-  const [note, setNote] = useState<string | null>(null);
   const finished = guesses.length === ROUNDS;
   const countdown = useCountdown(mode === 'daily' && finished);
 
@@ -119,6 +120,9 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
     const next = [...guesses, guess];
     onProgress({ source, guesses: next });
     setRevealed(true);
+    const got = score(guess, valueOf(round[next.length - 1], source));
+    buzz(got >= 60 ? 'good' : got >= 30 ? 'tap' : 'bad');
+    if (got >= 90) celebrate();
     if (next.length === ROUNDS) {
       const sum = next.reduce((a, g, i) => a + score(g, valueOf(round[i], source)), 0);
       setNewBest(submitBest(bestKey, sum));
@@ -136,10 +140,13 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
   async function share() {
     const title = mode === 'daily' ? `${t('game.price.title')} #${dayNumber(day)}` : t('game.price.title');
     const head = `${title} ${total}/${ROUNDS * MAX_POINTS} · ${shareValues(source)}`;
-    setNote(shareNote(await shareText(`${head}\n${points.map(emoji).join('')}\n${siteUrl()}#/price-tag`)));
+    notifyShare(await shareText(`${head}\n${points.map(emoji).join('')}\n${siteUrl()}#/price-tag`));
   }
 
   const actual = valueOf(player, source);
+  // The true value counts up when a guess is locked in (not when coming back to a finished round).
+  const [counting] = useState(() => guesses.length === 0);
+  const actualShown = Math.round(useCountUp(actual, revealed && counting, 800) / 100_000) * 100_000;
   const lastPoints = revealed ? points[index] : null;
 
   return (
@@ -209,7 +216,7 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
                 emoji: emoji(lastPoints!),
                 points: lastPoints!,
                 guess: formatEur(guesses[index]),
-                actual: formatEur(actual),
+                actual: formatEur(actualShown),
                 pct: formatPct(guesses[index] / actual - 1),
               })}
             </p>
@@ -239,11 +246,6 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
               {t('common.share')}
             </button>
           </div>
-          {note && (
-            <p class="end__note" role="status">
-              {note}
-            </p>
-          )}
         </div>
       )}
     </>

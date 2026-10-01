@@ -20,6 +20,24 @@ export interface PlayerStats {
   plGoals: number;
   plAssists: number;
   clMinutes: number;
+  /** This season (FPL). */
+  starts: number;
+  cleanSheets: number;
+  saves: number;
+  conceded: number;
+  /** FPL's defensive contribution: clearances, blocks, interceptions, tackles (and recoveries for midfielders). */
+  defActions: number;
+  xg: number;
+  xa: number;
+  /** The last four completed Premier League seasons. */
+  plStarts: number;
+  plCleanSheets: number;
+  plSaves: number;
+  /** Other big European leagues, for players without a PL record. */
+  otherSeasons: number;
+  otherMinutes: number;
+  otherGoals: number;
+  otherAssists: number;
 }
 
 export interface Player {

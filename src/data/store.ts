@@ -4,6 +4,7 @@
  * can change without touching them.
  */
 import { signal } from '@preact/signals';
+import { setRatingPool } from '../lib/strength';
 import type { Meta, Player } from './types';
 
 export interface Dataset {
@@ -27,6 +28,7 @@ export async function loadDataset(): Promise<void> {
       fetchJson<Player[]>('players.json'),
       fetchJson<Meta>('meta.json'),
     ]);
+    setRatingPool(players);
     dataset.value = { players, meta, byId: new Map(players.map((p) => [p.id, p])) };
   } catch (err) {
     loadError.value = err instanceof Error ? err.message : String(err);

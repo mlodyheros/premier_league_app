@@ -9,12 +9,14 @@ import type { Player } from '../../data/types';
 import { shareValues, sourceShort, valueOf, valueSource, valuesPhrase } from '../../data/valueSource';
 import { t, tj } from '../../i18n';
 import { continentName, countryName } from '../../i18n/countries';
-import { posFull, posLabel, shareNote } from '../../i18n/labels';
+import { posFull, posLabel } from '../../i18n/labels';
 import { formatDate, formatEur } from '../../lib/format';
 import { useCountdown } from '../../hooks/useCountdown';
 import { trackEvent } from '../../lib/analytics';
+import { buzz, celebrate } from '../../lib/motion';
 import { dayNumber, pick, previousDayKey, todayKey } from '../../lib/rng';
 import { shareText, siteUrl } from '../../lib/share';
+import { notifyShare } from '../../components/Toast';
 import { loadStats, recordResult, saveStats } from '../../lib/stats';
 import { readJson, writeJson } from '../../lib/storage';
 import { compare, dailyPool, dailyTarget, MAX_GUESSES, shareGrid, type Feedback, type Mark } from './logic';
@@ -94,11 +96,14 @@ export function GuessGame() {
     saveStats(statsKey, next);
     setStats(next);
     trackEvent(`guess/${mode}/${won ? `won-${guesses.length}` : round.gaveUp ? 'gave-up' : 'lost'}`);
+    // Let the last row's tiles flip before the celebration.
+    if (won) setTimeout(() => celebrate(guesses.length <= 3), 700);
     setRound((r) => ({ ...r, recorded: true }));
   }, [over]);
 
   function guess(p: Player) {
     if (over) return;
+    buzz(p.name === target.name ? 'good' : 'tap');
     setRound((r) => ({ ...r, guesses: [...r.guesses, p.name] }));
   }
 
@@ -248,14 +253,13 @@ interface EndProps {
 
 function EndPanel({ won, gaveUp, target, feedback, mode, day, stats, onNext }: EndProps) {
   const { meta } = useDataset();
-  const [shared, setShared] = useState<string | null>(null);
   const countdown = useCountdown(mode === 'daily');
   const tries = won ? feedback.length : 'X';
 
   async function share() {
     const title = mode === 'daily' ? t('guess.shareDaily', { n: dayNumber(day) }) : t('guess.shareUnlimited');
     const text = `${title} ${tries}/${MAX_GUESSES} · ${shareValues()}\n${shareGrid(feedback)}\n${siteUrl()}#/guess`;
-    setShared(shareNote(await shareText(text)));
+    notifyShare(await shareText(text));
   }
 
   return (
@@ -281,7 +285,6 @@ function EndPanel({ won, gaveUp, target, feedback, mode, day, stats, onNext }: E
           </button>
         )}
       </div>
-      {shared && <p class="end__note" role="status">{shared}</p>}
       {mode === 'daily' && (
         <p class="end__note">
           {tj('guess.nextDaily', { time: <b class="mono">{countdown}</b> })}

@@ -466,10 +466,14 @@ a.card:hover { transform: translateY(-2px); border-color: var(--green); }
 .pcard__id { min-width: 0; }
 .pcard__name { font-size: 1.65rem; text-transform: none; line-height: 1.05; }
 .pcard__meta { margin: 4px 0 0; color: var(--muted); font-size: 0.88rem; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-.pcard__stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 14px 0 0; }
-.pcard__stats div { background: var(--bg-2); border-radius: var(--radius-sm); padding: 7px 10px; }
-.pcard__stats dt { color: var(--muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
-.pcard__stats dd { margin: 0; font-weight: 600; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+.pcard__record { display: grid; gap: 10px; margin-top: 14px; }
+@media (min-width: 560px) { .pcard__record { grid-template-columns: 1fr 1fr; } }
+.pcard__label { margin: 0 0 4px; color: var(--muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.pcard__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 0; }
+.pcard__stats div { background: var(--bg-2); border-radius: var(--radius-sm); padding: 6px 8px; display: flex; flex-direction: column; }
+.pcard__stats dd { margin: 0; font-family: var(--display); font-weight: 700; font-size: 1.35rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.pcard__stats dt { color: var(--muted); font-size: 0.66rem; line-height: 1.2; }
+.pcard__none { margin: 0; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--bg-2); color: var(--muted); font-size: 0.85rem; }
 .pcard__foot { margin-top: 14px; }
 .pcard--compact .pcard__name { font-size: 1.3rem; }
 
@@ -870,3 +874,125 @@ abbr[title] { text-decoration: none; cursor: help; }
 }
 .scorebug--inline { margin: 12px 0 0; }
 .game .scorebug--inline + .lede { margin-top: 10px; }
+
+/* ================= Motion & feel ================= */
+.page { animation: page-in 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.btn { transition: transform 0.12s ease, filter 0.15s ease, border-color 0.15s ease, background-color 0.15s ease; }
+.btn:active:not(:disabled) { transform: scale(0.96); }
+.prow { transition: transform 0.12s ease, border-color 0.15s ease, background-color 0.15s ease; }
+.prow:active:not(:disabled) { transform: scale(0.985); }
+.card:active { transform: scale(0.985); }
+.btn--pulse { animation: pulse-glow 1.6s ease-in-out infinite; }
+@keyframes pulse-glow { 50% { box-shadow: 0 0 0 8px rgba(0, 255, 133, 0.18), 0 0 26px rgba(0, 255, 133, 0.35); } }
+
+/* Home: cards arrive one after another */
+.cards li { animation: rise 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.cards li:nth-child(2) { animation-delay: 0.05s; }
+.cards li:nth-child(3) { animation-delay: 0.1s; }
+.cards li:nth-child(4) { animation-delay: 0.15s; }
+.cards li:nth-child(5) { animation-delay: 0.2s; }
+.cards li:nth-child(6) { animation-delay: 0.25s; }
+.crest-row .crest { transition: transform 0.2s ease; }
+.crest-row .crest:hover { transform: translateY(-3px) scale(1.12); }
+
+/* Lists: rows slide in, staggered (capped so long lists don't wait) */
+.picker__list li { animation: rise 0.28s ease both; animation-delay: calc(min(var(--i, 0), 12) * 22ms); }
+
+/* Toasts */
+.toasts {
+  position: fixed;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 60;
+  display: grid;
+  gap: 8px;
+  pointer-events: none;
+  width: min(420px, calc(100vw - 32px));
+}
+.toast {
+  margin: 0;
+  padding: 11px 16px;
+  border-radius: 999px;
+  background: var(--green);
+  color: var(--green-ink);
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  animation: toast-in 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@keyframes toast-in { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: none; } }
+
+/* Confetti canvas */
+.confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 70; }
+
+/* Loading skeleton */
+.skeleton { display: grid; gap: 12px; padding-top: 8px; }
+.skeleton__line, .skeleton__cards span {
+  display: block;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 50%, var(--surface) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+.skeleton__line { height: 14px; max-width: 520px; }
+.skeleton__line--title { height: 40px; max-width: 360px; }
+.skeleton__line--short { max-width: 260px; }
+.skeleton__cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; }
+.skeleton__cards span { height: 150px; border-radius: var(--radius); }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* Road to 38-0: the reel */
+.spinner__reel { display: flex; align-items: center; gap: 14px; animation: reel-in 0.12s ease-out both; }
+.spinner--on .spinner__reel { filter: blur(0.6px); }
+.spinner--landed .spinner__reel { animation: land 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.spinner--landed .spinner__reel .crest { filter: drop-shadow(0 0 14px rgba(0, 255, 133, 0.55)); }
+.spinner__text { display: grid; gap: 4px; min-width: 0; }
+.spinner__club { font-family: var(--display); font-size: 1.7rem; font-weight: 700; text-transform: uppercase; line-height: 1.05; }
+.spinner__slot {
+  justify-self: start;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(4, 245, 255, 0.15);
+  color: var(--cyan);
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+@keyframes reel-in { from { opacity: 0.2; transform: translateY(-45%); } to { opacity: 1; transform: none; } }
+@keyframes land { 0% { transform: scale(0.86); } 60% { transform: scale(1.06); } 100% { transform: none; } }
+.btn--spin { min-width: 140px; }
+
+/* A player dropping onto the pitch */
+.slot--filled { animation: slot-pop 0.42s cubic-bezier(0.2, 1.5, 0.4, 1) both; }
+@keyframes slot-pop { from { transform: translate(-50%, -50%) scale(0.4); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+
+/* Season: results tick in like a matchday feed */
+.season--fresh .strip__m { animation: tick-in 0.26s ease both; animation-delay: calc(var(--i) * 32ms); }
+@keyframes tick-in { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: none; } }
+.season--fresh .badges li { animation: rise 0.4s ease both; animation-delay: 1.4s; }
+.season__record { font-variant-numeric: tabular-nums; }
+
+.xi-reveal { border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); padding: 12px 14px; }
+.xi-reveal h2 { font-size: 1.2rem; margin-bottom: 8px; }
+.xi-reveal ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+@media (min-width: 640px) { .xi-reveal ul { grid-template-columns: 1fr 1fr; column-gap: 12px; } }
+.xi-reveal li { display: flex; align-items: center; gap: 9px; padding: 5px 6px; border-radius: var(--radius-sm); background: var(--bg-2); }
+.season--fresh .xi-reveal li { animation: rise 0.3s ease both; animation-delay: calc(0.9s + var(--i) * 45ms); }
+.xi-reveal__pos { width: 34px; color: var(--muted); font-size: 0.75rem; font-weight: 700; }
+.xi-reveal__name { flex: 1; min-width: 0; font-weight: 600; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xi-reveal__ovr { font-family: var(--display); font-weight: 700; font-size: 1.15rem; color: var(--green); min-width: 26px; text-align: right; }
+
+/* Higher or Lower: the pair slides in, the value counts up */
+.hl__pair { animation: page-in 0.3s ease both; }
+.hl__value.counting { color: var(--cyan); }
+.hl__verdict { animation: land 0.35s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+
+/* Guess: the winning row glows */
+.guess__row--win .guess__tiles .tile { box-shadow: 0 0 18px rgba(0, 255, 133, 0.35); }
+/* Road to 38-0 on phones: the spinner and picks come first, the pitch follows. */
+@media (max-width: 819px) {
+  .road .picker { order: -1; }
+  .road .pitch { max-width: 380px; }
+}

@@ -69,6 +69,21 @@ export const pl: Dictionary = {
   'share.failed': 'Nie udało się udostępnić',
   'search.placeholder': 'Wpisz piłkarza…',
   'search.empty': 'Brak piłkarza pasującego do „{query}” w tegorocznych kadrach.',
+  'stat.minutes': 'Minuty',
+  'stat.starts': 'Od początku',
+  'stat.cleanSheets': 'Czyste konta',
+  'stat.saves': 'Obrony',
+  'stat.defActions': 'Akcje obronne',
+  'stat.goals': 'Gole',
+  'stat.assists': 'Asysty',
+  'stat.ga': 'Gole + asysty',
+  'card.otherLeagues': {
+    one: 'Inne duże ligi, {count} sezon',
+    few: 'Inne duże ligi, {count} sezony',
+    many: 'Inne duże ligi, {count} sezonów',
+    other: 'Inne duże ligi, {count} sezonu',
+  },
+  'card.noRecord': 'Brak występów w ligach objętych danymi',
   'card.thisSeason': 'Ten sezon',
   'card.plHistory': 'PL, ostatnie 4 sezony',
   'card.none': 'brak',
@@ -274,7 +289,17 @@ export const pl: Dictionary = {
     many: 'Wybrano {picked}/11 · zostało {count} losowań',
     other: 'Wybrano {picked}/11 · zostało {count} losowania',
   },
-  'road.mode': 'Tryb',
+  'road.draft': 'Losowanie',
+  'road.draft.standard': 'Standardowe',
+  'road.draft.position': 'Losowa pozycja',
+  'road.draft.blind': 'Na ślepo',
+  'road.draft.help.standard': 'Losujesz klub i bierzesz dowolnego piłkarza na dowolną wolną pozycję.',
+  'road.draft.help.position': 'Losowanie wybiera klub i pozycję – musisz obsadzić dokładnie ją.',
+  'road.draft.help.blind': 'Losowa pozycja i żadnych ocen ani cen – same nazwiska. Oceny poznasz po sezonie.',
+  'road.drawnSlot': 'Pozycja: {pos}',
+  'road.pickForSlot': 'Wybierz piłkarza na pozycję {pos}.',
+  'road.completeBlind': 'Jedenastka gotowa. Jej oceny poznasz po sezonie.',
+  'road.mode': 'Sezon',
   'road.mode.realistic': 'Realistyczny',
   'road.mode.arcade': 'Arkadowy',
   'road.mode.help.realistic': 'Model prawdziwej ligi. 38-0 to marzenie raz na całe życie.',
@@ -297,7 +322,6 @@ export const pl: Dictionary = {
   'road.away': '{opp} (na wyjeździe)',
   'road.newDraft': 'Nowy skład',
   'road.yourXi': 'Twoja XI',
-  'road.yourXiList': 'Twoja jedenastka: {names}',
   'road.table': 'Tabela końcowa',
   'road.col.team': 'Drużyna',
   'road.col.w': 'Z',
@@ -377,7 +401,7 @@ export const pl: Dictionary = {
   'how.games.hl':
     'Czy następny piłkarz jest wart więcej, czy mniej? Pary o tej samej wartości nigdy się nie pojawiają, a im dłuższa seria, tym bliższe wartości.',
   'how.games.road':
-    'Wylosuj klub, weź jednego piłkarza na wolną pozycję i powtarzaj, aż jedenastka będzie pełna, a potem rozegraj sezon. Wybrani piłkarze odchodzą ze swoich klubów.',
+    'Wylosuj klub, weź jednego piłkarza na wolną pozycję i powtarzaj, aż jedenastka będzie pełna, a potem rozegraj sezon. Wybrani piłkarze odchodzą ze swoich klubów. Dwa trudniejsze losowania: losowa pozycja (losuje się też pozycja do obsadzenia) i na ślepo (losowa pozycja i same nazwiska, bez ocen i cen).',
   'how.games.budget':
     'Wybierz jedenastu piłkarzy w ramach budżetu. Wynik to siła jedenastki – ta sama miara, której używa Droga do 38-0.',
   'how.games.beat':
@@ -386,7 +410,7 @@ export const pl: Dictionary = {
     'Podaj wartość na suwaku w skali logarytmicznej. 100 punktów za idealną wycenę, spadające do 0 przy trzykrotnym przeszacowaniu lub niedoszacowaniu.',
   'how.sim.title': 'Oceny i symulacja sezonu',
   'how.sim.rating':
-    'Ocena piłkarza (40–99) to w połowie gra, a w połowie wartość. Gra to percentyl w obrębie grupy pozycji, liczony z minut, punktów bonusowych, xGChain, udziału w golach, formy w FPL i meczów w Lidze Mistrzów. Wartość liczona jest w skali logarytmicznej od 1 mln € do 200 mln €, według wybranego źródła, żeby gwiazdy się wyróżniały.',
+    'Ocena ogólna piłkarza (OVR) powstaje w trzech krokach. Najpierw jego wartość rynkowa (według wybranego źródła) jest korygowana o wiek, bo rynek płaci młodym za potencjał, a weteranów wycenia nisko, bo nie da się ich odsprzedać – 35-letni podstawowy zawodnik jest tani, ale dziś wciąż dobry. Potem 60% wyniku to ta wartość (w skali logarytmicznej), a 40% to gra: percentyl w obrębie grupy pozycji liczony z minut, punktów bonusowych, xGChain, udziału w golach, formy w FPL i meczów w Lidze Mistrzów. Na koniec wyniki są szeregowane w całej lidze i rozkładane jak oceny w FIFA: najlepszy piłkarz ok. 91, najlepsze 3% od 86 w górę, typowy zawodnik Premier League ok. 73.',
   'how.sim.fit':
     'Poza swoją pozycją piłkarz zachowuje część oceny: skrzydłowy w ataku {winger}%, środkowy obrońca na boku obrony {cb}%. Bramkarz może grać tylko w bramce.',
   'how.sim.strength':
@@ -396,7 +420,7 @@ export const pl: Dictionary = {
   'how.sim.odds':
     'Szansa na 38-0 pokazywana dla jedenastki jest dokładna: to iloczyn prawdopodobieństw wygranej we wszystkich 38 meczach. Żaden prawdziwy klub Premier League nigdy nie wygrał wszystkich meczów sezonu.',
   'how.sim.arcade':
-    'Tryb arkadowy w Drodze do 38-0 daje twojej jedenastce +{bonus} i bardziej stromą krzywą (+{up}% / −{down}% na punkt). Przy obecnych kadrach jedenastka z oceną 88 ma wtedy szansę {arcade} na 38-0, a w trybie realistycznym {real}.',
+    'Tryb arkadowy w Drodze do 38-0 daje twojej jedenastce +{bonus} i bardziej stromą krzywą (+{up}% / −{down}% na punkt). Przy obecnych kadrach mocny draft ({ovr} OVR) ma wtedy szansę {arcade} na 38-0, a w trybie realistycznym {real}.',
   'how.credits.title': 'Autorzy i źródła',
   'how.credits.body':
     'Model i dane: {repo}. Źródła: Transfermarkt, API Fantasy Premier League, archiwum FPL vaastava, Understat oraz zbiory danych Transfermarkt na Kaggle; dane należą do nich. Herby klubów są ich znakami towarowymi i służą tu wyłącznie do ich oznaczenia; nie używamy zdjęć piłkarzy. To nieoficjalny projekt kibicowski, niezwiązany z Premier League, jej klubami ani z Transfermarkt.',

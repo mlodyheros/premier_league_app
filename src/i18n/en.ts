@@ -69,6 +69,16 @@ export const en = {
   'share.failed': 'Could not share',
   'search.placeholder': 'Type a player…',
   'search.empty': 'No player matching “{query}” in this season\'s squads.',
+  'stat.minutes': 'Minutes',
+  'stat.starts': 'Starts',
+  'stat.cleanSheets': 'Clean sheets',
+  'stat.saves': 'Saves',
+  'stat.defActions': 'Def. actions',
+  'stat.goals': 'Goals',
+  'stat.assists': 'Assists',
+  'stat.ga': 'Goals + assists',
+  'card.otherLeagues': { one: 'Other big leagues, {count} season', other: 'Other big leagues, {count} seasons' },
+  'card.noRecord': 'No record in any league the data covers',
   'card.thisSeason': 'This season',
   'card.plHistory': 'PL, last 4 seasons',
   'card.none': 'none',
@@ -254,7 +264,17 @@ export const en = {
     'Spin a club, take one of its players for an open position, and spin again until your XI is full. {respins} Then play a 38-game season against the real league. Ratings use {values}, and every player you take leaves his club weaker.',
   'road.respins': { one: 'You have {count} re-spin.', other: 'You have {count} re-spins.' },
   'road.progress': { one: '{picked}/11 picked · {count} re-spin left', other: '{picked}/11 picked · {count} re-spins left' },
-  'road.mode': 'Mode',
+  'road.draft': 'Draft',
+  'road.draft.standard': 'Standard',
+  'road.draft.position': 'Random position',
+  'road.draft.blind': 'Blind',
+  'road.draft.help.standard': 'Spin a club and take any of its players for any open position.',
+  'road.draft.help.position': 'The spin draws a club and a position, and you must fill exactly that one.',
+  'road.draft.help.blind': 'A drawn position and no ratings or prices: names only. The ratings are revealed after the season.',
+  'road.drawnSlot': 'Position: {pos}',
+  'road.pickForSlot': 'Pick a player for {pos}.',
+  'road.completeBlind': 'Your XI is complete. Its ratings are revealed after the season.',
+  'road.mode': 'Season',
   'road.mode.realistic': 'Realistic',
   'road.mode.arcade': 'Arcade',
   'road.mode.help.realistic': "The real league's own model. 38-0 is a once-in-a-lifetime dream.",
@@ -277,7 +297,6 @@ export const en = {
   'road.away': 'at {opp}',
   'road.newDraft': 'New draft',
   'road.yourXi': 'Your XI',
-  'road.yourXiList': 'Your XI: {names}',
   'road.table': 'Final table',
   'road.col.team': 'Team',
   'road.col.w': 'W',
@@ -358,7 +377,7 @@ export const en = {
   'how.games.hl':
     'Is the next player worth more or less? Pairs of equal value never appear, and the values get closer as your streak grows.',
   'how.games.road':
-    'Spin a club, draft one player into an open position, repeat until the XI is full, then play a season. Drafted players leave their clubs.',
+    'Spin a club, draft one player into an open position, repeat until the XI is full, then play a season. Drafted players leave their clubs. Two harder drafts: random position (the spin also draws the position to fill) and blind (a drawn position and names only, no ratings or prices).',
   'how.games.budget':
     'Pick eleven players within a budget. The score is the XI\'s strength, the same measure Road to 38-0 uses.',
   'how.games.beat':
@@ -367,7 +386,7 @@ export const en = {
     'Guess a value on a log-scale slider. 100 points for an exact guess, falling to 0 at three times too high or too low.',
   'how.sim.title': 'Ratings and the season simulation',
   'how.sim.rating':
-    'A player\'s rating (40-99) is half performance and half value. Performance is a percentile within his position group, from minutes, bonus points, xGChain, goal involvement, FPL form and Champions League games. Value is on a log scale from €1M to €200M on the active value source, so stars stand out.',
+    "A player's overall rating (OVR) is built in three steps. First his market value on the active source is corrected for age, because the market pays young players for potential and veterans cheaply for their lack of resale: a 35-year-old regular is cheap but still good today. Then 60% of the score is that value (on a log scale) and 40% performance: a percentile within his position group from minutes, bonus points, xGChain, goal involvement, FPL form and Champions League games. Finally the scores are ranked across the league and spread like FIFA ratings: the best player about 91, the top 3% 86 and up, a typical Premier League player about 73.",
   'how.sim.fit':
     'Out of position a player keeps part of his rating: a winger up front keeps {winger}%, a centre-back at full-back {cb}%. A goalkeeper can only play in goal.',
   'how.sim.strength':
@@ -377,7 +396,7 @@ export const en = {
   'how.sim.odds':
     "The 38-0 odds shown for an XI are exact: the product of its win probabilities in all 38 fixtures. No real Premier League club has ever won every game of a season.",
   'how.sim.arcade':
-    "Arcade mode in Road to 38-0 gives your XI +{bonus} and a steeper curve (+{up}% / −{down}% per point). With today's squads an 88-rated XI then has a {arcade} chance of going 38-0, against {real} in realistic mode.",
+    "Arcade mode in Road to 38-0 gives your XI +{bonus} and a steeper curve (+{up}% / −{down}% per point). With today's squads a strong draft ({ovr} OVR) then has a {arcade} chance of going 38-0, against {real} in realistic mode.",
   'how.credits.title': 'Credits',
   'how.credits.body':
     'Model and data: {repo}. Sources: Transfermarkt, the Fantasy Premier League API, vaastav\'s FPL archive, Understat and the Transfermarkt datasets on Kaggle; the data belongs to them. Club crests are trademarks of their clubs and are shown only to identify them; no player photos are used. This is an unofficial fan project, not affiliated with the Premier League, its clubs or Transfermarkt.',

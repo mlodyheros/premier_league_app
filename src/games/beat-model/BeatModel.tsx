@@ -6,13 +6,14 @@ import { useCountdown } from '../../hooks/useCountdown';
 import { useDataset } from '../../data/store';
 import type { Player } from '../../data/types';
 import { t, tj } from '../../i18n';
-import { shareNote } from '../../i18n/labels';
 import { trackEvent } from '../../lib/analytics';
+import { buzz, celebrate } from '../../lib/motion';
 import { dailyRand, dailyStreak, recordDaily, type Mode } from '../../lib/daily';
 import { formatEur } from '../../lib/format';
 import { getBest, submitBest } from '../../lib/records';
 import { dayNumber, todayKey } from '../../lib/rng';
 import { shareText, siteUrl } from '../../lib/share';
+import { notifyShare } from '../../components/Toast';
 import { readJson, writeJson } from '../../lib/storage';
 import { drawRound, modelNotes, ROUNDS, sideOf, type Side } from './logic';
 
@@ -91,7 +92,6 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
   const [revealed, setRevealed] = useState(answers.length > 0);
   const [best, setBest] = useState(() => getBest(BEST_KEY));
   const [newBest, setNewBest] = useState(false);
-  const [note, setNote] = useState<string | null>(null);
   const finished = answers.length === ROUNDS;
   const countdown = useCountdown(mode === 'daily' && finished);
 
@@ -105,9 +105,12 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
     const next = [...answers, side];
     onAnswers(next);
     setRevealed(true);
+    buzz(side === sideOf(questions[answers.length]) ? 'good' : 'bad');
     if (next.length === ROUNDS) {
       const final = next.filter((a, i) => a === sideOf(questions[i])).length;
-      setNewBest(submitBest(BEST_KEY, final));
+      const isNew = submitBest(BEST_KEY, final);
+      setNewBest(isNew);
+      if (final >= 8) celebrate(final === ROUNDS);
       setBest(getBest(BEST_KEY));
       if (mode === 'daily') recordDaily(GAME, day);
       trackEvent(`beat/${mode}/score-${final}`);
@@ -117,7 +120,7 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
   async function share() {
     const grid = marks.map((m) => (m ? '🟩' : '🟥')).join('');
     const title = mode === 'daily' ? `${t('game.beat.title')} #${dayNumber(day)}` : t('game.beat.title');
-    setNote(shareNote(await shareText(`${title} ${score}/${ROUNDS}\n${grid}\n${siteUrl()}#/beat-model`)));
+    notifyShare(await shareText(`${title} ${score}/${ROUNDS}\n${grid}\n${siteUrl()}#/beat-model`));
   }
 
   const right = revealed ? marks[index] : null;
@@ -200,11 +203,6 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
               {t('bm.howLink')}
             </a>
           </div>
-          {note && (
-            <p class="end__note" role="status">
-              {note}
-            </p>
-          )}
         </div>
       )}
     </>

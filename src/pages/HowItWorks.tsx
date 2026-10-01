@@ -8,7 +8,7 @@ import { modelNotes } from '../games/beat-model/logic';
 import { t, tj, type Key } from '../i18n';
 import { formatDate, formatDecimal, formatEur, formatOdds } from '../lib/format';
 import { clubTeams, withUserTeam } from '../lib/league';
-import { BASE_GOALS, DIFFICULTY, HOME_ADVANTAGE, K_DOWN, K_UP, perfectSeasonOdds } from '../lib/season';
+import { BASE_GOALS, DIFFICULTY, HOME_ADVANTAGE, K_DOWN, K_UP, perfectSeasonOdds, STRONG_DRAFT } from '../lib/season';
 import { FIT, SQUAD_DEPTH } from '../lib/strength';
 
 /** Players shown as examples of disagreement must be worth at least this much. */
@@ -72,13 +72,13 @@ export function HowItWorks() {
     };
   }, [players]);
 
-  /** 38-0 odds of an 88-rated XI in each mode, against today's squads. */
+  /** 38-0 odds of a strong draft in each mode, against today's squads. */
   const odds = useMemo(() => {
     const clubs = clubTeams(players, meta, 'tm');
     const of = (mode: keyof typeof DIFFICULTY) => {
       const { model, bonus } = DIFFICULTY[mode];
-      const { league } = withUserTeam(clubs, 88 + bonus);
-      return perfectSeasonOdds(88 + bonus, league.slice(1).map((team) => team.strength), model);
+      const { league } = withUserTeam(clubs, STRONG_DRAFT + bonus);
+      return perfectSeasonOdds(STRONG_DRAFT + bonus, league.slice(1).map((team) => team.strength), model);
     };
     return { real: of('realistic'), arcade: of('arcade') };
   }, [players, meta]);
@@ -212,6 +212,7 @@ export function HowItWorks() {
             bonus: DIFFICULTY.arcade.bonus,
             up: perPoint(DIFFICULTY.arcade.model.up),
             down: perPoint(DIFFICULTY.arcade.model.down),
+            ovr: STRONG_DRAFT,
             arcade: formatOdds(odds.arcade),
             real: formatOdds(odds.real),
           })}

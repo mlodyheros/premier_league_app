@@ -4,15 +4,19 @@ import { useDataset } from '../../data/store';
 import type { Player } from '../../data/types';
 import { shareValues, valueOf, valueSource, valuesPhrase } from '../../data/valueSource';
 import { t, tj } from '../../i18n';
-import { shareNote } from '../../i18n/labels';
 import { formatEur } from '../../lib/format';
+import { useCountUp } from '../../hooks/useCountUp';
 import { trackEvent } from '../../lib/analytics';
+import { buzz, celebrate } from '../../lib/motion';
 import { getBest, submitBest } from '../../lib/records';
 import { pick } from '../../lib/rng';
 import { shareText, siteUrl } from '../../lib/share';
+import { notifyShare } from '../../components/Toast';
 import { isCorrect, nextChallenger, pool, type Call } from './logic';
 
-const REVEAL_MS = 1100;
+/** Long enough for the value to count up and the verdict to land. */
+const REVEAL_MS = 1700;
+const COUNT_MS = 850;
 const RECENT = 40;
 
 type Phase = 'ask' | 'reveal' | 'over';
@@ -32,7 +36,6 @@ export function HigherLower() {
   const [lastCall, setLastCall] = useState<{ call: Call; right: boolean } | null>(null);
   const [best, setBest] = useState(() => getBest(`hl:${source}`) ?? 0);
   const [newBest, setNewBest] = useState(false);
-  const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => setBest(getBest(`hl:${source}`) ?? 0), [source]);
 
@@ -52,6 +55,7 @@ export function HigherLower() {
     const right = isCorrect(current, challenger, c, source);
     setLastCall({ call: c, right });
     setPhase('reveal');
+    setTimeout(() => buzz(right ? 'good' : 'bad'), COUNT_MS);
     if (right) {
       const next = streak + 1;
       setStreak(next);
@@ -67,6 +71,7 @@ export function HigherLower() {
         const isNew = submitBest(`hl:${source}`, streak);
         trackEvent(`hl/${source}/streak-${streak < 10 ? streak : Math.floor(streak / 5) * 5}`);
         setNewBest(isNew && streak > 0);
+        if (isNew && streak >= 5) celebrate(streak >= 15);
         setBest(getBest(`hl:${source}`) ?? 0);
         setPhase('over');
       }, REVEAL_MS);
@@ -81,13 +86,12 @@ export function HigherLower() {
     setStreak(0);
     setLastCall(null);
     setNewBest(false);
-    setNote(null);
     setPhase('ask');
   }
 
   async function share() {
     const head = t('hl.share', { n: streak, icon: streak >= 10 ? '🔥' : '⚽', values: shareValues(source) });
-    setNote(shareNote(await shareText(`${head}\n${siteUrl()}#/higher-lower`)));
+    notifyShare(await shareText(`${head}\n${siteUrl()}#/higher-lower`));
   }
 
   const revealed = phase !== 'ask';
@@ -111,7 +115,7 @@ export function HigherLower() {
         {tj('hl.lede', { values: <b>{valuesPhrase(source)}</b> })}
       </p>
 
-      <div class="hl__pair">
+      <div class="hl__pair" key={current.id}>
         <PlayerCard player={current}>
           <p class="hl__value">{formatEur(valueOf(current, source))}</p>
         </PlayerCard>
@@ -122,10 +126,7 @@ export function HigherLower() {
 
         <PlayerCard player={challenger}>
           {revealed ? (
-            <p class={`hl__value ${lastCall?.right ? 'good' : 'bad'}`}>
-              {formatEur(valueOf(challenger, source))}
-              <span class="hl__verdict">{lastCall?.right ? '✓' : '✗'}</span>
-            </p>
+            <RevealValue value={valueOf(challenger, source)} right={!!lastCall?.right} />
           ) : (
             <div class="hl__buttons">
               <button class="btn btn--primary" onClick={() => call('higher')}>
@@ -159,9 +160,20 @@ export function HigherLower() {
               {t('common.share')}
             </button>
           </div>
-          {note && <p class="end__note" role="status">{note}</p>}
         </div>
       )}
     </section>
+  );
+}
+
+/** The hidden value counts up from zero, then the verdict lands. */
+function RevealValue({ value, right }: { value: number; right: boolean }) {
+  const shown = useCountUp(value, true, COUNT_MS);
+  const done = shown === value;
+  return (
+    <p class={`hl__value ${done ? (right ? 'good' : 'bad') : 'counting'}`}>
+      {formatEur(shown)}
+      {done && <span class="hl__verdict">{right ? '✓' : '✗'}</span>}
+    </p>
   );
 }

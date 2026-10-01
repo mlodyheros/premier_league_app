@@ -12,7 +12,7 @@ time, and scores, streaks and settings live in the browser's local storage.
 | Game | What you do |
 |---|---|
 | **Guess the Player** | Wordle-style: find the hidden player from club, position, nationality, age and value clues. Daily and unlimited. |
-| **Road to 38-0** | Spin a club, draft one of its players, fill an XI, then play a 38-game season against the real league. Realistic or arcade mode. |
+| **Road to 38-0** | Spin a club, draft one of its players, fill an XI, then play a 38-game season against the real league. Three draft modes (standard, random position, blind) and two season modes (realistic, arcade). |
 | **Higher or Lower** | Is the next player worth more or less? Pairs get closer as the streak grows. |
 | **Budget XI** | Build the strongest XI under €150M, €300M or €500M. |
 | **Beat the Model** | Does the model rate the player over or under his Transfermarkt value? Ten a round; daily and practice. |
@@ -172,33 +172,51 @@ draws at random. Its hard mode draws from all 540 players.
 
 ## Ratings and the season simulation
 
-Road to 38-0 and Budget XI rate players from 40 to 99. Half the rating is
-**performance** (the exported `perf`); the other half is **value** on the active
-source, on a log scale from €1m to €200m. On that scale Haaland (€220m) scores
-1.0, a €100m player 0.87 and a €20m player 0.57, so stars stand out. A player out
-of position loses a share of his rating (a winger at striker keeps 87%, a centre-back
-at full-back 85%; a goalkeeper can only play in goal).
+Road to 38-0 and Budget XI rate players on a FIFA-like overall (OVR), built in
+[`src/lib/strength.ts`](src/lib/strength.ts) in three steps:
+
+1. **Ability value.** The market value on the active source, corrected for age
+   (`AGE_FACTOR`): the market prices young players for potential and resale and
+   veterans cheaply for the lack of it, so a 20-year-old's price is scaled down
+   (×0.62) and a 35-year-old's up (×3.2).
+2. **Score.** 60% that ability value on a log scale (€1m–€200m), 40% the exported
+   performance percentile (minutes, bonus points, xGChain, goal involvement,
+   FPL form, Champions League games, within the position group).
+3. **Scale.** Scores are ranked across the league and mapped onto a FIFA-like
+   curve (`RATING_CURVE`): the best player 91, about ten players 88+, the top 3%
+   86+, a median Premier League player 73, fringe youngsters in the 50s.
+
+A player out of position keeps part of his rating (a winger up front keeps 87%,
+a centre-back at full-back 85%; a goalkeeper only plays in goal).
 
 - **Your XI's strength** is the mean rating of its eleven, after those penalties.
 - **A real club's strength** is the mean rating of its best 16 players: clubs
   rotate, while your XI plays every minute. Players you draft leave their clubs.
+  Today that runs from about 69 (the promoted clubs) to 85 (Arsenal, Man City).
 - **Your XI joins the league** in place of the weakest club, and every team plays
   every other home and away.
 - **Each match** draws goals from a Poisson distribution. The expected goals
   start at 1.45 a side, get ×1.12 at home (÷1.12 away), and move with the
-  strength gap: a stronger side's goals rise by 3.5% per rating point, a weaker
-  side's fall by 10.5%. Favourites therefore win 2-0 and 3-0 far more often than
+  strength gap: a stronger side's goals rise by 5.5% per rating point, a weaker
+  side's fall by 16.5%. Favourites therefore win 2-0 and 3-0 far more often than
   7-0.
 
 With these settings a simulated real league averages 2.7 goals a game, with
-a champion on 95–97 points and a goal difference around +70. The **38-0 odds** shown for an XI are exact: the
-product of its win probabilities in all 38 fixtures. A 90-rated XI has about a
-1 in 300,000 chance; a 93 about 1 in 7,000. No real club has ever done it.
+a champion on about 96 points and a goal difference around +72. The **38-0 odds**
+shown for an XI are exact: the product of its win probabilities in all 38
+fixtures. Random drafts land around 79–85; a strong one (83) has about a 1 in 45
+million chance in realistic mode. No real club has ever done it.
 
-**Arcade mode** (an option in Road to 38-0) gives your XI +5 and a steeper
-curve (+5% / −15% per point). There a typical draft (85) wins the title about a
-third of the time with 38-0 odds near 1 in 10,000, a strong one (88) about 1 in
-240, and a top-1% draft (91) about 1 in 27. Bests are kept per mode.
+**Arcade mode** (an option in Road to 38-0) gives your XI +3 and a steeper
+curve (+9% / −27% per point). There a typical draft (~81.5) wins the title about
+a third of the time with 38-0 odds near 1 in 7,500, a strong one (83) about 1 in
+230, and the best drafts (~84.5) about 1 in 30.
+
+**Draft modes**, from easiest to hardest: *standard* (spin a club, take any
+player for any open position), *random position* (the spin also draws the
+position to fill) and *blind* (a drawn position, names only: no ratings, no
+prices, an alphabetical list; the ratings are revealed after the season). Bests
+are kept per draft mode and season mode.
 
 ## Data and credits
 
