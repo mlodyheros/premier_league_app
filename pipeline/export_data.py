@@ -4,8 +4,8 @@ Runs with pl-value's own Python environment, because the model's estimates are
 not stored anywhere in pl-value: its API computes them on startup. Calling the
 same functions here keeps every figure identical to what pl-value itself shows.
 
-    ~/Desktop/pl-value-predictor/.venv/bin/python pipeline/export_data.py \
-        --pl-value ~/Desktop/pl-value-predictor
+    ~/projects/pl-value-predictor/.venv/bin/python pipeline/export_data.py \
+        --pl-value ~/projects/pl-value-predictor
 
 Nothing is fetched from the network: it reads pl-value's built dataset, its
 calibration file and its cached FPL snapshot, and writes public/data/.
@@ -26,7 +26,7 @@ sys.path.insert(0, str(HERE))
 from reference import CLUBS, COUNTRIES, POSITIONS, flag  # noqa: E402
 
 OUT_DIR = HERE.parent / "public" / "data"
-REPO_URL = "https://github.com/mlodyheros/pl-value-predictor"
+REPO_URL = "https://github.com/mlodyheros/pl-value"
 RANGE_LEVEL = 0.8
 TIER_CODES = {"pl_history": 0, "non_pl_history": 1, "no_history": 2}
 
@@ -342,7 +342,7 @@ def main() -> None:
     parser.add_argument(
         "--pl-value",
         type=Path,
-        default=Path.home() / "Desktop" / "pl-value-predictor",
+        default=Path.home() / "projects" / "pl-value-predictor",
         help="path to a pl-value-predictor checkout with a built dataset",
     )
     args = parser.parse_args()

@@ -2,7 +2,7 @@
 
 Premier League mini-games powered by real squad data and two prices for every
 player: **Transfermarkt's market value** and an estimate from the
-[pl-value](https://github.com/mlodyheros/pl-value-predictor) machine-learning
+[pl-value](https://github.com/mlodyheros/pl-value) machine-learning
 model. A switch in the header chooses which price every game uses, and it is
 remembered between visits.
 
@@ -76,7 +76,7 @@ npm run export-data
 
 This runs [`pipeline/export_data.py`](pipeline/export_data.py) with pl-value's
 own Python environment. It expects a built checkout at
-`~/Desktop/pl-value-predictor`; point `PL_VALUE_DIR` elsewhere if needed:
+`~/projects/pl-value-predictor`; point `PL_VALUE_DIR` elsewhere if needed:
 
 ```bash
 PL_VALUE_DIR=/path/to/pl-value-predictor npm run export-data
@@ -103,6 +103,41 @@ What the export adds:
 - Club colours, flags and continents, from the hand-written
   [`pipeline/reference.py`](pipeline/reference.py). A new club or nationality
   stops the export with a message saying what to add there.
+
+### Automatic updates
+
+On a Mac, the data can update itself every morning. pl-value refreshes its
+dataset at 07:00. At 07:30,
+[`scripts/publish_data.sh`](scripts/publish_data.sh) re-exports it. If the data
+has changed, the script runs the tests and the build, commits `public/data` as
+"Update data to <date> (GW <gameweek>)" and pushes to `main`. The Deploy
+workflow then publishes the site.
+
+```bash
+./scripts/install_publish_schedule.sh     # turn it on: daily at 07:30 (launchd)
+./scripts/uninstall_publish_schedule.sh   # turn it off
+./scripts/publish_data.sh                 # run it now, by hand
+launchctl kickstart -k gui/$(id -u)/com.plgames.publish   # run the scheduled job now
+```
+
+The log is in `logs/publish.log`, which is not committed.
+
+The script is careful by design:
+- **Your work is safe.** It does nothing while anything outside `public/data`
+  is uncommitted, so work in progress is never pushed.
+- **No needless commits.** It stops without committing when nothing but
+  `exportedAt` has changed.
+- **Broken builds stay local.** If the tests or the build fail, it stops without
+  committing.
+- **It never force-pushes.**
+- **It waits for pl-value.** If the Mac slept through both times, launchd starts
+  both jobs on waking. The script then waits for pl-value's refresh to finish
+  before exporting.
+
+Pushing needs stored GitHub credentials (the macOS keychain or `gh auth`),
+because the job cannot ask for a password. Keep this checkout and pl-value's
+outside Desktop, Documents and Downloads: macOS does not let background jobs
+read them.
 
 ## Share previews
 
@@ -287,7 +322,7 @@ reason to take a slightly weaker player from a club you already have.
 ## Data and credits
 
 Player data and values come from
-[pl-value-predictor](https://github.com/mlodyheros/pl-value-predictor), which
+[pl-value-predictor](https://github.com/mlodyheros/pl-value), which
 draws on the Fantasy Premier League API, Understat and Transfermarkt. Market
 values are Transfermarkt's estimates, shown for non-commercial, educational
 use. Club crests in [`public/crests/`](public/crests) are the badges the Premier

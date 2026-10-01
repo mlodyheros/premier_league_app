@@ -21,7 +21,7 @@ OUT_DIR = Path(__file__).resolve().parent.parent / "public" / "crests"
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("--pl-value", type=Path, default=Path.home() / "Desktop" / "pl-value-predictor")
+    parser.add_argument("--pl-value", type=Path, default=Path.home() / "projects" / "pl-value-predictor")
     parser.add_argument("--force", action="store_true", help="download even if the file exists")
     args = parser.parse_args()
 
