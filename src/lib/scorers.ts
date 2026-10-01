@@ -4,8 +4,10 @@
  * The season simulation only knows team goals. Each goal is then given a
  * scorer, drawn with weights from the slot he plays (a striker scores far more
  * than a centre-back) times his own record (goals per 90 against what is
- * normal for his position), and, about three goals in four, an assister drawn
- * the same way from assist records. Goalkeepers never score.
+ * normal for his position), and, about three goals in five, an assister drawn
+ * the same way from assist records but more concentrated, since one or two
+ * creators make most of a side's assists. A few goals are own goals and are
+ * credited to nobody. Goalkeepers never score.
  */
 import type { Player, PosCode } from '../data/types';
 import type { MatchResult } from './season';
@@ -16,11 +18,19 @@ export interface Tally {
   assists: number;
 }
 
-/** Share of Premier League goals that come with an assist. */
-export const ASSISTED_SHARE = 0.72;
+/** Share of goals that come with an assist (penalties and many set pieces don't). */
+export const ASSISTED_SHARE = 0.62;
+/** Share of a side's goals that are own goals: nobody in your XI scores them. */
+export const OWN_GOAL_SHARE = 0.03;
+/**
+ * Assists are concentrated: one or two creators lead, the rest share little.
+ * Raising the weights to this power keeps a 100-goal side to a couple of
+ * double-figure assisters, as in real seasons.
+ */
+const ASSIST_CONCENTRATION = 1.5;
 
 const SCORE_BY_SLOT: Record<SlotType, number> = {
-  ST: 1, LW: 0.6, RW: 0.6, AM: 0.55, LM: 0.45, RM: 0.45, CM: 0.22, DM: 0.1, CB: 0.08, LB: 0.07, RB: 0.07, GK: 0,
+  ST: 0.85, LW: 0.6, RW: 0.6, AM: 0.55, LM: 0.45, RM: 0.45, CM: 0.24, DM: 0.1, CB: 0.09, LB: 0.08, RB: 0.08, GK: 0,
 };
 const ASSIST_BY_SLOT: Record<SlotType, number> = {
   AM: 0.8, LW: 0.7, RW: 0.7, LM: 0.6, RM: 0.6, ST: 0.45, CM: 0.45, LB: 0.35, RB: 0.35, DM: 0.2, CB: 0.07, GK: 0.02,
@@ -38,7 +48,7 @@ function form(p: Player, kind: 'goals' | 'assists'): number {
   const per90 = minutes > 0 ? (count / minutes) * 90 : norm;
   const trust = Math.min(1, minutes / 4000); // ~45 full games to fully trust a rate
   const ratio = trust * (per90 / norm) + (1 - trust);
-  return 0.35 + 0.65 * Math.min(2.5, ratio);
+  return 0.5 + 0.5 * Math.min(2.2, ratio);
 }
 
 function draw<T>(items: readonly T[], weights: readonly number[], rand: () => number): T {
@@ -63,11 +73,12 @@ export function attributeGoals(
     return p ? [{ p, slot: slot.type }] : [];
   });
   const scoreW = squad.map(({ p, slot }) => SCORE_BY_SLOT[slot] * form(p, 'goals'));
-  const assistW = squad.map(({ p, slot }) => ASSIST_BY_SLOT[slot] * form(p, 'assists'));
+  const assistW = squad.map(({ p, slot }) => (ASSIST_BY_SLOT[slot] * form(p, 'assists')) ** ASSIST_CONCENTRATION);
   const tally: Record<string, Tally> = Object.fromEntries(squad.map(({ p }) => [p.name, { goals: 0, assists: 0 }]));
 
   const goals = results.reduce((n, r) => n + r.goalsFor, 0);
   for (let g = 0; g < goals; g++) {
+    if (rand() < OWN_GOAL_SHARE) continue;
     const scorer = draw(squad, scoreW, rand);
     tally[scorer.p.name].goals++;
     if (rand() < ASSISTED_SHARE) {

@@ -1,3 +1,4 @@
+import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { DailyDone, ModeTabs } from '../../components/ModeTabs';
 import { PlayerCard } from '../../components/PlayerCard';
@@ -70,10 +71,9 @@ export function PriceTag() {
   const isDaily = mode === 'daily';
   return (
     <section class="game pt">
-      <div class="game__head">
-        <h1>{t('game.price.title')}</h1>
-        <ModeTabs mode={mode} day={day} onChange={switchMode} />
-      </div>
+      <GameHeader game="price" tabs={<ModeTabs mode={mode} day={day} onChange={switchMode} />}>
+        <p>{tj('pt.lede', { value: <b>{valuePhrase()}</b>, max: MAX_POINTS })}</p>
+      </GameHeader>
       <Round
         key={isDaily ? `daily-${day}` : `practice-${practiceRound.map((p) => p.id).join('-')}`}
         mode={mode}
@@ -83,6 +83,7 @@ export function PriceTag() {
         onProgress={isDaily ? saveDaily : setPractice}
         onRestart={isDaily ? () => switchMode('practice') : newPractice}
       />
+      <OtherGames current="price" />
     </section>
   );
 }
@@ -164,7 +165,6 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
           <b>{best ?? '–'}</b>
         </span>
       </div>
-      <p class="lede">{tj('pt.lede', { value: <b>{valuePhrase(source)}</b>, max: MAX_POINTS })}</p>
       {mode === 'practice' && <p class="mode-help">{t('mode.practiceHint')}</p>}
 
       {switched && !finished && <p class="notice-inline">{t('pt.locked', { values: valuesPhrase(source) })}</p>}

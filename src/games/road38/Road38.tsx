@@ -1,3 +1,4 @@
+import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { Avatar, Crest } from '../../components/Avatar';
 import { Pitch } from '../../components/Pitch';
@@ -21,7 +22,8 @@ import {
   byName,
   candidates,
   draftedIds,
-  drawSpin,
+  clubOptions,
+  slotOptions,
   drawsPosition,
   DRAFT_MODES,
   fillableSlots,
@@ -86,8 +88,10 @@ export function Road38() {
 
   const [state, setState] = useState<State>(load);
   const [selected, setSelected] = useState<string | null>(null);
-  const [reel, setReel] = useState<Spin | null>(null);
-  const [landed, setLanded] = useState(false);
+  // What each reel shows while it spins (null when it is still).
+  const [clubReel, setClubReel] = useState<string | null>(null);
+  const [slotReel, setSlotReel] = useState<string | null>(null);
+  const [landed, setLanded] = useState<{ club: boolean; slot: boolean }>({ club: false, slot: false });
   const [justPlayed, setJustPlayed] = useState(false);
   const timers = useRef<number[]>([]);
 
@@ -105,61 +109,99 @@ export function Road38() {
   const bestKey = bestKeyFor(source, difficulty, draft);
   const best = getBest(bestKey);
   const started = Object.keys(state.picks).length > 0 || !!state.spin;
-  const spinning = reel !== null;
+  const spinning = clubReel !== null || slotReel !== null;
+  const positional = drawsPosition(draft);
+  const spun = state.spin;
+  const ready = !!spun?.club && (!positional || !!spun.slot);
 
   // In the position modes the drawn slot is the only one that can be filled.
   const drawnSlot = state.spin?.slot ? (formation.slots.find((s) => s.id === state.spin!.slot) ?? null) : null;
   const chosenSlot = drawnSlot ?? formation.slots.find((s) => s.id === selected && !lineup[s.id]) ?? null;
-  const rawList = state.spin ? candidates(players, state.spin.club, formation, lineup, source, chosenSlot) : [];
+  const rawList = ready ? candidates(players, spun!.club!, formation, lineup, source, chosenSlot) : [];
   const list = blind ? byName(rawList) : rawList;
   const hint = drawnSlot
     ? new Set([drawnSlot.id])
-    : state.spin
-      ? fillableSlots(players, state.spin.club, formation, lineup)
+    : spun?.club
+      ? fillableSlots(players, spun.club, formation, lineup)
       : undefined;
 
-  function spin(isRespin: boolean) {
-    if (spinning) return;
-    const landing = drawSpin(players, clubCodes, formation, lineup, draft, Math.random, isRespin ? state.spin : null);
-    if (!landing) return;
-    setSelected(null);
-    setLanded(false);
-    buzz('tap');
-    const finish = () => {
-      setReel(null);
-      setLanded(true);
-      buzz('good');
-      setState((s) => ({ ...s, spin: landing, respins: isRespin ? s.respins - 1 : s.respins }));
-    };
-    if (reducedMotion()) return finish();
-    // Stage one spins the clubs; in the position modes stage two then spins
-    // the positions, with the club already settled.
-    const positions = [...fillableSlots(players, landing.club, formation, lineup)];
-    let at = 0;
-    timers.current = REEL.map((gap) => {
+  // What each button may still draw: a club that can fill the drawn position,
+  // a position the drawn club can fill.
+  const clubPool = clubOptions(players, clubCodes, formation, lineup, spun?.slot ?? null, spun?.club);
+  const slotPool = positional ? slotOptions(players, clubCodes, formation, lineup, spun?.club ?? null, spun?.slot) : [];
+  const canRespin = state.respins > 0 && !spinning;
+
+  /** Spin one reel through random faces, slowing down, and stop on `landing`; returns when it stops. */
+  function runReel(set: (v: string | null) => void, faces: string[], landing: string, delay: number, stopped: () => void) {
+    let at = delay;
+    for (const gap of REEL) {
       at += gap;
-      return window.setTimeout(() => setReel({ club: pick(clubCodes), slot: null }), at);
-    });
-    if (drawsPosition(draft)) {
-      at += 260;
-      timers.current.push(window.setTimeout(() => (buzz('tap'), setReel({ club: landing.club, slot: '' })), at));
-      for (const gap of REEL.slice(3)) {
-        at += gap;
-        timers.current.push(window.setTimeout(() => setReel({ club: landing.club, slot: pick(positions) }), at));
-      }
+      timers.current.push(window.setTimeout(() => set(pick(faces)), at));
     }
-    timers.current.push(window.setTimeout(finish, at + 200));
+    at += 200;
+    timers.current.push(
+      window.setTimeout(() => {
+        set(landing);
+        buzz('good');
+        stopped();
+      }, at),
+    );
+    return at;
+  }
+
+  /** Draw the club, the position, or both; a re-draw costs one re-spin. */
+  function draw(which: 'club' | 'slot' | 'both') {
+    if (spinning) return;
+    const respin = which === 'both' || (which === 'club' ? !!spun?.club : !!spun?.slot);
+    if (respin && state.respins === 0) return;
+    const club =
+      which === 'slot'
+        ? (spun?.club ?? null)
+        : pick(clubOptions(players, clubCodes, formation, lineup, which === 'both' ? null : (spun?.slot ?? null), spun?.club));
+    if (which !== 'slot' && !club) return;
+    const slot =
+      which === 'club'
+        ? (spun?.slot ?? null)
+        : pick(slotOptions(players, clubCodes, formation, lineup, club, which === 'slot' || which === 'both' ? spun?.slot : null));
+    if (which !== 'club' && !slot) return;
+
+    setSelected(null);
+    setLanded({ club: false, slot: false });
+    buzz('tap');
+    const commit = () =>
+      setState((st) => ({ ...st, spin: { club, slot }, respins: respin ? st.respins - 1 : st.respins }));
+    if (reducedMotion()) {
+      setLanded({ club: which !== 'slot', slot: which !== 'club' });
+      return commit();
+    }
+    timers.current = [];
+    let end = 0;
+    if (which !== 'slot') {
+      end = runReel(setClubReel, clubCodes, club!, 0, () => setLanded((l) => ({ ...l, club: true })));
+    }
+    if (which !== 'club') {
+      const faces = open.map((sl) => sl.id);
+      end = runReel(setSlotReel, faces, slot!, which === 'both' ? 220 : 0, () => setLanded((l) => ({ ...l, slot: true })));
+    }
+    // Both reels show their landing; then the draw is saved and the reels let go.
+    timers.current.push(
+      window.setTimeout(() => {
+        commit();
+        setClubReel(null);
+        setSlotReel(null);
+      }, end + 350),
+    );
   }
 
   function choose(playerName: string, slot: Slot) {
     buzz('tap');
     setState((s) => ({ ...s, picks: { ...s.picks, [slot.id]: playerName }, spin: null }));
     setSelected(null);
-    setLanded(false);
+    setLanded({ club: false, slot: false });
   }
 
   function onSlot(slot: Slot) {
-    if (lineup[slot.id] || !state.spin || drawnSlot) return;
+    if (lineup[slot.id] || !ready || drawnSlot) return;
     setSelected(selected === slot.id ? null : slot.id);
   }
 
@@ -215,29 +257,31 @@ export function Road38() {
     notifyShare(await shareText(`${head}\n${resultsGrid(season)}\n${shareValues(season.source)} · ${siteUrl()}#/road100`));
   }
 
-  const shown = reel ?? state.spin;
-
+  
   return (
     <section class="game road">
-      <div class="game__head">
-        <h1>{t('game.road.title')}</h1>
-        <div class="scorebug">
-          <span>
-            <small>{t('common.ovr')}</small>
-            <b>{blind && !state.season ? '?' : strength ? formatDecimal(strength) : '–'}</b>
-          </span>
-          <span>
-            <small>{t('road.bestPts')}</small>
-            <b>{best ?? '–'}</b>
-          </span>
-        </div>
-      </div>
-      <p class="lede">
-        {tj('road.lede', {
-          respins: t('road.respins', { count: RESPINS }),
-          values: <b>{valuesPhrase(source)}</b>,
-        })}
-      </p>
+      <GameHeader
+        game="road"
+        score={
+          <div class="scorebug">
+            <span>
+              <small>{t('common.ovr')}</small>
+              <b>{blind && !state.season ? '?' : strength ? formatDecimal(strength) : '–'}</b>
+            </span>
+            <span>
+              <small>{t('road.bestPts')}</small>
+              <b>{best ?? '–'}</b>
+            </span>
+          </div>
+        }
+      >
+        <p>
+          {tj('road.lede', {
+            respins: t('road.respins', { count: RESPINS }),
+            values: <b>{valuesPhrase(source)}</b>,
+          })}
+        </p>
+      </GameHeader>
 
       {!state.season && (
         <>
@@ -298,42 +342,59 @@ export function Road38() {
 
             <div class="picker">
               {!complete && (
-                <div class={`spinner ${spinning ? 'spinner--on' : ''} ${landed ? 'spinner--landed' : ''}`} aria-live="polite">
-                  {shown ? (
-                    <div class="spinner__reel" key={`${shown.club}-${spinning && shown.slot === null}`}>
-                      <Crest code={shown.club} size={56} />
-                      <div class="spinner__text">
-                        <span class="spinner__club">{meta.clubs[shown.club].name}</span>
-                        {shown.slot !== null && (
-                          <span class="spinner__slot" key={shown.slot}>
-                            {shown.slot
-                              ? t('road.drawnSlot', {
-                                  pos: posLabel(formation.slots.find((s) => s.id === shown.slot)?.type ?? 'CM'),
-                                })
-                              : t('road.drawingSlot')}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <p class="picker__hint">{t(open.length === 11 ? 'road.spinFirst' : 'road.spinNext')}</p>
+                <div class="draws" aria-live="polite">
+                  <ReelBox
+                    label={t('road.reel.club')}
+                    spinning={clubReel !== null}
+                    landed={landed.club}
+                    face={clubReel ?? spun?.club ?? null}
+                    render={(code) => (
+                      <>
+                        <Crest code={code} size={52} />
+                        <span class="reel__name">{meta.clubs[code].short}</span>
+                      </>
+                    )}
+                  >
+                    {!spun?.club ? (
+                      <button class="btn btn--primary btn--spin" onClick={() => draw('club')} disabled={spinning || !clubPool.length}>
+                        {t('road.drawClub')}
+                      </button>
+                    ) : (
+                      <button class="btn btn--ghost" onClick={() => draw('club')} disabled={!canRespin || !clubPool.length}>
+                        {t('road.redrawClub', { n: state.respins })}
+                      </button>
+                    )}
+                  </ReelBox>
+                  {positional && (
+                    <ReelBox
+                      label={t('road.reel.slot')}
+                      spinning={slotReel !== null}
+                      landed={landed.slot}
+                      face={slotReel ?? spun?.slot ?? null}
+                      render={(id) => (
+                        <span class="reel__pos">{posLabel(formation.slots.find((sl) => sl.id === id)?.type ?? 'CM')}</span>
+                      )}
+                    >
+                      {!spun?.slot ? (
+                        <button class="btn btn--primary btn--spin" onClick={() => draw('slot')} disabled={spinning || !slotPool.length}>
+                          {t('road.drawSlot')}
+                        </button>
+                      ) : (
+                        <button class="btn btn--ghost" onClick={() => draw('slot')} disabled={!canRespin || !slotPool.length}>
+                          {t('road.redrawSlot', { n: state.respins })}
+                        </button>
+                      )}
+                    </ReelBox>
                   )}
-                  <div class="spinner__actions">
-                    {!state.spin && (
-                      <button class="btn btn--primary btn--spin" onClick={() => spin(false)} disabled={spinning}>
-                        {spinning ? t('road.spinning') : t('road.spin')}
-                      </button>
-                    )}
-                    {state.spin && !spinning && (
-                      <button class="btn" onClick={() => spin(true)} disabled={state.respins === 0}>
-                        {t('road.respin', { n: state.respins })}
-                      </button>
-                    )}
-                  </div>
+                  {positional && spun?.club && spun?.slot && (
+                    <button class="btn btn--ghost draws__both" onClick={() => draw('both')} disabled={!canRespin}>
+                      {t('road.redrawBoth', { n: state.respins })}
+                    </button>
+                  )}
                 </div>
               )}
 
-              {state.spin && !spinning && (
+              {ready && !spinning && (
                 <>
                   <p class="picker__hint">
                     {drawnSlot
@@ -400,6 +461,40 @@ export function Road38() {
           }
         />
       )}
+      <OtherGames current="road" />
     </section>
+  );
+}
+
+/** One reel: a framed face (or "?" before the first draw) and its button. */
+function ReelBox({
+  label,
+  face,
+  spinning,
+  landed,
+  render,
+  children,
+}: {
+  label: string;
+  face: string | null;
+  spinning: boolean;
+  landed: boolean;
+  render: (face: string) => preact.ComponentChildren;
+  children: preact.ComponentChildren;
+}) {
+  return (
+    <div class={`reel ${spinning ? 'reel--on' : ''} ${landed ? 'reel--landed' : ''}`}>
+      <span class="reel__label">{label}</span>
+      <div class="reel__window">
+        {face ? (
+          <div class="reel__face" key={face}>
+            {render(face)}
+          </div>
+        ) : (
+          <span class="reel__empty">?</span>
+        )}
+      </div>
+      {children}
+    </div>
   );
 }

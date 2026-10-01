@@ -1,3 +1,4 @@
+import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { useMemo, useState } from 'preact/hooks';
 import { DailyDone, ModeTabs } from '../../components/ModeTabs';
 import { PlayerCard } from '../../components/PlayerCard';
@@ -57,13 +58,16 @@ export function BeatModel() {
 
   return (
     <section class="game bm">
-      <div class="game__head">
-        <h1>{t('game.beat.title')}</h1>
-        <ModeTabs mode={mode} day={day} onChange={switchMode} />
-      </div>
-      <p class="lede">
-        {tj('bm.lede', { over: <b>{t('bm.overWord')}</b>, under: <b>{t('bm.underWord')}</b> })}
-      </p>
+      <GameHeader
+        game="beat"
+        tabs={
+          <ModeTabs mode={mode} day={day} onChange={switchMode} />
+        }
+      >
+        <p>
+          {tj('bm.lede', { over: <b>{t('bm.overWord')}</b>, under: <b>{t('bm.underWord')}</b> })}
+        </p>
+      </GameHeader>
       {mode === 'practice' && <p class="mode-help">{t('mode.practiceHint')}</p>}
       <Round
         key={mode === 'daily' ? `daily-${day}` : `practice-${practice.map((p) => p.id).join('-')}`}
@@ -74,6 +78,7 @@ export function BeatModel() {
         onAnswers={setAnswers}
         onRestart={mode === 'practice' ? newPractice : () => switchMode('practice')}
       />
+      <OtherGames current="beat" />
     </section>
   );
 }

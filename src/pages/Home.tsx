@@ -1,47 +1,46 @@
+import { useState } from 'preact/hooks';
 import { Crest } from '../components/Avatar';
 import { useDataset } from '../data/store';
-import { valuesPhrase } from '../data/valueSource';
+import { valuesPhrase, valueSource } from '../data/valueSource';
+import { GAME_LIST, type GameMeta } from '../games/meta';
 import { t, tj, type Key } from '../i18n';
 import { formatDecimal, formatEur } from '../lib/format';
 import { getBest } from '../lib/records';
+import { todayKey } from '../lib/rng';
 import { loadStats } from '../lib/stats';
-import { valueSource } from '../data/valueSource';
 import { href } from '../router';
-
-interface GameCard {
-  path: string;
-  id: 'guess' | 'road' | 'hl' | 'budget' | 'beat' | 'price';
-  /** Personal best to show on the card, if any. */
-  best: () => string | null;
-}
 
 function best(key: string, label: Key, digits = 0, extra: Record<string, string> = {}) {
   const v = getBest(key);
   return v === null ? null : t(label, { n: digits ? formatDecimal(v, digits) : String(v), ...extra });
 }
 
-export const GAMES: GameCard[] = [
-  {
-    path: 'guess',
-    id: 'guess',
-    best: () => {
+/** The personal best shown on each card. */
+function record(g: GameMeta): string | null {
+  const src = valueSource.value;
+  switch (g.id) {
+    case 'guess': {
       const s = loadStats('guess-daily', 8);
       return s.played ? t('home.best.guess', { n: s.streak }) : null;
-    },
-  },
-  { path: 'road100', id: 'road', best: () => best(`road:pts:${valueSource.value}`, 'home.best.road') },
-  { path: 'higher-lower', id: 'hl', best: () => best(`hl:${valueSource.value}`, 'home.best.hl') },
-  {
-    path: 'budget',
-    id: 'budget',
-    best: () => best(`budget:200000000:${valueSource.value}`, 'home.best.budget', 1, { budget: formatEur(200_000_000) }),
-  },
-  { path: 'beat-model', id: 'beat', best: () => best('beat-model', 'home.best.beat') },
-  { path: 'price-tag', id: 'price', best: () => best(`price-tag:${valueSource.value}`, 'home.best.price') },
-];
+    }
+    case 'road':
+      return best(`road:pts:${src}`, 'home.best.road');
+    case 'hl':
+      return best(`hl:${src}`, 'home.best.hl');
+    case 'budget':
+      return best(`budget:200000000:${src}`, 'home.best.budget', 1, { budget: formatEur(200_000_000) });
+    case 'beat':
+      return best('beat-model', 'home.best.beat');
+    case 'price':
+      return best(`price-tag:${src}`, 'home.best.price');
+  }
+}
 
 export function Home() {
   const { meta } = useDataset();
+  const [day] = useState(todayKey);
+  const dailies = GAME_LIST.filter((g) => g.daily);
+
   return (
     <section class="home">
       <div class="hero">
@@ -61,12 +60,39 @@ export function Home() {
           })}
         </p>
       </div>
-      <ul class="cards">
-        {GAMES.map((g) => {
-          const record = g.best();
+
+      <h2 class="section-title">{t('home.daily')}</h2>
+      <ul class="dailies">
+        {dailies.map((g) => {
+          const done = g.daily!.done(day);
+          const streak = g.daily!.streak();
           return (
             <li>
-              <a class="card" href={href(g.path)}>
+              <a class={`daily ${done ? 'daily--done' : ''}`} href={href(g.path)}>
+                <span class="daily__icon" aria-hidden="true">
+                  {g.icon}
+                </span>
+                <span class="daily__text">
+                  <b>{t(`game.${g.id}.title`)}</b>
+                  <small>{streak > 0 ? t('home.dailyStreak', { count: streak }) : t(`game.${g.id}.tag`)}</small>
+                </span>
+                <span class="daily__state">{done ? `✓ ${t('home.dailyDone')}` : `${t('home.dailyPlay')} →`}</span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+
+      <h2 class="section-title">{t('home.allGames')}</h2>
+      <ul class="cards">
+        {GAME_LIST.map((g) => {
+          const rec = record(g);
+          return (
+            <li>
+              <a class={`card card--${g.id}`} href={href(g.path)}>
+                <span class="card__icon" aria-hidden="true">
+                  {g.icon}
+                </span>
                 <span class="card__tag">{t(`game.${g.id}.tag`)}</span>
                 <h2>{t(`game.${g.id}.title`)}</h2>
                 <p>{t(`game.${g.id}.blurb`)}</p>
@@ -74,7 +100,7 @@ export function Home() {
                   <span class="card__go" aria-hidden="true">
                     {t('home.play')}
                   </span>
-                  {record && <span class="card__best">{record}</span>}
+                  {rec && <span class="card__best">{rec}</span>}
                 </span>
               </a>
             </li>

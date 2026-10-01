@@ -1,3 +1,4 @@
+import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { PlayerCard } from '../../components/PlayerCard';
 import { useDataset } from '../../data/store';
@@ -98,22 +99,25 @@ export function HigherLower() {
 
   return (
     <section class="game hl">
-      <div class="game__head">
-        <h1>{t('game.hl.title')}</h1>
-        <div class="scorebug" aria-live="polite">
-          <span>
-            <small>{t('common.streak')}</small>
-            <b>{streak}</b>
-          </span>
-          <span>
-            <small>{t('common.best')}</small>
-            <b>{best}</b>
-          </span>
-        </div>
-      </div>
-      <p class="lede">
-        {tj('hl.lede', { values: <b>{valuesPhrase(source)}</b> })}
-      </p>
+      <GameHeader
+        game="hl"
+        score={
+          <div class="scorebug" aria-live="polite">
+            <span>
+              <small>{t('common.streak')}</small>
+              <b>{streak}</b>
+            </span>
+            <span>
+              <small>{t('common.best')}</small>
+              <b>{best}</b>
+            </span>
+          </div>
+        }
+      >
+        <p>
+          {tj('hl.lede', { values: <b>{valuesPhrase(source)}</b> })}
+        </p>
+      </GameHeader>
 
       <div class="hl__pair" key={current.id}>
         <PlayerCard player={current}>
@@ -162,6 +166,7 @@ export function HigherLower() {
           </div>
         </div>
       )}
+      <OtherGames current="hl" />
     </section>
   );
 }

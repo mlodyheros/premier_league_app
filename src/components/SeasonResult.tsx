@@ -87,11 +87,15 @@ export function SeasonResult({
         {chips.map((c) => (
           <span class="mode-chip">{c}</span>
         ))}
-        <p class="season__record" aria-label={`${row.won}-${row.drawn}-${row.lost}`}>
-          {Math.round(won)}-{Math.round(drawn)}-{Math.round(lost)}
+        <p class={`season__pts ${reached ? 'season__pts--hit' : ''}`} aria-label={`${row.points} ${t('pt.pointsWord')}`}>
+          {Math.round(points)}
+          <small>{t('pt.pointsWord')}</small>
         </p>
-        <p class={`season__points ${reached ? 'season__points--hit' : ''}`}>
-          {t('road.result', { pts: Math.round(points), pos: ordinal(season.position) })}
+        <p class="season__line">
+          {t('season.line', {
+            record: `${Math.round(won)}-${Math.round(drawn)}-${Math.round(lost)}`,
+            pos: ordinal(season.position),
+          })}
         </p>
         {earned.length > 0 && (
           <ul class="badges">

@@ -92,16 +92,53 @@ export function hidesRatings(mode: DraftMode): boolean {
 }
 
 export interface Spin {
-  club: string;
+  club: string | null;
   /** The open slot to fill, in the modes that draw one. */
   slot: string | null;
 }
 
 /**
- * Draw the next spin. The club comes first, from the clubs that can still fill
- * an open position; in the position modes the position is then drawn on its
- * own, from the open positions that club can fill. `avoid` (the current spin,
- * on a re-spin) is never drawn again.
+ * Clubs a spin can land on: those with an available player for `slot` when a
+ * position is already drawn, otherwise for any open position. `avoid` (the
+ * club being re-drawn) is left out.
+ */
+export function clubOptions(
+  players: readonly Player[],
+  clubs: readonly string[],
+  formation: Formation,
+  lineup: Lineup,
+  slot: string | null,
+  avoid?: string | null,
+): string[] {
+  return clubs.filter((club) => {
+    if (club === avoid) return false;
+    const fillable = fillableSlots(players, club, formation, lineup);
+    return slot ? fillable.has(slot) : fillable.size > 0;
+  });
+}
+
+/**
+ * Positions a spin can land on: the open ones `club` can fill when a club is
+ * already drawn, otherwise any open position some club can fill.
+ */
+export function slotOptions(
+  players: readonly Player[],
+  clubs: readonly string[],
+  formation: Formation,
+  lineup: Lineup,
+  club: string | null,
+  avoid?: string | null,
+): string[] {
+  const fillable = new Set<string>();
+  for (const c of club ? [club] : clubs) for (const s of fillableSlots(players, c, formation, lineup)) fillable.add(s);
+  return openSlots(formation, lineup)
+    .map((s) => s.id)
+    .filter((id) => id !== avoid && fillable.has(id));
+}
+
+/**
+ * A full draw in one go (both reels), for tests and quick play: club first,
+ * then, in the position modes, a position that club can fill.
  */
 export function drawSpin(
   players: readonly Player[],
@@ -112,18 +149,13 @@ export function drawSpin(
   rand: () => number,
   avoid?: Spin | null,
 ): Spin | null {
-  const options = clubs
-    .map((club) => ({ club, slots: [...fillableSlots(players, club, formation, lineup)] }))
-    .map((o) => ({
-      ...o,
-      // On a re-spin the same club may come back only with a different position.
-      slots: o.slots.filter((slot) => !(avoid && avoid.club === o.club && (!drawsPosition(mode) || avoid.slot === slot))),
-    }))
-    .filter((o) => o.slots.length > 0);
-  if (!options.length) return null;
-  const { club, slots } = options[Math.floor(rand() * options.length)];
+  const pick = <T,>(xs: T[]) => xs[Math.floor(rand() * xs.length)];
+  const clubPool = clubOptions(players, clubs, formation, lineup, null, avoid?.club);
+  if (!clubPool.length) return null;
+  const club = pick(clubPool);
   if (!drawsPosition(mode)) return { club, slot: null };
-  return { club, slot: slots[Math.floor(rand() * slots.length)] };
+  const slots = slotOptions(players, clubs, formation, lineup, club);
+  return { club, slot: pick(slots) };
 }
 
 /** In blind mode the list must not give the ratings away, so it is alphabetical. */

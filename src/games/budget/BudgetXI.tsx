@@ -1,3 +1,4 @@
+import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { Avatar } from '../../components/Avatar';
 import { Pitch } from '../../components/Pitch';
@@ -154,22 +155,25 @@ export function BudgetXI() {
 
   return (
     <section class="game budget">
-      <div class="game__head">
-        <h1>{t('game.budget.title')}</h1>
-        <div class="scorebug">
-          <span>
-            <small>{t('common.ovr')}</small>
-            <b>{strength ? formatDecimal(strength) : '–'}</b>
-          </span>
-          <span>
-            <small>{t('common.best')}</small>
-            <b>{best ? formatDecimal(best) : '–'}</b>
-          </span>
-        </div>
-      </div>
-      <p class="lede">
-        {tj('budget.lede', { values: <b>{valuesPhrase(source)}</b> })}
-      </p>
+      <GameHeader
+        game="budget"
+        score={
+          <div class="scorebug">
+            <span>
+              <small>{t('common.ovr')}</small>
+              <b>{strength ? formatDecimal(strength) : '–'}</b>
+            </span>
+            <span>
+              <small>{t('common.best')}</small>
+              <b>{best ? formatDecimal(best) : '–'}</b>
+            </span>
+          </div>
+        }
+      >
+        <p>
+          {tj('budget.lede', { values: <b>{valuesPhrase(source)}</b> })}
+        </p>
+      </GameHeader>
 
       <div class="themes" role="radiogroup" aria-label={t('budget.budget')} ref={themesRef}>
         {THEMES.map((th) => (
@@ -319,6 +323,7 @@ export function BudgetXI() {
           chips={[`${theme.icon} ${t(`budget.theme.${theme.key}`)}`]}
         />
       )}
+      <OtherGames current="budget" />
     </section>
   );
 }

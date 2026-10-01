@@ -1090,3 +1090,132 @@ abbr[title] { text-decoration: none; cursor: help; }
 .bm__reveal .btn--big { justify-self: stretch; }
 .bm__reveal .verdict, .bm__reveal .btn--big { justify-self: stretch; }
 .pt__reveal > * { justify-self: stretch; }
+
+/* ================= Round 6 ================= */
+/* Season: points first */
+.season__pts { margin: 0; font-family: var(--display); font-size: clamp(4.2rem, 20vw, 6.5rem); font-weight: 700; line-height: 0.9; font-variant-numeric: tabular-nums; color: var(--text); }
+.season__pts small { font-size: 0.32em; margin-left: 6px; color: var(--muted); }
+.season__pts--hit { color: var(--green); text-shadow: 0 0 28px rgba(0, 255, 133, 0.45); }
+.season__line { margin: 6px 0 12px; font-family: var(--display); font-size: 1.5rem; font-weight: 700; text-transform: uppercase; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Road to 100: two reels */
+.draws { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.draws__both { grid-column: 1 / -1; }
+.reel { display: grid; gap: 8px; justify-items: stretch; padding: 10px; border-radius: var(--radius); background: var(--bg-2); border: 1px solid var(--line); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.reel--on { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(4, 245, 255, 0.12); }
+.reel--landed { border-color: var(--green); box-shadow: 0 0 22px rgba(0, 255, 133, 0.22); }
+.reel__label { color: var(--muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; text-align: center; }
+.reel__window { height: 92px; display: grid; place-items: center; overflow: hidden; border-radius: var(--radius-sm); background: var(--surface); }
+.reel__face { display: grid; justify-items: center; gap: 4px; animation: reel-in 0.12s ease-out both; }
+.reel--on .reel__face { filter: blur(0.5px); }
+.reel--landed .reel__face { animation: land 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.reel__name { font-family: var(--display); font-weight: 700; font-size: 1.05rem; text-transform: uppercase; }
+.reel__pos { font-family: var(--display); font-weight: 700; font-size: 2.6rem; color: var(--cyan); }
+.reel--landed .reel__pos { color: var(--green); }
+.reel__empty { font-family: var(--display); font-size: 2.6rem; color: var(--line); }
+.reel .btn { width: 100%; }
+
+/* ================= App UI pass ================= */
+/* Game header */
+.game-head { display: grid; gap: 10px; margin-bottom: 16px; }
+.game-head__back { justify-self: start; color: var(--muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; padding: 4px 10px 4px 0; }
+.game-head__back:hover { color: var(--text); }
+.game-head__row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.game-head__icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  font-size: 1.7rem;
+  background: linear-gradient(145deg, var(--surface-2), var(--bg-2));
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.game-head__title { flex: 1; min-width: 180px; }
+.game-head__title h1 { font-size: clamp(1.9rem, 7vw, 2.8rem); }
+.game-head__pitch { margin: 2px 0 0; color: var(--muted); font-size: 0.92rem; }
+.game-head__tabs { display: flex; }
+.game-head .scorebug { margin-left: auto; }
+@media (max-width: 520px) { .game-head .scorebug { margin-left: 0; } }
+.rules { border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line); }
+.rules summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 9px 12px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--cyan);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rules summary::-webkit-details-marker { display: none; }
+.rules summary::before { content: 'ⓘ'; font-size: 1rem; }
+.rules summary::after { content: '▾'; margin-left: auto; transition: transform 0.2s ease; }
+.rules[open] summary::after { transform: rotate(180deg); }
+.rules__body { padding: 0 12px 10px; color: var(--muted); font-size: 0.9rem; }
+.rules__body p { margin: 0; }
+.rules__body b { color: var(--text); }
+.game .lede { margin-top: 0; }
+.guess__legend { display: flex; gap: 6px; margin: 0 0 8px; }
+.guess__legend .tile { min-height: 0; padding: 2px 10px; font-size: 0.78rem; }
+
+/* Other games */
+.other-games { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--line); }
+.other-games p { margin: 0 0 8px; color: var(--muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.other-games ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.other-games a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.88rem;
+  transition: border-color 0.15s ease, transform 0.12s ease;
+}
+.other-games a:hover { border-color: var(--green); }
+.other-games a:active { transform: scale(0.97); }
+
+/* Home */
+.section-title { margin: 26px 0 10px; font-size: 1.15rem; color: var(--muted); letter-spacing: 0.06em; }
+.dailies { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+@media (min-width: 760px) { .dailies { grid-template-columns: repeat(3, 1fr); } }
+.daily {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(0, 255, 133, 0.12), var(--surface) 60%);
+  border: 1px solid var(--line);
+  color: var(--text);
+  text-decoration: none;
+  transition: transform 0.12s ease, border-color 0.15s ease;
+  animation: rise 0.35s ease both;
+}
+.daily:hover { border-color: var(--green); }
+.daily:active { transform: scale(0.985); }
+.daily__icon { font-size: 1.6rem; }
+.daily__text { display: grid; flex: 1; min-width: 0; }
+.daily__text b { font-size: 0.98rem; }
+.daily__text small { color: var(--muted); font-size: 0.78rem; }
+.daily__state { font-weight: 700; font-size: 0.85rem; color: var(--green); white-space: nowrap; }
+.daily--done { background: var(--surface); opacity: 0.8; }
+.daily--done .daily__state { color: var(--muted); }
+.card__icon {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-size: 2rem;
+  opacity: 0.9;
+  transition: transform 0.25s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+a.card:hover .card__icon { transform: scale(1.15) rotate(-6deg); }
+.card h2 { padding-right: 44px; }
+.hero { padding-bottom: 8px; }

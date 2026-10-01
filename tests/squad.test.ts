@@ -254,15 +254,26 @@ describe('Road to 38-0 draft modes', () => {
     }
   });
 
-  it('only draws open positions, and never repeats the spin on a re-spin', () => {
+  it('only draws open positions, and a re-drawn club is a different one', () => {
     const lineup: Lineup = { gk: players.find((p) => p.pos === 'GK')! };
     const rand = mulberry32(9);
     for (let i = 0; i < 50; i++) {
       const first = drawSpin(players, clubs, f, lineup, 'blind', rand)!;
       expect(first.slot).not.toBe('gk');
       const again = drawSpin(players, clubs, f, lineup, 'blind', rand, first)!;
-      expect(again.club === first.club && again.slot === first.slot).toBe(false);
+      expect(again.club).not.toBe(first.club);
     }
+  });
+
+  it('draws clubs that can fill a drawn position, and positions a drawn club can fill', async () => {
+    const { clubOptions, slotOptions } = await import('../src/games/road38/logic');
+    for (const club of clubOptions(players, clubs, f, {}, 'gk')) {
+      expect(players.some((p) => p.club === club && p.pos === 'GK')).toBe(true);
+    }
+    const slots = slotOptions(players, clubs, f, {}, 'ARS', 'st');
+    expect(slots).not.toContain('st');
+    expect(slots.length).toBeGreaterThan(5);
+    expect(clubOptions(players, clubs, f, {}, null, 'ARS')).not.toContain('ARS');
   });
 
   it('draws no position in standard mode', () => {
@@ -290,11 +301,15 @@ describe('goal scorers', () => {
     const results = Array.from({ length: 38 }, () => ({ opponent: 'X', home: true, goalsFor: 2, goalsAgainst: 1, outcome: 'W' as const }));
     const tally = attributeGoals(f, lineup, results, mulberry32(3));
     const goals = Object.values(tally).reduce((a, t) => a + t.goals, 0);
-    expect(goals).toBe(76);
+    // A few are own goals, credited to nobody.
+    expect(goals).toBeGreaterThan(66);
+    expect(goals).toBeLessThanOrEqual(76);
     expect(tally[lineup.gk!.name].goals).toBe(0);
     expect(tally[lineup.st!.name].goals).toBeGreaterThan(tally[lineup.lcb!.name].goals);
     const assists = Object.values(tally).reduce((a, t) => a + t.assists, 0);
-    expect(assists).toBeGreaterThan(40);
-    expect(assists).toBeLessThan(70);
+    expect(assists).toBeGreaterThan(30);
+    expect(assists).toBeLessThan(60);
+    // Assists are concentrated: never five double-figure assisters.
+    expect(Object.values(tally).filter((t) => t.assists >= 10).length).toBeLessThan(5);
   });
 });

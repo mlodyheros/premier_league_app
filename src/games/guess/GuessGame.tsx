@@ -1,3 +1,4 @@
+import { GameHeader, OtherGames } from '../../components/GameHeader';
 import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { Avatar, ClubChip, Crest } from '../../components/Avatar';
@@ -115,29 +116,37 @@ export function GuessGame() {
 
   return (
     <section class="game guess">
-      <div class="game__head">
-        <h1>{t('game.guess.title')}</h1>
-        <div class="tabs" role="tablist">
-          <button role="tab" aria-selected={mode === 'daily'} onClick={() => switchMode('daily')}>
-            {t('guess.daily', { n: dayNumber(day) })}
-          </button>
-          <button role="tab" aria-selected={mode === 'unlimited'} onClick={() => switchMode('unlimited')}>
-            {t('guess.unlimited')}
-          </button>
-        </div>
-      </div>
+      <GameHeader
+        game="guess"
+        tabs={
+          <div class="tabs" role="tablist">
+            <button role="tab" aria-selected={mode === 'daily'} onClick={() => switchMode('daily')}>
+              {t('guess.daily', { n: dayNumber(day) })}
+            </button>
+            <button role="tab" aria-selected={mode === 'unlimited'} onClick={() => switchMode('unlimited')}>
+              {t('guess.unlimited')}
+            </button>
+          </div>
+        }
+      >
+        <p>
+          {tj('guess.lede', {
+            max: MAX_GUESSES,
+            legend: (
+              <span class="legend">
+                <Tile mark="hit">{t('guess.exact')}</Tile> <Tile mark="near">{t('guess.close')}</Tile>
+              </span>
+            ),
+            values: valuesPhrase(source),
+          })}
+        </p>
+      </GameHeader>
 
-      <p class="lede">
-        {tj('guess.lede', {
-          max: MAX_GUESSES,
-          legend: (
-            <span class="legend">
-              <Tile mark="hit">{t('guess.exact')}</Tile> <Tile mark="near">{t('guess.close')}</Tile>
-            </span>
-          ),
-          values: valuesPhrase(source),
-        })}
-      </p>
+      {!over && (
+        <p class="guess__legend">
+          <Tile mark="hit">{t('guess.exact')}</Tile> <Tile mark="near">{t('guess.close')}</Tile>
+        </p>
+      )}
 
       {!over && (
         <div class="guess__input">
@@ -192,6 +201,7 @@ export function GuessGame() {
           ))}
         </div>
       )}
+      <OtherGames current="guess" />
     </section>
   );
 }

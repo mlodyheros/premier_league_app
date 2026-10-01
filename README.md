@@ -216,8 +216,10 @@ goalkeeper only plays in goal.
   Liverpool about a sixth, someone else the rest.
 - **Goals get scorers.** Each of your XI's goals is given a scorer drawn by the
   slot he plays (a striker far more often than a centre-back, a goalkeeper
-  never) and his own goals-per-90 record against his position's norm; about
-  three goals in four also get an assister, drawn the same way
+  never) and his own goals-per-90 record against his position's norm. About
+  three goals in five also get an assister, drawn the same way but more
+  concentrated, so a 100-goal side has one or two double-figure assisters, not
+  five; 3% are own goals and go to nobody
   ([`src/lib/scorers.ts`](src/lib/scorers.ts)).
 - **Each match** draws goals from a Poisson distribution. The expected goals
   start at 1.45 a side, get ×1.12 at home (÷1.12 away), and move with the
@@ -241,8 +243,10 @@ of the time.
 player for any open position), *random position* (the spin also draws the
 position to fill) and *blind* (a drawn position, names only: no ratings, no
 prices, an alphabetical list; the ratings are revealed after the season). In
-the position modes the club is drawn first, then the position, from those the
-club can fill. Bests
+the position modes the club and the position have a reel and a button each, in
+either order: the club is drawn from those that can fill the drawn position,
+the position from those the drawn club can fill. A re-draw (club, position or
+both at once) costs one of the three re-spins. Bests
 are kept per draft mode and season mode.
 
 ## Data and credits
