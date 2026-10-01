@@ -49,6 +49,19 @@ PERF_WEIGHTS = {
     "cl_matches": 0.10,
 }
 GK_SKIP = {"xgchain", "gi_per90"}
+# Measures a role is not judged on: goalkeepers have no attacking output, and
+# deeper midfielders are not playmakers, so goal involvement would rank them
+# below every number 10 regardless of how good they are.
+ROLE_SKIP = {
+    "Goalkeeper": GK_SKIP,
+    "Defensive Midfield": {"gi_per90"},
+    "Central Midfield": {"gi_per90"},
+}
+# Measures from the current season alone. Early on a few games say little (a
+# player back from injury looks like a reserve), so their weight grows with the
+# season: a quarter at gameweek 5, full from gameweek SEASON_FULL_WEIGHT_GW.
+THIS_SEASON = {"this_season_share", "form_ppg"}
+SEASON_FULL_WEIGHT_GW = 19
 
 
 def _load_pl_value(root: Path):
@@ -141,13 +154,21 @@ def _performance(df):
     measures["gi_per90"] = np.where(df["career_minutes_share"] > 0, df["career_gi_per90"], np.nan)
     measures["cl_matches"] = df["cl_matches_last"]
 
+    progress = min(1.0, df["fpl_gameweeks"].max() / SEASON_FULL_WEIGHT_GW)
     score = pd.Series(0.0, index=df.index)
     for group, idx in df.groupby("pos_group").groups.items():
-        weights = {k: w for k, w in PERF_WEIGHTS.items() if not (group == "GK" and k in GK_SKIP)}
-        total = sum(weights.values())
-        for measure, weight in weights.items():
-            pct = measures.loc[idx, measure].rank(pct=True).fillna(MISSING_PERCENTILE)
-            score.loc[idx] += pct * weight / total
+        # Percentiles are taken within the position group...
+        pct = {m: measures.loc[idx, m].rank(pct=True).fillna(MISSING_PERCENTILE) for m in PERF_WEIGHTS}
+        # ...but each position weighs them its own way: a holding midfielder is
+        # not judged on goals and assists against the playmakers.
+        for pos, pos_idx in df.loc[idx].groupby("position").groups.items():
+            skip = ROLE_SKIP.get(pos, set())
+            weights = {
+                k: w * (progress if k in THIS_SEASON else 1.0) for k, w in PERF_WEIGHTS.items() if k not in skip
+            }
+            total = sum(weights.values())
+            for measure, weight in weights.items():
+                score.loc[pos_idx] += pct[measure].loc[pos_idx] * weight / total
     # Re-rank so every group spreads across the full 0-100 scale.
     return (score.groupby(df["pos_group"]).rank(pct=True) * 100).round().astype(int)
 

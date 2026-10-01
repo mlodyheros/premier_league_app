@@ -4,10 +4,11 @@
  * An overall rating (OVR) is built in three steps:
  *
  * 1. **Ability value.** The market value on the active source, corrected for
- *    age. Transfermarkt prices young players for their potential and resale,
- *    and veterans for their lack of it: a 35-year-old regular is cheap but
- *    still good today. The correction (AGE_FACTOR) turns price into a rough
- *    "what he is worth on the pitch now".
+ *    age and position. Transfermarkt prices young players for their potential
+ *    and resale, and veterans for their lack of it: a 35-year-old regular is
+ *    cheap but still good today (AGE_FACTOR). Goalkeepers sell for less than
+ *    outfield players of the same standing (POSITION_FACTOR). The result is a
+ *    rough "what he is worth on the pitch now".
  * 2. **Score.** 60% that ability value (log scale), 40% performance (the
  *    exported `perf`: minutes, bonus points, xGChain, goal involvement, form,
  *    Champions League games, as a percentile within his position group).
@@ -16,6 +17,9 @@
  *    86+, a median Premier League player ~73, fringe youngsters in the 50s.
  *    Ranking keeps the order the score gives while making the numbers read
  *    the way football fans expect.
+ * 4. **Reader corrections.** A short, explicit list (RATING_ADJUSTMENTS) for
+ *    players a reader judged the formula still gets wrong; every reader rating
+ *    is a test (tests/rating-labels.test.ts) the formula has to keep passing.
  */
 import type { Player, PosCode } from '../data/types';
 import { valueOf, type ValueSource } from '../data/valueSource';
@@ -39,18 +43,33 @@ export function valueScore(value: number): number {
 
 /** Multiplier from market price to "ability now", by age. */
 export const AGE_FACTOR: Record<number, number> = {
-  17: 0.5, 18: 0.52, 19: 0.56, 20: 0.62, 21: 0.7, 22: 0.8, 23: 0.9,
+  17: 0.55, 18: 0.6, 19: 0.65, 20: 0.72, 21: 0.82, 22: 0.9, 23: 0.96,
   24: 1, 25: 1, 26: 1, 27: 1,
-  28: 1.1, 29: 1.25, 30: 1.45, 31: 1.7, 32: 2, 33: 2.4, 34: 2.8, 35: 3.2,
+  28: 1.1, 29: 1.3, 30: 1.55, 31: 1.85, 32: 2.25, 33: 2.7, 34: 3.2, 35: 3.7,
 };
 
 export function ageFactor(age: number): number {
-  return AGE_FACTOR[age] ?? (age < 17 ? 0.5 : 3.4);
+  return AGE_FACTOR[age] ?? (age < 17 ? 0.55 : 4);
 }
+
+/** Multiplier from market price to ability, by position: keepers are cheap for their level. */
+export const POSITION_FACTOR: Partial<Record<PosCode, number>> = { GK: 1.5 };
+
+/**
+ * Points added after the scale, for players a reader judged the formula still
+ * rates wrong (keyed by name, which survives data updates). Kept short: when
+ * a pattern shows up here, the formula is what should change.
+ */
+export const RATING_ADJUSTMENTS: Record<string, number> = {
+  'Bruno Fernandes': 3,
+  'Carlos Baleba': 5,
+  'Youri Tielemans': 3,
+  'Kobbie Mainoo': 3,
+};
 
 /** The 0-1 score a rating is ranked on. */
 export function ratingScore(player: Player, source: ValueSource): number {
-  const ability = valueOf(player, source) * ageFactor(player.age);
+  const ability = valueOf(player, source) * ageFactor(player.age) * (POSITION_FACTOR[player.pos] ?? 1);
   return VALUE_WEIGHT * valueScore(ability) + (1 - VALUE_WEIGHT) * (player.perf / 100);
 }
 
@@ -106,7 +125,8 @@ export function rating(player: Player, source: ValueSource): number {
   if (!pool) throw new Error('setRatingPool() must run before ratings are read');
   const hit = cache[source].get(player.id);
   if (hit !== undefined) return hit;
-  const r = Math.round(curve(rankOf(pool[source], ratingScore(player, source))));
+  const scaled = Math.round(curve(rankOf(pool[source], ratingScore(player, source))));
+  const r = Math.min(RATING_MAX, Math.max(RATING_MIN, scaled + (RATING_ADJUSTMENTS[player.name] ?? 0)));
   cache[source].set(player.id, r);
   return r;
 }
@@ -124,13 +144,14 @@ export const FIT: Record<SlotType, Partial<Record<PosCode, number>>> = {
   CB: { CB: 1, DM: 0.88, LB: 0.85, RB: 0.85 },
   LB: { LB: 1, LM: 0.9, CB: 0.85, RB: 0.82, LW: 0.8 },
   RB: { RB: 1, RM: 0.9, CB: 0.85, LB: 0.82, RW: 0.8 },
-  DM: { DM: 1, CM: 0.94, CB: 0.86, AM: 0.82 },
-  CM: { CM: 1, DM: 0.94, AM: 0.94, LM: 0.86, RM: 0.86 },
-  AM: { AM: 1, CM: 0.93, LW: 0.9, RW: 0.9, ST: 0.88, LM: 0.86, RM: 0.86 },
-  LM: { LM: 1, LW: 0.96, RM: 0.9, RW: 0.88, LB: 0.86, CM: 0.86, AM: 0.86 },
-  RM: { RM: 1, RW: 0.96, LM: 0.9, LW: 0.88, RB: 0.86, CM: 0.86, AM: 0.86 },
-  LW: { LW: 1, LM: 0.95, RW: 0.92, AM: 0.88, ST: 0.86 },
-  RW: { RW: 1, RM: 0.95, LW: 0.92, AM: 0.88, ST: 0.86 },
+  // Neighbouring roles cost nothing: CM <-> DM, CM <-> AM, winger <-> wide midfielder.
+  DM: { DM: 1, CM: 1, CB: 0.86, AM: 0.9 },
+  CM: { CM: 1, DM: 1, AM: 1, LM: 0.9, RM: 0.9 },
+  AM: { AM: 1, CM: 1, LW: 0.9, RW: 0.9, ST: 0.88, LM: 0.88, RM: 0.88 },
+  LM: { LM: 1, LW: 1, RM: 0.92, RW: 0.9, LB: 0.86, CM: 0.88, AM: 0.88 },
+  RM: { RM: 1, RW: 1, LM: 0.92, LW: 0.9, RB: 0.86, CM: 0.88, AM: 0.88 },
+  LW: { LW: 1, LM: 1, RW: 0.92, AM: 0.88, ST: 0.86 },
+  RW: { RW: 1, RM: 1, LW: 0.92, AM: 0.88, ST: 0.86 },
   ST: { ST: 1, LW: 0.87, RW: 0.87, AM: 0.86 },
 };
 

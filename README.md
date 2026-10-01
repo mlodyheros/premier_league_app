@@ -178,16 +178,29 @@ Road to 38-0 and Budget XI rate players on a FIFA-like overall (OVR), built in
 1. **Ability value.** The market value on the active source, corrected for age
    (`AGE_FACTOR`): the market prices young players for potential and resale and
    veterans cheaply for the lack of it, so a 20-year-old's price is scaled down
-   (×0.62) and a 35-year-old's up (×3.2).
+   (×0.72) and a 35-year-old's up (×3.7). Goalkeepers' prices are scaled up
+   (×1.5, `POSITION_FACTOR`), because keepers sell for less than outfield
+   players of the same standing.
 2. **Score.** 60% that ability value on a log scale (€1m–€200m), 40% the exported
    performance percentile (minutes, bonus points, xGChain, goal involvement,
-   FPL form, Champions League games, within the position group).
+   FPL form, Champions League games, within the position group). Each role is
+   judged on what it does: goalkeepers not on attacking output, defensive and
+   central midfielders not on goal involvement. This season's measures count
+   in proportion to the season played (a quarter at gameweek 5, fully from
+   gameweek 19), so a few games missed early don't sink a regular.
 3. **Scale.** Scores are ranked across the league and mapped onto a FIFA-like
    curve (`RATING_CURVE`): the best player 91, about ten players 88+, the top 3%
    86+, a median Premier League player 73, fringe youngsters in the 50s.
+4. **Reader corrections.** A reader's ratings for 15 players are a test
+   ([`tests/rating-labels.test.ts`](tests/rating-labels.test.ts)): every one must
+   stay within a point. The formula gets 11 of them on its own; four Man Utd
+   midfielders, whose recent numbers reflect a struggling side more than
+   themselves, get explicit `RATING_ADJUSTMENTS`. If that list grows, change
+   the formula instead.
 
-A player out of position keeps part of his rating (a winger up front keeps 87%,
-a centre-back at full-back 85%; a goalkeeper only plays in goal).
+Neighbouring roles cost nothing: CM ↔ DM, CM ↔ AM, LW ↔ LM, RW ↔ RM. Further out
+of position a player keeps part of his rating (a winger up front keeps 87%, a
+centre-back at full-back 85%; a goalkeeper only plays in goal).
 
 - **Your XI's strength** is the mean rating of its eleven, after those penalties.
 - **A real club's strength** is the mean rating of its best 16 players: clubs
