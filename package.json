@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && tsc --noEmit -p tests && vite build",
+    "build": "tsc --noEmit && tsc --noEmit -p tests && tsc --noEmit -p e2e && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "export-data": "sh pipeline/update_data.sh",
-    "og-image": "node pipeline/og-image.mjs"
+    "og-image": "node pipeline/og-image.mjs",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
@@ -18,6 +19,7 @@
     "preact": "^11.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@preact/preset-vite": "^2.10.6",
     "@resvg/resvg-js": "^2.6.2",
     "@types/node": "^26.6.3",

@@ -21,3 +21,12 @@ export async function shareText(text: string): Promise<'shared' | 'copied' | 'fa
 export function siteUrl(): string {
   return location.origin + location.pathname;
 }
+
+/**
+ * A link to a game's share page (g/<path>/): its own preview title, text and
+ * picture, forwarding to the game. Built only in production; in development
+ * it is just the game's address.
+ */
+export function shareUrl(path: string, query = ''): string {
+  return import.meta.env.PROD ? `${siteUrl()}g/${path}/${query}` : `${siteUrl()}${query ? `#/${path}${query}` : `#/${path}`}`;
+}

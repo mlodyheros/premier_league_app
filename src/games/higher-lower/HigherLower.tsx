@@ -11,7 +11,7 @@ import { trackEvent } from '../../lib/analytics';
 import { buzz, celebrate } from '../../lib/motion';
 import { getBest, submitBest } from '../../lib/records';
 import { pick } from '../../lib/rng';
-import { shareText, siteUrl } from '../../lib/share';
+import { shareText, shareUrl } from '../../lib/share';
 import { notifyShare } from '../../components/Toast';
 import { Chips } from '../../components/Chips';
 import { PoolNote } from '../../components/PoolNote';
@@ -111,7 +111,7 @@ export function HigherLower() {
   async function share() {
     const themeName = theme === 'all' ? '' : ` (${t(`hl.theme.${theme}`)})`;
     const head = t('hl.share', { n: streak, icon: streak >= 10 ? '🔥' : '⚽', values: shareValues(source) }) + themeName;
-    notifyShare(await shareText(`${head}\n${siteUrl()}#/higher-lower`));
+    notifyShare(await shareText(`${head}\n${shareUrl('higher-lower')}`));
   }
 
   const revealed = phase !== 'ask';

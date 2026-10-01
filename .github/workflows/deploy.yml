@@ -1,4 +1,4 @@
-# Test, build and publish to GitHub Pages on every push to main.
+# Test, build, check in a browser and publish to GitHub Pages on every push to main.
 # One-time setup: repository Settings → Pages → Source: "GitHub Actions".
 name: Deploy
 
@@ -32,6 +32,9 @@ jobs:
           # Repository variable (Settings → Secrets and variables → Actions → Variables).
           # Analytics stay off while it is unset.
           VITE_GOATCOUNTER_CODE: ${{ vars.GOATCOUNTER_CODE }}
+      # Phone and desktop checks of the built site (playwright.config.ts).
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist

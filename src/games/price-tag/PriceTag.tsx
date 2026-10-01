@@ -15,7 +15,7 @@ import { dailyRand, dailyStreak, recordDaily, type Mode } from '../../lib/daily'
 import { formatEur, formatPct } from '../../lib/format';
 import { getBest, submitBest } from '../../lib/records';
 import { dayNumber, shuffled, todayKey } from '../../lib/rng';
-import { shareText, siteUrl } from '../../lib/share';
+import { shareText, shareUrl } from '../../lib/share';
 import { notifyShare } from '../../components/Toast';
 import { readJson, writeJson } from '../../lib/storage';
 import { emoji, eurToSlider, legacyPool, MAX_POINTS, ROUNDS, score, SLIDER_MID, sliderToEur, stepPrice } from './logic';
@@ -144,7 +144,7 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
   async function share() {
     const title = mode === 'daily' ? `${t('game.price.title')} #${dayNumber(day)}` : t('game.price.title');
     const head = `${title} ${total}/${ROUNDS * MAX_POINTS} · ${shareValues(source)}`;
-    notifyShare(await shareText(`${head}\n${points.map(emoji).join('')}\n${siteUrl()}#/price-tag`));
+    notifyShare(await shareText(`${head}\n${points.map(emoji).join('')}\n${shareUrl('price-tag')}`));
   }
 
   const actual = valueOf(player, source);

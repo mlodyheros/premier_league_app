@@ -24,6 +24,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from reference import CLUBS, COUNTRIES, POSITIONS, flag  # noqa: E402
+import history  # noqa: E402
 
 OUT_DIR = HERE.parent / "public" / "data"
 REPO_URL = "https://github.com/mlodyheros/pl-value"
@@ -358,6 +359,9 @@ def main() -> None:
         json.dumps(players, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
     )
     (OUT_DIR / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2, allow_nan=False))
+    values = history.add_snapshot(history.load(), players, meta["dataDate"])
+    values["career"] = history.careers(root, players, meta["dataDate"])
+    history.write(values)
     crest_dir = OUT_DIR.parent / "crests"
     missing = sorted(code for code in CLUBS if not (crest_dir / f"{code}.svg").exists())
     if missing:

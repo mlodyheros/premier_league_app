@@ -15,7 +15,7 @@ import { playSeason, previewSeason, type PlayedSeason } from '../../lib/playSeas
 import { getBest, submitBest } from '../../lib/records';
 import { pick } from '../../lib/rng';
 import { DIFFICULTY, type Difficulty } from '../../lib/season';
-import { shareText, siteUrl } from '../../lib/share';
+import { shareText, shareUrl } from '../../lib/share';
 import { readJson, writeJson } from '../../lib/storage';
 import { formationByKey, FORMATIONS, teamStrength, type Lineup, type Slot } from '../../lib/strength';
 import {
@@ -282,7 +282,7 @@ export function Road38() {
       pos: ordinal(season.position),
       icons: [icons, ...modes].filter(Boolean).join(' · '),
     });
-    notifyShare(await shareText(`${head}\n${resultsGrid(season)}\n${shareValues(season.source)} · ${siteUrl()}#/road100`));
+    notifyShare(await shareText(`${head}\n${resultsGrid(season)}\n${shareValues(season.source)} · ${shareUrl('road100')}`));
   }
 
   

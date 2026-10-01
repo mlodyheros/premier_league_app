@@ -2,7 +2,7 @@
 import { readJson } from '../lib/storage';
 import { loadStats } from '../lib/stats';
 
-export type GameId = 'guess' | 'road' | 'hl' | 'budget' | 'beat' | 'price';
+export type GameId = 'guess' | 'road' | 'hl' | 'budget' | 'beat' | 'price' | 'transfer';
 
 export interface GameMeta {
   id: GameId;
@@ -25,6 +25,7 @@ export const GAME_LIST: GameMeta[] = [
   { id: 'road', path: 'road100', icon: '💯' },
   { id: 'hl', path: 'higher-lower', icon: '↕️' },
   { id: 'budget', path: 'budget', icon: '💰' },
+  { id: 'transfer', path: 'transfer', icon: '🔁' },
   {
     id: 'beat',
     path: 'beat-model',

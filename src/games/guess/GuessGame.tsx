@@ -19,7 +19,7 @@ import { PoolNote } from '../../components/PoolNote';
 import { buzz, celebrate } from '../../lib/motion';
 import { saveDailyResult } from '../../lib/daily';
 import { dayNumber, pick, previousDayKey, todayKey } from '../../lib/rng';
-import { shareText, siteUrl } from '../../lib/share';
+import { shareText, shareUrl } from '../../lib/share';
 import { notifyShare } from '../../components/Toast';
 import { shareImage, type Cell } from '../../lib/shareImage';
 import { loadStats, recordResult, saveStats } from '../../lib/stats';
@@ -299,7 +299,7 @@ function EndPanel({ won, gaveUp, target, feedback, mode, day, stats, hinted, onN
 
   async function share() {
     const title = mode === 'daily' ? t('guess.shareDaily', { n: dayNumber(day) }) : t('guess.shareUnlimited');
-    const text = `${title} ${tries}/${MAX_GUESSES}${hinted ? ' 💡' : ''} · ${shareValues()}\n${shareGrid(feedback)}\n${siteUrl()}#/guess`;
+    const text = `${title} ${tries}/${MAX_GUESSES}${hinted ? ' 💡' : ''} · ${shareValues()}\n${shareGrid(feedback)}\n${shareUrl('guess')}`;
     notifyShare(await shareText(text));
   }
 

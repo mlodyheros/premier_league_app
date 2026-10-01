@@ -28,7 +28,12 @@
 
 .players__rank { min-width: 24px; color: var(--color-text-muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; text-align: right; }
 
-.players__list .prow__name small { display: flex; align-items: center; gap: 4px; }
+.players__list .prow__name { white-space: nowrap; }
+
+.players__list .prow__name,
+.players__list .prow__name small { display: block; overflow: hidden; text-overflow: ellipsis; }
+
+.players__list .prow__name small .crest { vertical-align: -2px; }
 
 .players__list .prow__price { min-width: 72px; }
 
@@ -37,3 +42,6 @@
 .players__card .value-compare { margin: 0; }
 
 .players__more { display: block; margin: var(--space-4) auto 0; }
+
+/* Grid items default to their content's width; an open card must not widen the page. */
+.players__list > li { min-width: 0; }

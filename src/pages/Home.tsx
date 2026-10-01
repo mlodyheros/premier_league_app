@@ -4,13 +4,16 @@ import { useDataset } from '../data/store';
 import { valuesPhrase, valueSource } from '../data/valueSource';
 import { GAME_LIST, type GameMeta } from '../games/meta';
 import { t, tj, type Key } from '../i18n';
-import { formatDecimal, formatEur } from '../lib/format';
+import { formatDecimal, formatEur, formatPct } from '../lib/format';
 import { getBest } from '../lib/records';
 import { dailyResult, dayNumber } from '../lib/daily';
 import { todayKey } from '../lib/rng';
 import { shareText, siteUrl } from '../lib/share';
 import { useCountdown } from '../hooks/useCountdown';
 import { notifyShare } from '../components/Toast';
+import { useHistory } from '../data/history';
+import { leagueLink, myCard, myName } from '../lib/friends';
+import { weeklyMoves } from '../lib/market';
 import { loadStats } from '../lib/stats';
 import { href } from '../router';
 
@@ -37,11 +40,17 @@ function record(g: GameMeta): string | null {
       return best('beat-model', 'home.best.beat');
     case 'price':
       return best(`price-tag:${src}`, 'home.best.price');
+    case 'transfer': {
+      const v = getBest(`transfer:${src}`);
+      return v === null ? null : t('home.best.transfer', { n: v > 0 ? `+${v}` : String(v) });
+    }
   }
 }
 
 export function Home() {
-  const { meta } = useDataset();
+  const { meta, players } = useDataset();
+  const h = useHistory();
+  const moves = h ? weeklyMoves(h, players, 'model', 1) : null;
   const [day] = useState(todayKey);
   const dailies = GAME_LIST.filter((g) => g.daily);
   const allDone = dailies.every((g) => g.daily!.done(day));
@@ -50,7 +59,9 @@ export function Home() {
   /** One message with all three of today's results. */
   async function shareAll() {
     const lines = dailies.map((g) => `${g.icon} ${t(`game.${g.id}.title`)}: ${dailyResult(g.id, day) ?? '✓'}`);
-    notifyShare(await shareText(`${t('home.shareAll', { n: dayNumber(day) })}\n${lines.join('\n')}\n${siteUrl()}`));
+    // With a nickname set, the link also adds you to the reader's friends league.
+    const link = myName() ? leagueLink(myCard(day)) : siteUrl();
+    notifyShare(await shareText(`${t('home.shareAll', { n: dayNumber(day) })}\n${lines.join('\n')}\n${link}`));
   }
 
   return (
@@ -116,6 +127,18 @@ export function Home() {
           );
         })}
       </ul>
+
+      {moves && moves.risers[0] && moves.fallers[0] && (
+        <a class="market-tile" href={href('market')}>
+          <b>📈 {t('home.market')} →</b>
+          <span>
+            {tj('home.marketUp', { name: moves.risers[0].player.name, pct: <em class="up">{formatPct(moves.risers[0].change)}</em> })}
+          </span>
+          <span>
+            {tj('home.marketDown', { name: moves.fallers[0].player.name, pct: <em class="down">{formatPct(moves.fallers[0].change)}</em> })}
+          </span>
+        </a>
+      )}
 
       <h2 class="section-title">{t('home.allGames')}</h2>
       <ul class="cards">

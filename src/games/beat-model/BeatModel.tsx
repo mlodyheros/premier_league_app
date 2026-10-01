@@ -16,7 +16,7 @@ import { useCountUp } from '../../hooks/useCountUp';
 import { modelGap } from '../../data/valueSource';
 import { getBest, submitBest } from '../../lib/records';
 import { dayNumber, todayKey } from '../../lib/rng';
-import { shareText, siteUrl } from '../../lib/share';
+import { shareText, shareUrl } from '../../lib/share';
 import { notifyShare } from '../../components/Toast';
 import { readJson, writeJson } from '../../lib/storage';
 import { drawRound, modelNotes, ROUNDS, sideOf, type Side } from './logic';
@@ -138,7 +138,7 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
   async function share() {
     const grid = marks.map((m) => (m ? '🟩' : '🟥')).join('');
     const title = mode === 'daily' ? `${t('game.beat.title')} #${dayNumber(day)}` : t('game.beat.title');
-    notifyShare(await shareText(`${title} ${score}/${ROUNDS}\n${grid}\n${siteUrl()}#/beat-model`));
+    notifyShare(await shareText(`${title} ${score}/${ROUNDS}\n${grid}\n${shareUrl('beat-model')}`));
   }
 
   const right = revealed ? marks[index] : null;

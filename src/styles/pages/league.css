@@ -1,0 +1,33 @@
+/* Friends league. */
+
+.league-page h1 { font-size: clamp(2rem, 8vw, 2.8rem); }
+
+.league-page .lede { margin: var(--space-1) 0 var(--space-4); color: var(--color-text-muted); }
+
+.league-me { display: flex; align-items: flex-end; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-2); }
+
+.league-me label { flex: 1; min-width: 180px; display: grid; gap: 4px; color: var(--color-text-muted); font-size: 0.8rem; font-weight: var(--weight-semibold); }
+
+.league-me input { min-height: var(--touch-min); padding: 0 var(--space-3); border-radius: var(--radius-sm); background: var(--color-bg-sunken); border: 1px solid var(--color-border-strong); color: var(--color-text); font: inherit; font-size: 1rem; }
+
+.table-scroll { overflow-x: auto; margin: var(--space-4) calc(-1 * var(--gutter)) 0; padding: 0 var(--gutter); }
+
+.league-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+
+.league-table caption { text-align: left; margin-bottom: var(--space-2); color: var(--color-text-muted); font-size: 0.85rem; }
+
+.league-table th, .league-table td { padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--color-border); white-space: nowrap; }
+
+.league-table th { color: var(--color-text-muted); font-size: 0.78rem; font-weight: var(--weight-bold); }
+
+.league-table .l { text-align: left; }
+
+.league-table td.l small { display: block; color: var(--color-text-muted); font-size: 0.72rem; }
+
+.league-table tr.you td { background: rgb(var(--primary-rgb) / 0.08); }
+
+.league-table tr.you td:first-child b { color: var(--color-primary); }
+
+.league-table__remove { width: 36px; height: 36px; background: none; border: 0; color: var(--color-text-muted); cursor: pointer; border-radius: 50%; }
+
+.league-table__remove:hover { color: var(--color-accent); background: rgb(var(--accent-rgb) / 0.1); }

@@ -1,0 +1,75 @@
+/* Market of the week: risers, fallers, the quiz. */
+
+.market__head h1 { font-size: clamp(2rem, 8vw, 2.8rem); }
+
+.market__head .lede { margin: var(--space-1) 0 var(--space-3); color: var(--color-text-muted); }
+
+.market__cols { display: grid; gap: var(--space-4); margin-top: var(--space-4); }
+
+@media (min-width: 760px) { .market__cols { grid-template-columns: 1fr 1fr; } }
+
+.moves { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+
+.move { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--color-surface); border: 1px solid var(--color-border); }
+
+.move__name { flex: 1; min-width: 0; display: flex; flex-direction: column; font-weight: var(--weight-semibold); font-size: 0.92rem; }
+
+.move__name small { color: var(--color-text-muted); font-weight: var(--weight-regular); font-size: 0.76rem; }
+
+.move__pct { font-family: var(--display); font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+
+.move__pct.up { color: var(--color-primary); }
+
+.move__pct.down { color: var(--color-accent); }
+
+.quiz { margin-top: var(--space-6); }
+
+.quiz .progress { margin: var(--space-3) 0; }
+
+.quiz__pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+
+.quiz__pick {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-height: 150px;
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: linear-gradient(160deg, var(--color-surface-raised), var(--color-surface));
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+
+.quiz__pick:hover { border-color: var(--color-primary); }
+
+.quiz__pick:active { transform: scale(0.97); }
+
+.quiz__pick small { color: var(--color-text-muted); }
+
+.quiz__last { margin: 0 0 var(--space-3); font-weight: var(--weight-semibold); }
+
+.quiz__last.good { color: var(--color-primary); }
+
+.quiz__last.bad { color: var(--color-accent); }
+
+.market__foot { margin-top: var(--space-6); color: var(--color-text-muted); font-size: 0.9rem; }
+
+.market__foot a { color: var(--color-info); font-weight: var(--weight-semibold); }
+
+/* Home: the market tile. */
+
+.market-tile { display: grid; gap: 4px; margin-bottom: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius); background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-text); text-decoration: none; transition: border-color var(--dur-fast) ease; }
+
+.market-tile:hover { border-color: var(--color-primary); }
+
+.market-tile b { font-family: var(--display); font-size: 1.2rem; text-transform: uppercase; }
+
+.market-tile span { color: var(--color-text-muted); font-size: 0.88rem; }
+
+.market-tile .up { color: var(--color-primary); }
+
+.market-tile .down { color: var(--color-accent); }

@@ -11,12 +11,15 @@ import { GuessGame } from './games/guess/GuessGame';
 import { HigherLower } from './games/higher-lower/HigherLower';
 import { PriceTag } from './games/price-tag/PriceTag';
 import { Road38 } from './games/road38/Road38';
+import { TransferWindow } from './games/transfer/TransferWindow';
 import { lang, t, type Key } from './i18n';
 import { trackPage } from './lib/analytics';
 import { formatDate } from './lib/format';
 import { Home } from './pages/Home';
 import { HowItWorks } from './pages/HowItWorks';
 import { Players } from './pages/Players';
+import { Market } from './pages/Market';
+import { League } from './pages/League';
 import { route } from './router';
 
 const PAGES: Record<string, { page: FunctionComponent; title?: Key }> = {
@@ -29,8 +32,11 @@ const PAGES: Record<string, { page: FunctionComponent; title?: Key }> = {
   budget: { page: BudgetXI, title: 'game.budget.title' },
   'beat-model': { page: BeatModel, title: 'game.beat.title' },
   'price-tag': { page: PriceTag, title: 'game.price.title' },
+  transfer: { page: TransferWindow, title: 'game.transfer.title' },
   how: { page: HowItWorks, title: 'how.title' },
   stats: { page: Players, title: 'players.title' },
+  market: { page: Market, title: 'market.title' },
+  league: { page: League, title: 'league.title' },
 };
 
 export function App() {

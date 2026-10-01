@@ -2,6 +2,8 @@ import { useMemo, useState } from 'preact/hooks';
 import { Avatar, Crest } from '../components/Avatar';
 import { Chips } from '../components/Chips';
 import { PlayerCard } from '../components/PlayerCard';
+import { ValueChart } from '../components/ValueChart';
+import { useHistory } from '../data/history';
 import { useDataset } from '../data/store';
 import type { Player } from '../data/types';
 import { valueOf, valueSource } from '../data/valueSource';
@@ -46,6 +48,7 @@ function metric(p: Player, key: SortKey, source: 'tm' | 'model'): { value: numbe
 /** Every player in the data: search, filter, sort, and open one for the full card. */
 export function Players() {
   const { players, meta } = useDataset();
+  const h = useHistory();
   const source = valueSource.value;
   const clubParam = routeParam('club');
   const [query, setQuery] = useState('');
@@ -144,6 +147,7 @@ export function Players() {
                       {formatEur(p.low)}–{formatEur(p.high)}
                     </div>
                   </div>
+                  {h?.career[p.name] && <ValueChart points={h.career[p.name]} unit={h.unit} label={t('chart.title')} />}
                 </PlayerCard>
               </div>
             )}

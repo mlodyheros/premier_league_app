@@ -1,0 +1,86 @@
+/* Transfer Window. */
+
+.tw-pick__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-3); }
+
+.tw-pick__head h2 { font-size: 1.5rem; }
+
+.tw-clubs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: var(--space-2); }
+
+.tw-clubs button {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+
+.tw-clubs button:hover { border-color: var(--color-primary); }
+
+.tw-clubs button:active { transform: scale(0.97); }
+
+.tw-clubs b { font-size: 0.88rem; }
+
+.tw-clubs small { color: var(--color-text-muted); font-size: 0.75rem; }
+
+.tw-club { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+
+.tw-club b { flex: 1; font-family: var(--display); font-size: 1.6rem; text-transform: uppercase; line-height: 1; }
+
+.tw-outlook { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 var(--space-2); }
+
+.tw-stat { display: flex; flex-direction: column; padding: 8px; border-radius: var(--radius-sm); background: var(--color-bg-sunken); border: 1px solid var(--color-border); min-width: 0; }
+
+.tw-stat dt { color: var(--color-text-muted); font-size: 0.66rem; font-weight: var(--weight-bold); letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.2; }
+
+.tw-stat dd { margin: 2px 0 0; font-family: var(--display); font-size: 1.5rem; font-weight: var(--weight-bold); font-variant-numeric: tabular-nums; line-height: 1.1; display: flex; flex-direction: column; }
+
+.tw-stat small { font-family: var(--font); font-size: 0.68rem; font-weight: var(--weight-semibold); }
+
+.tw-stat small.up { color: var(--color-primary); }
+
+.tw-stat small.down { color: var(--color-accent); }
+
+.tw-money { margin: 0 0 var(--space-3); color: var(--color-text-muted); font-size: 0.88rem; }
+
+.tw-money b { color: var(--color-text); }
+
+.tw-money b.bad { color: var(--color-accent); }
+
+.tw-deals { list-style: none; margin: 0 0 var(--space-3); padding: 0; display: grid; gap: 4px; }
+
+.tw-deal { display: flex; align-items: center; gap: var(--space-2); padding: 2px var(--space-3); border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: var(--weight-semibold); }
+
+.tw-deal span:first-child { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.tw-deal--out { background: rgb(var(--accent-rgb) / 0.1); }
+
+.tw-deal--in { background: rgb(var(--primary-rgb) / 0.1); }
+
+.tw .chips { margin-bottom: var(--space-2); }
+
+.tw-filters { margin-bottom: var(--space-2); }
+
+.tw-filters input { width: 100%; min-height: var(--touch-min); padding: 0 var(--space-3); border-radius: var(--radius-sm); background: var(--color-bg-sunken); border: 1px solid var(--color-border-strong); color: var(--color-text); font: inherit; }
+
+.tw-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+
+.trow { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); background: var(--color-bg-sunken); min-height: 52px; min-width: 0; }
+
+.trow__name { flex: 1; min-width: 0; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--weight-semibold); font-size: 0.9rem; }
+
+.trow__name small { display: block; color: var(--color-text-muted); font-weight: var(--weight-regular); font-size: 0.76rem; overflow: hidden; text-overflow: ellipsis; }
+
+.trow__tag { margin-left: 6px; padding: 1px 6px; border-radius: 999px; background: var(--color-primary); color: var(--color-on-primary); font-style: normal; font-size: 0.68rem; font-weight: var(--weight-bold); text-transform: uppercase; }
+
+.trow__price { font-weight: var(--weight-bold); font-size: 0.8rem; min-width: 56px; text-align: right; font-variant-numeric: tabular-nums; }
+
+.trow .btn--sm { min-width: 72px; }
+
+.tw-play { display: grid; margin-top: var(--space-4); }

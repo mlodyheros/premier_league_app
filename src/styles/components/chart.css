@@ -1,0 +1,21 @@
+/* A player's value over his career. */
+
+.vchart { margin: var(--space-3) 0 0; }
+
+.vchart__title { margin-bottom: var(--space-1); color: var(--color-text-muted); font-size: 0.68rem; font-weight: var(--weight-bold); letter-spacing: 0.08em; text-transform: uppercase; }
+
+.vchart svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+.vchart__area { fill: rgb(var(--primary-rgb) / 0.12); }
+
+.vchart__line { fill: none; stroke: var(--color-primary); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+
+.vchart__year line { stroke: var(--color-border); stroke-dasharray: 2 3; }
+
+.vchart__year text, .vchart__label { fill: var(--color-text-muted); font-size: 10px; font-family: var(--font); }
+
+.vchart__label { fill: var(--color-text); font-weight: var(--weight-bold); }
+
+.vchart__peak { fill: var(--color-warning); }
+
+.vchart__now { fill: var(--color-primary); stroke: var(--color-bg); stroke-width: 2; }

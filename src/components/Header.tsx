@@ -15,6 +15,12 @@ export function Header() {
           <a href={href('')} aria-current={route.value === '' ? 'page' : undefined}>
             {t('nav.games')}
           </a>
+          <a href={href('league')} aria-current={route.value === 'league' ? 'page' : undefined}>
+            {t('nav.league')}
+          </a>
+          <a href={href('market')} aria-current={route.value === 'market' ? 'page' : undefined}>
+            {t('nav.market')}
+          </a>
           <a href={href('stats')} aria-current={route.value === 'stats' ? 'page' : undefined}>
             {t('nav.players')}
           </a>

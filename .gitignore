@@ -9,3 +9,7 @@ __pycache__/
 
 # Output of scripts/publish_data.sh
 logs/
+
+# Playwright
+test-results/
+playwright-report/

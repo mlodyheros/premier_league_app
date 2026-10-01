@@ -1,13 +1,14 @@
 /**
- * Render the share-preview image (public/og.png, 1200×630) that link previews
- * show on Messenger, X, Slack and the like.
+ * Render the share-preview images (1200×630) that link previews show on
+ * Messenger, X, Slack and the like: public/og.png for the site, and
+ * public/og/<path>.png for each game's share page (pipeline/share-pages.json).
  *
  * Run locally after the clubs change: `npm run og-image`. It uses macOS
  * system fonts (DIN Condensed, Avenir Next), so the PNG is committed rather
  * than built in CI, where those fonts don't exist.
  */
 import { Resvg } from '@resvg/resvg-js';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -35,14 +36,11 @@ const crests = codes
   })
   .join('\n');
 
-const games = [
-  'Guess the Player',
-  'Road to 38-0',
-  'Higher or Lower',
-  'Budget XI',
-  'Beat the Model',
-  'Price Tag',
-].join('  ·  ');
+const pages = JSON.parse(readFileSync(join(root, 'pipeline/share-pages.json'), 'utf8'));
+const games = pages
+  .filter((p) => !['market', 'league'].includes(p.path))
+  .map((p) => p.en[0])
+  .join('  ·  ');
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
@@ -56,15 +54,67 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" 
   <text x="94" y="104" font-family="DIN Condensed" font-weight="700" font-size="56" fill="#f6eff8" letter-spacing="1">PL<tspan fill="#00ff85">GAMES</tspan></text>
   <text x="60" y="230" font-family="DIN Condensed" font-weight="700" font-size="96" fill="#f6eff8">PREMIER LEAGUE GAMES,</text>
   <text x="60" y="320" font-family="DIN Condensed" font-weight="700" font-size="96" fill="#00ff85">PRICED BY DATA.</text>
-  <text x="60" y="372" font-family="Avenir Next" font-weight="500" font-size="27" fill="#b7a3bf">${games}</text>
+  <text x="60" y="372" font-family="Avenir Next" font-weight="500" font-size="21" fill="#b7a3bf">${games}</text>
   ${crests}
   <text x="60" y="${H - 34}" font-family="Avenir Next" font-weight="600" font-size="22" fill="#b7a3bf">${meta.season} · ${meta.players} players · Transfermarkt vs a machine-learning model · English / Polski</text>
 </svg>`;
 
-const png = new Resvg(svg, {
-  fitTo: { mode: 'width', value: W },
-  font: { loadSystemFonts: true, defaultFontFamily: 'Avenir Next' },
-}).render().asPng();
+const render = (svgText) =>
+  new Resvg(svgText, {
+    fitTo: { mode: 'width', value: W },
+    font: { loadSystemFonts: true, defaultFontFamily: 'Avenir Next' },
+  })
+    .render()
+    .asPng();
 
+const png = render(svg);
 writeFileSync(join(root, 'public/og.png'), png);
 console.log(`public/og.png: ${W}×${H}, ${(png.length / 1024).toFixed(0)} KB`);
+
+const esc = (text) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/** Greedy line breaks at about `max` characters. */
+function wrap(text, max) {
+  const lines = [''];
+  for (const word of text.split(' ')) {
+    const line = lines[lines.length - 1];
+    if (line && (line + ' ' + word).length > max) lines.push(word);
+    else lines[lines.length - 1] = line ? `${line} ${word}` : word;
+  }
+  return lines;
+}
+
+// One row of all 20 crests along the bottom of each game's image.
+const rowSize = 40;
+const rowGap = (W - 120 - rowSize * codes.length) / (codes.length - 1);
+const crestRow = codes
+  .map((code, i) => `<image href="${crest(code)}" x="${60 + i * (rowSize + rowGap)}" y="${H - 96}" width="${rowSize}" height="${rowSize}" preserveAspectRatio="xMidYMid meet"/>`)
+  .join('\n');
+
+mkdirSync(join(root, 'public/og'), { recursive: true });
+for (const page of pages) {
+  const [titlePl, blurbPl] = page.pl;
+  const [titleEn] = page.en;
+  const blurb = wrap(blurbPl, 52)
+    .slice(0, 3)
+    .map((line, i) => `<text x="60" y="${364 + i * 42}" font-family="Avenir Next" font-weight="500" font-size="32" fill="#e9def0">${esc(line)}</text>`)
+    .join('\n');
+  const gameSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  <defs>
+    <radialGradient id="g1" cx="0.9" cy="0" r="0.7"><stop offset="0" stop-color="#ff2882" stop-opacity="0.35"/><stop offset="1" stop-color="#ff2882" stop-opacity="0"/></radialGradient>
+    <radialGradient id="g2" cx="0" cy="0.15" r="0.6"><stop offset="0" stop-color="#04f5ff" stop-opacity="0.22"/><stop offset="1" stop-color="#04f5ff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="${W}" height="${H}" fill="#16081d"/>
+  <rect width="${W}" height="${H}" fill="url(#g1)"/>
+  <rect width="${W}" height="${H}" fill="url(#g2)"/>
+  <circle cx="72" cy="86" r="9" fill="#ff2882"/>
+  <text x="94" y="104" font-family="DIN Condensed" font-weight="700" font-size="56" fill="#f6eff8" letter-spacing="1">PL<tspan fill="#00ff85">GAMES</tspan></text>
+  <text x="60" y="244" font-family="DIN Condensed" font-weight="700" font-size="124" fill="#f6eff8">${esc(titlePl.toUpperCase())}</text>
+  <text x="62" y="300" font-family="DIN Condensed" font-weight="700" font-size="44" fill="#00ff85">${esc(titleEn.toUpperCase())}</text>
+  ${blurb}
+  ${crestRow}
+</svg>`;
+  const out = render(gameSvg);
+  writeFileSync(join(root, 'public/og', `${page.path}.png`), out);
+  console.log(`public/og/${page.path}.png: ${(out.length / 1024).toFixed(0)} KB`);
+}

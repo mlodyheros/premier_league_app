@@ -11,13 +11,17 @@
 @import './components/feedback.css';
 @import './components/season.css';
 @import './components/game-head.css';
+@import './components/chart.css';
 @import './games/guess.css';
 @import './games/higher-lower.css';
 @import './games/beat-model.css';
 @import './games/price-tag.css';
 @import './games/budget.css';
 @import './games/road.css';
+@import './games/transfer.css';
 @import './pages/home.css';
 @import './pages/how.css';
 @import './pages/players.css';
+@import './pages/market.css';
+@import './pages/league.css';
 @import './motion.css';

@@ -11,7 +11,7 @@ const TABS: { path: string; icon: string; label: Key; match: string[] }[] = [
   { path: 'road100', icon: gameMeta('road').icon, label: 'short.road', match: ['road100', 'road38'] },
   { path: 'budget', icon: gameMeta('budget').icon, label: 'short.budget', match: ['budget'] },
 ];
-const MORE_GAMES: GameId[] = ['hl', 'beat', 'price'];
+const MORE_GAMES: GameId[] = ['transfer', 'hl', 'beat', 'price'];
 
 /**
  * A phone's bottom tab bar (at most five tabs, in thumb reach), with a
@@ -76,6 +76,24 @@ export function BottomNav() {
                 </li>
               );
             })}
+            <li>
+              <a href={href('league')} onClick={close} aria-current={here === 'league' ? 'page' : undefined}>
+                <span aria-hidden="true">🏆</span>
+                <span>
+                  <b>{t('nav.league')}</b>
+                  <small>{t('league.blurb')}</small>
+                </span>
+              </a>
+            </li>
+            <li>
+              <a href={href('market')} onClick={close} aria-current={here === 'market' ? 'page' : undefined}>
+                <span aria-hidden="true">📈</span>
+                <span>
+                  <b>{t('nav.market')}</b>
+                  <small>{t('market.blurb')}</small>
+                </span>
+              </a>
+            </li>
             <li>
               <a href={href('stats')} onClick={close} aria-current={here === 'stats' ? 'page' : undefined}>
                 <span aria-hidden="true">📊</span>

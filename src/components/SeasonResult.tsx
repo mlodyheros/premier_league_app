@@ -48,7 +48,16 @@ export function SeasonResult({
   chips = [],
   actions,
   imageTitle,
+  note,
+  user,
+  success,
 }: {
+  /** Replaces the default note (the 100-point odds and the club replaced). */
+  note?: ComponentChildren;
+  /** Your team in the table when it is a real club (Transfer Window), not "Your XI". */
+  user?: { code: string; name: string };
+  /** Overrides the default verdict (100 points reached). */
+  success?: boolean;
   /** The game's name: offers the result as a picture too. */
   imageTitle?: string;
   season: PlayedSeason;
@@ -66,7 +75,7 @@ export function SeasonResult({
   const drawn = useCountUp(row.drawn, animate, 1400);
   const lost = useCountUp(row.lost, animate, 1400);
   const points = useCountUp(row.points, animate, 1600);
-  const reached = row.points >= (season.target ?? 100);
+  const reached = success ?? row.points >= (season.target ?? 100);
 
   useEffect(() => {
     if (!animate) return;
@@ -126,14 +135,15 @@ export function SeasonResult({
           </ul>
         )}
         <p class="end__note">
-          {tj(season.target ? 'road.note' : 'road.notePerfect', {
+          {note ??
+            tj(season.target ? 'road.note' : 'road.notePerfect', {
             ovr: formatDecimal(season.strength),
             boost,
             odds: <b>{formatOdds(season.odds)}</b>,
             club: season.replaced,
             gf: row.goalsFor,
             ga: row.goalsAgainst,
-          })}
+            })}
         </p>
         <ol class="strip" aria-label={t('road.results')}>
           {season.results.map((r, i) => (
@@ -224,14 +234,16 @@ export function SeasonResult({
                 <td>{i + 1}</td>
                 <td class="l">
                   <span class="league__team">
-                    {team.id === USER_TEAM_ID ? (
+                    {team.id !== USER_TEAM_ID ? (
+                      <Crest code={team.id} size={18} />
+                    ) : user ? (
+                      <Crest code={user.code} size={18} />
+                    ) : (
                       <span class="league__you" aria-hidden="true">
                         ★
                       </span>
-                    ) : (
-                      <Crest code={team.id} size={18} />
                     )}
-                    {team.id === USER_TEAM_ID ? t('road.yourXi') : team.name}
+                    {team.id === USER_TEAM_ID ? (user?.name ?? t('road.yourXi')) : team.name}
                   </span>
                 </td>
                 <td>{team.won}</td>
