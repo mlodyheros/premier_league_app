@@ -146,8 +146,8 @@ export const pl: Dictionary = {
   'game.guess.title': 'Zgadnij piłkarza',
   'game.guess.blurb': 'Wordle w wersji Premier League. Podpowiedzi: klub, pozycja, narodowość, wiek i wartość.',
   'game.guess.tag': 'Codziennie',
-  'game.road.title': 'Droga do 38-0',
-  'game.road.blurb': 'Wylosuj klub, wybierz piłkarza, skompletuj jedenastkę i rozegraj cały sezon.',
+  'game.road.title': 'Droga do 100 pkt',
+  'game.road.blurb': 'Wylosuj klub, wybierz piłkarza, skompletuj jedenastkę i powalcz o 100 punktów w sezonie.',
   'game.road.tag': 'Skład',
   'game.hl.title': 'Więcej czy mniej',
   'game.hl.blurb': 'Dwóch piłkarzy. Który jest wart więcej? Nie przerwij serii.',
@@ -205,11 +205,10 @@ export const pl: Dictionary = {
   'bm.overWord': 'wyżej',
   'bm.underWord': 'niżej',
   'bm.tm': 'Transfermarkt',
-  'bm.more': '▲ Model: więcej',
-  'bm.less': '▼ Model: mniej',
-  'bm.right': '✓ Dobrze',
+  'bm.more': 'Model: więcej',
+  'bm.less': 'Model: mniej',
+  'bm.right': '✓ Dobrze!',
   'bm.wrong': '✗ Źle',
-  'bm.verdict': '{mark}: model wycenia go na {value}',
   'bm.great': 'Czytasz model jak jego autor.',
   'bm.good': 'Lepiej niż rzut monetą.',
   'bm.poor': 'Model trudniej przejrzeć, niż się wydaje.',
@@ -269,14 +268,13 @@ export const pl: Dictionary = {
   'budget.result': '{ovr} OVR · ocena {grade}',
   'budget.beaten': 'Mocniejsza niż {n} z 20 kadr Premier League',
   'budget.points': 'Oczekiwane punkty w sezonie: {n}',
-  'budget.odds': 'Szansa na 38-0: {odds}',
+  'budget.odds': 'Szansa na 100+ pkt: {odds}',
   'budget.spentOf': 'Wydano {v} z {budget}',
-  'budget.tryRoad': 'Spróbuj Drogi do 38-0 →',
+  'budget.tryRoad': 'Spróbuj Drogi do 100 pkt →',
   'budget.share': 'Jedenastka za {budget} · {ovr} OVR ({grade}) · {values}',
 
   // ---------- Road to 38-0 ----------
-  'road.lede':
-    'Wylosuj klub, weź jednego z jego piłkarzy na wolną pozycję i losuj dalej, aż skompletujesz jedenastkę. {respins} Potem rozegraj 38 kolejek przeciwko prawdziwej lidze. Oceny liczone są według {values}, a każdy zabrany piłkarz osłabia swój klub.',
+  'road.lede': 'Wylosuj klub, weź jednego z jego piłkarzy na wolną pozycję i losuj dalej, aż skompletujesz jedenastkę. {respins} Potem rozegraj 38 kolejek przeciwko prawdziwej lidze – cel to 100 punktów. Oceny liczone są według {values}, a każdy zabrany piłkarz osłabia swój klub.',
   'road.respins': {
     one: 'Masz {count} ponowne losowanie.',
     few: 'Masz {count} ponowne losowania.',
@@ -302,8 +300,8 @@ export const pl: Dictionary = {
   'road.mode': 'Sezon',
   'road.mode.realistic': 'Realistyczny',
   'road.mode.arcade': 'Arkadowy',
-  'road.mode.help.realistic': 'Model prawdziwej ligi. 38-0 to marzenie raz na całe życie.',
-  'road.mode.help.arcade': 'Twoja jedenastka gra każdy mecz na szczycie formy (+{bonus}), a różnice w sile znaczą więcej. 38-0 jest trudne, ale możliwe.',
+  'road.mode.help.realistic': 'Model prawdziwej ligi: 100 punktów to sezon do historii.',
+  'road.mode.help.arcade': 'Twoja jedenastka gra każdy mecz na szczycie formy (+{bonus}), a różnice w sile znaczą więcej: 100 punktów jest w zasięgu.',
   'road.boost': ', +{n} w trybie arkadowym',
   'road.bestPts': 'Rekord pkt',
   'road.spinFirst': 'Zakręć, żeby wylosować pierwszy klub.',
@@ -316,7 +314,7 @@ export const pl: Dictionary = {
   'road.complete': 'Jedenastka gotowa: {ovr} OVR.',
   'road.kickoff': 'Rozpocznij sezon ⚽',
   'road.result': '{pts} pkt · {pos} miejsce',
-  'road.note': 'Szansa twojej jedenastki ({ovr} OVR{boost}) na 38-0: {odds}. W lidze zajęła miejsce klubu {club}. Bramki {gf}–{ga}.',
+  'road.note': 'Szansa twojej jedenastki ({ovr} OVR{boost}) na 100+ pkt: {odds}. W lidze zajęła miejsce klubu {club}. Bramki {gf}–{ga}.',
   'road.results': 'Wyniki po kolei',
   'road.home': '{opp} (u siebie)',
   'road.away': '{opp} (na wyjeździe)',
@@ -332,10 +330,8 @@ export const pl: Dictionary = {
   'road.badge.perfect': '38-0: sezon idealny',
   'road.badge.champions': 'Mistrzostwo',
   'road.badge.invincible': 'Niepokonani',
-  'road.badge.centurion': 'Setka: 100+ punktów',
-  'road.share': 'Droga do 38-0 · {w}-{d}-{l} · {pts} pkt · {pos} miejsce {icons}',
-
-  // ---------- How it works ----------
+  'road.badge.centurion': '100 punktów!',
+  'road.share': 'Droga do 100 pkt · {w}-{d}-{l} · {pts} pkt · {pos} miejsce {icons}',
   'how.title': 'Jak to działa',
   'how.intro':
     'Wszystkie gry korzystają z {players} piłkarzy z tegorocznych kadr Premier League. Każdy ma dwie ceny: wartość rynkową z Transfermarkt i wycenę z {repo}, modelu uczenia maszynowego, który wycenia piłkarzy na podstawie tego, co faktycznie robią na boisku. Dane z {date}, po {gw}. kolejce sezonu {season}.',
@@ -400,10 +396,8 @@ export const pl: Dictionary = {
     'Ukryty piłkarz, osiem prób. Każda próba jest porównywana pod względem klubu, pozycji, narodowości, wieku i wartości. Piłkarz dnia jest ten sam dla wszystkich i nie powtarza się, dopóki nie wyczerpie się pula znanych piłkarzy.',
   'how.games.hl':
     'Czy następny piłkarz jest wart więcej, czy mniej? Pary o tej samej wartości nigdy się nie pojawiają, a im dłuższa seria, tym bliższe wartości.',
-  'how.games.road':
-    'Wylosuj klub, weź jednego piłkarza na wolną pozycję i powtarzaj, aż jedenastka będzie pełna, a potem rozegraj sezon. Wybrani piłkarze odchodzą ze swoich klubów. Dwa trudniejsze losowania: losowa pozycja (losuje się też pozycja do obsadzenia) i na ślepo (losowa pozycja i same nazwiska, bez ocen i cen).',
-  'how.games.budget':
-    'Wybierz jedenastu piłkarzy w ramach budżetu. Wynik to siła jedenastki – ta sama miara, której używa Droga do 38-0.',
+  'how.games.road': 'Wylosuj klub (a w trudniejszych trybach także pozycję), weź jednego piłkarza i powtarzaj, aż jedenastka będzie pełna, a potem rozegraj sezon – cel to 100 punktów. Wybrani piłkarze odchodzą ze swoich klubów. Trudniejsze losowania: losowa pozycja i na ślepo (same nazwiska, bez ocen i cen).',
+  'how.games.budget': 'Wybierz jedenastu piłkarzy w ramach budżetu – od beniaminka po arabskiego szejka. Wynik to siła jedenastki, a do tego możesz rozegrać nią sezon.',
   'how.games.beat':
     'Zgadnij, czy model wycenia piłkarza wyżej, czy niżej niż Transfermarkt. Pomijani są piłkarze poniżej 5 mln € i różnice mniejsze niż 8%, a obie odpowiedzi są równie prawdopodobne.',
   'how.games.price':
@@ -417,11 +411,32 @@ export const pl: Dictionary = {
     'Siła twojej jedenastki to średnia z jedenastu ocen. Siła prawdziwego klubu to średnia z jego {depth} najlepszych piłkarzy, bo kluby rotują składem, a twoja jedenastka gra każdą minutę. Twoja drużyna zastępuje najsłabszy klub, a każdy gra z każdym u siebie i na wyjeździe.',
   'how.sim.match':
     'W każdym meczu gole losowane są z rozkładu Poissona. Oczekiwana liczba goli to na start {base} na drużynę, mnożona przez {home} u siebie (dzielona na wyjeździe) i zależna od różnicy ocen: gole silniejszej drużyny rosną o {up}% na punkt, a słabszej spadają o {down}%. Faworyci znacznie częściej wygrywają 2:0 i 3:0 niż 7:0.',
-  'how.sim.odds':
-    'Szansa na 38-0 pokazywana dla jedenastki jest dokładna: to iloczyn prawdopodobieństw wygranej we wszystkich 38 meczach. Żaden prawdziwy klub Premier League nigdy nie wygrał wszystkich meczów sezonu.',
-  'how.sim.arcade':
-    'Tryb arkadowy w Drodze do 38-0 daje twojej jedenastce +{bonus} i bardziej stromą krzywą (+{up}% / −{down}% na punkt). Przy obecnych kadrach mocny draft ({ovr} OVR) ma wtedy szansę {arcade} na 38-0, a w trybie realistycznym {real}.',
+  'how.sim.odds': 'Szansa na 100 punktów pokazywana dla jedenastki jest dokładna: sumuje wszystkie kombinacje wygranych, remisów i porażek w 38 meczach. Tylko jedna drużyna w historii Premier League zdobyła 100 punktów: Manchester City w sezonie 2017/18.',
+  'how.sim.arcade': 'Tryb arkadowy w Drodze do 100 pkt daje twojej jedenastce +{bonus} i bardziej stromą krzywą (+{up}% / −{down}% na punkt). Przy obecnych kadrach mocny draft ({ovr} OVR) ma wtedy szansę {arcade} na 100 punktów, a w trybie realistycznym {real}.',
   'how.credits.title': 'Autorzy i źródła',
   'how.credits.body':
     'Model i dane: {repo}. Źródła: Transfermarkt, API Fantasy Premier League, archiwum FPL vaastava, Understat oraz zbiory danych Transfermarkt na Kaggle; dane należą do nich. Herby klubów są ich znakami towarowymi i służą tu wyłącznie do ich oznaczenia; nie używamy zdjęć piłkarzy. To nieoficjalny projekt kibicowski, niezwiązany z Premier League, jej klubami ani z Transfermarkt.',
+  'road.drawingSlot': 'Losowanie pozycji…',
+  'road.notePerfect': 'Szansa twojej jedenastki ({ovr} OVR{boost}) na 38-0: {odds}. W lidze zajęła miejsce klubu {club}. Bramki {gf}–{ga}.',
+  'budget.theme.promoted': 'Beniaminek',
+  'budget.theme.promoted.blurb': 'Świeżo po awansie z Championship – liczy się każde euro.',
+  'budget.theme.midtable': 'Środek tabeli',
+  'budget.theme.midtable.blurb': 'Solidny budżet ligowego średniaka. Szukaj okazji.',
+  'budget.theme.europe': 'Walka o Europę',
+  'budget.theme.europe.blurb': 'Starczy na kilka gwiazd, jeśli reszta to sprytne zakupy.',
+  'budget.theme.bigsix': 'Wielka szóstka',
+  'budget.theme.bigsix.blurb': 'Pieniądze na walkę o tytuł. Wszystko poza top 4 to porażka.',
+  'budget.theme.sheikh': 'Arabski szejk',
+  'budget.theme.sheikh.blurb': 'Przejęcie z Zatoki Perskiej – kupuj, kogo chcesz.',
+  'budget.playSeason': 'Zagraj sezon ⚽',
+  'budget.playAgain': 'Zagraj jeszcze raz',
+  'card.plSeasons': 'Premier League: {count} z ostatnich 4 sezonów',
+  'card.notLastSeason': 'W zeszłym sezonie nie grał w Premier League',
+  'card.noPl': 'Brak meczów w Premier League w ostatnich 4 sezonach',
+  'pt.pointsWord': 'pkt',
+  'pt.yourGuess': 'Twoja wycena',
+  'pt.off': 'Różnica',
+  'bm.question': 'Czy model wycenia go wyżej, czy niżej niż Transfermarkt?',
+  'bm.range': 'Przedział 80% modelu: {low}–{high}',
+  'how.sim.form': 'W każdym sezonie każdy prawdziwy klub dostaje też własną formę – losowe wahanie o ok. ±{sd} punktu oceny (kontuzje, nowy trener, szczęście) – więc najmocniejsza kadra nie wygrywa ligi za każdym razem.',
 };

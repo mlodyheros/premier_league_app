@@ -12,14 +12,25 @@ export function pool(players: readonly Player[]): Player[] {
   return players.filter((p) => p.known || p.tm >= 5_000_000);
 }
 
-/** Slider position (0-1) to euros, logarithmic, rounded to a "price-like" figure. */
+/** The value at the middle of the slider, where a guess starts. */
+export const SLIDER_MID = 40_000_000;
+
+/**
+ * The slider is logarithmic, bent so its middle sits at SLIDER_MID: plain log
+ * spacing would put €11m in the middle and crowd the stars into the last third.
+ */
+const SPAN = Math.log(SLIDER_MAX / SLIDER_MIN);
+const BEND = Math.log(Math.log(SLIDER_MID / SLIDER_MIN) / SPAN) / Math.log(0.5);
+
+/** Slider position (0-1) to euros, rounded to a "price-like" figure. */
 export function sliderToEur(t: number): number {
-  const raw = SLIDER_MIN * (SLIDER_MAX / SLIDER_MIN) ** Math.min(1, Math.max(0, t));
-  return roundPrice(raw);
+  const x = Math.min(1, Math.max(0, t)) ** BEND;
+  return roundPrice(SLIDER_MIN * Math.exp(SPAN * x));
 }
 
 export function eurToSlider(eur: number): number {
-  return Math.log(eur / SLIDER_MIN) / Math.log(SLIDER_MAX / SLIDER_MIN);
+  const x = Math.log(eur / SLIDER_MIN) / SPAN;
+  return Math.min(1, Math.max(0, x)) ** (1 / BEND);
 }
 
 /** Two significant figures: €47M, €4.7M, €750K. */

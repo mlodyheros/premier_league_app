@@ -3,8 +3,21 @@ import type { Player } from '../../data/types';
 import { valueOf, type ValueSource } from '../../data/valueSource';
 import { fit, slotRating, type Formation, type Lineup, type Slot } from '../../lib/strength';
 
-export const BUDGETS = [150_000_000, 300_000_000, 500_000_000];
-export const DEFAULT_BUDGET = 300_000_000;
+export type ThemeKey = 'promoted' | 'midtable' | 'europe' | 'bigsix' | 'sheikh';
+
+/** Budgets with a story: from a newly promoted side to a sheikh's takeover. */
+export const THEMES: { key: ThemeKey; budget: number; icon: string }[] = [
+  { key: 'promoted', budget: 80_000_000, icon: '🆙' },
+  { key: 'midtable', budget: 200_000_000, icon: '⚖️' },
+  { key: 'europe', budget: 400_000_000, icon: '🌍' },
+  { key: 'bigsix', budget: 700_000_000, icon: '🏆' },
+  { key: 'sheikh', budget: 1_500_000_000, icon: '🛢️' },
+];
+export const DEFAULT_THEME: ThemeKey = 'midtable';
+
+export function themeFor(budget: number | undefined): (typeof THEMES)[number] {
+  return THEMES.find((th) => th.budget === budget) ?? THEMES.find((th) => th.key === DEFAULT_THEME)!;
+}
 
 export function spent(lineup: Lineup, source: ValueSource): number {
   return Object.values(lineup).reduce((sum, p) => sum + (p ? valueOf(p, source) : 0), 0);

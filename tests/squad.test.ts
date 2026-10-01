@@ -2,7 +2,10 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Meta, Player } from '../src/data/types';
 import { affordable, options, spent } from '../src/games/budget/logic';
-import { badges, byName as alphabetical, candidates, drawSpin, resultsGrid, spinnableClubs } from '../src/games/road38/logic';
+import { byName as alphabetical, candidates, drawSpin, spinnableClubs } from '../src/games/road38/logic';
+import { resultsGrid, seasonBadges } from '../src/components/SeasonResult';
+import type { PlayedSeason } from '../src/lib/playSeason';
+import type { TableRow } from '../src/lib/season';
 import { formatOdds } from '../src/lib/format';
 import { clubTeams, withUserTeam } from '../src/lib/league';
 import { mulberry32 } from '../src/lib/rng';
@@ -169,9 +172,12 @@ describe('Road to 38-0', () => {
     for (let i = 1; i < list.length; i++) expect(list[i - 1].rating).toBeGreaterThanOrEqual(list[i].rating);
   });
 
-  it('awards badges for the season', () => {
-    expect(badges({ won: 38, drawn: 0, lost: 0, points: 114 }, 1).map((b) => b.icon)).toEqual(['⭐', '🏆', '💯']);
-    expect(badges({ won: 25, drawn: 13, lost: 0, points: 88 }, 2).map((b) => b.icon)).toEqual(['🛡️']);
+  it('awards badges for the season, 100 points first', () => {
+    const row = (won: number, drawn: number, lost: number) =>
+      ({ id: 'YOU', name: 'You', played: 38, won, drawn, lost, goalsFor: 0, goalsAgainst: 0, points: won * 3 + drawn }) as TableRow;
+    expect(seasonBadges(row(38, 0, 0), 1).map((b) => b.icon)).toEqual(['💯', '🏆', '⭐']);
+    expect(seasonBadges(row(25, 13, 0), 2).map((b) => b.icon)).toEqual(['🛡️']);
+    expect(seasonBadges(row(32, 4, 2), 2).map((b) => b.icon)).toEqual(['💯']);
   });
 
   it('shares 38 results in two rows', () => {
@@ -182,7 +188,7 @@ describe('Road to 38-0', () => {
       goalsAgainst: 0,
       outcome: 'W' as const,
     }));
-    const rows = resultsGrid(results).split('\n');
+    const rows = resultsGrid({ results } as unknown as PlayedSeason).split('\n');
     expect(rows).toHaveLength(2);
     expect([...rows[0]].length).toBe(19);
   });
@@ -267,5 +273,28 @@ describe('Road to 38-0 draft modes', () => {
     const list = alphabetical(candidates(players, 'ARS', f, {}, 'tm'));
     const names = list.map((c) => c.player.name);
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
+  });
+});
+
+describe('goal scorers', () => {
+  it('give every goal a scorer, most to forwards, none to the keeper', async () => {
+    const { attributeGoals } = await import('../src/lib/scorers');
+    const f = FORMATIONS[0];
+    const lineup: Lineup = {};
+    const used = new Set<number>();
+    for (const s of f.slots) {
+      const p = players.filter((x) => x.pos === s.type && !used.has(x.id)).sort((a, b) => b.tm - a.tm)[0];
+      used.add(p.id);
+      lineup[s.id] = p;
+    }
+    const results = Array.from({ length: 38 }, () => ({ opponent: 'X', home: true, goalsFor: 2, goalsAgainst: 1, outcome: 'W' as const }));
+    const tally = attributeGoals(f, lineup, results, mulberry32(3));
+    const goals = Object.values(tally).reduce((a, t) => a + t.goals, 0);
+    expect(goals).toBe(76);
+    expect(tally[lineup.gk!.name].goals).toBe(0);
+    expect(tally[lineup.st!.name].goals).toBeGreaterThan(tally[lineup.lcb!.name].goals);
+    const assists = Object.values(tally).reduce((a, t) => a + t.assists, 0);
+    expect(assists).toBeGreaterThan(40);
+    expect(assists).toBeLessThan(70);
   });
 });

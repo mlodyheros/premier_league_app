@@ -19,6 +19,8 @@ import { route } from './router';
 const PAGES: Record<string, { page: FunctionComponent; title?: Key }> = {
   '': { page: Home },
   guess: { page: GuessGame, title: 'game.guess.title' },
+  road100: { page: Road38, title: 'game.road.title' },
+  // Old links from when the game was Road to 38-0.
   road38: { page: Road38, title: 'game.road.title' },
   'higher-lower': { page: HigherLower, title: 'game.hl.title' },
   budget: { page: BudgetXI, title: 'game.budget.title' },

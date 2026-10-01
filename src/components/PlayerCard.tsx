@@ -29,10 +29,11 @@ function historyStats(p: Player): Stat[] {
   return [starts, ['stat.goals', String(s.plGoals)], ['stat.assists', String(s.plAssists)]];
 }
 
-function StatRow({ title, stats }: { title: string; stats: Stat[] }) {
+function StatRow({ title, stats, note }: { title: string; stats: Stat[]; note?: string }) {
   return (
     <div class="pcard__block">
       <p class="pcard__label">{title}</p>
+      {note && <p class="pcard__note">{note}</p>}
       <dl class="pcard__stats">
         {stats.map(([label, value]) => (
           <div>
@@ -72,10 +73,15 @@ export function PlayerCard({
         <div class="pcard__record">
           <StatRow title={t('card.thisSeason')} stats={seasonStats(player)} />
           {s.plSeasons > 0 ? (
-            <StatRow title={t('card.plHistory')} stats={historyStats(player)} />
+            <StatRow
+              title={t('card.plSeasons', { count: s.plSeasons })}
+              stats={historyStats(player)}
+              note={s.plLastSeasonMinutes === 0 ? t('card.notLastSeason') : undefined}
+            />
           ) : s.otherSeasons > 0 ? (
             <StatRow
               title={t('card.otherLeagues', { count: s.otherSeasons })}
+              note={t('card.noPl')}
               stats={[
                 ['stat.minutes', formatInt(s.otherMinutes)],
                 ['stat.goals', String(s.otherGoals)],
@@ -84,7 +90,7 @@ export function PlayerCard({
             />
           ) : (
             <div class="pcard__block">
-              <p class="pcard__label">{t('card.plHistory')}</p>
+              <p class="pcard__label">{t('card.noPl')}</p>
               <p class="pcard__none">{t('card.noRecord')}</p>
             </div>
           )}

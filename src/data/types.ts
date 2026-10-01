@@ -33,6 +33,8 @@ export interface PlayerStats {
   plStarts: number;
   plCleanSheets: number;
   plSaves: number;
+  /** Premier League minutes in the newest completed season (0: not in the PL then). */
+  plLastSeasonMinutes: number;
   /** Other big European leagues, for players without a PL record. */
   otherSeasons: number;
   otherMinutes: number;

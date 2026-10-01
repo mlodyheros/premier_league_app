@@ -15,6 +15,10 @@ const NBSP = '\u00a0';
  */
 export function formatEur(value: number, l: Lang = lang.value, compact = false): string {
   const euro = compact ? '' : `${NBSP}€`;
+  if (value >= 1_000_000_000) {
+    const b = decimal(value / 1_000_000_000, 1, l);
+    return l === 'pl' ? `${b}${NBSP}mld${euro}` : `€${b}B`;
+  }
   if (value >= 1_000_000) {
     const m = decimal(value / 1_000_000, value >= 100_000_000 ? 0 : 1, l);
     return l === 'pl' ? `${m}${NBSP}mln${euro}` : `€${m}M`;
@@ -57,10 +61,12 @@ export function ordinal(n: number, l: Lang = lang.value): string {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-/** "1 in 12,300" / "1 do 12 300"; "practically zero" when too small to show. */
+/** "62%", "4,5%", "1 in 12,300" / "1 do 12 300"; "practically zero" when too small to show. */
 export function formatOdds(p: number, l: Lang = lang.value): string {
   if (p <= 0 || !Number.isFinite(1 / p)) return t('odds.never', {}, l);
-  if (p >= 0.5) return `${Math.round(p * 100)}%`;
+  if (p >= 0.995) return '>99%';
+  if (p >= 0.1) return `${Math.round(p * 100)}%`;
+  if (p >= 0.01) return `${formatDecimal(p * 100, 1, l)}%`;
   const n = 1 / p;
   if (n > 1e12) return t('odds.tiny', {}, l);
   const rounded = n < 100 ? Math.round(n) : Number(n.toPrecision(3));

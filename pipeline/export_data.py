@@ -258,6 +258,7 @@ def build(root: Path) -> tuple[list[dict], dict]:
                     "plStarts": int(hist.get("starts", 0)),
                     "plCleanSheets": int(hist.get("cs", 0)),
                     "plSaves": int(hist.get("saves", 0)),
+                    "plLastSeasonMinutes": int(row.recent_minutes),
                     "otherSeasons": int(row.nonpl_seasons),
                     "otherMinutes": int(row.nonpl_minutes),
                     "otherGoals": int(row.nonpl_goals),

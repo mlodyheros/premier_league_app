@@ -27,7 +27,7 @@ function player(over: Partial<Player>): Player {
     stats: {
       minutes: 0, goals: 0, assists: 0, points: 0, plSeasons: 0, plMinutes: 0, plGoals: 0, plAssists: 0, clMinutes: 0,
       starts: 0, cleanSheets: 0, saves: 0, conceded: 0, defActions: 0, xg: 0, xa: 0,
-      plStarts: 0, plCleanSheets: 0, plSaves: 0, otherSeasons: 0, otherMinutes: 0, otherGoals: 0, otherAssists: 0,
+      plStarts: 0, plCleanSheets: 0, plSaves: 0, plLastSeasonMinutes: 0, otherSeasons: 0, otherMinutes: 0, otherGoals: 0, otherAssists: 0,
     },
     ...over,
   };

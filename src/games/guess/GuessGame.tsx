@@ -3,10 +3,9 @@ import { useEffect, useMemo, useState } from 'preact/hooks';
 import { Avatar, ClubChip, Crest } from '../../components/Avatar';
 import { PlayerSearch } from '../../components/PlayerSearch';
 import { StatsPanel } from '../../components/StatsPanel';
-import { ValueCompare } from '../../components/ValueCompare';
 import { useDataset } from '../../data/store';
 import type { Player } from '../../data/types';
-import { shareValues, sourceShort, valueOf, valueSource, valuesPhrase } from '../../data/valueSource';
+import { shareValues, sourceShort, valueOf, valuePhrase, valueSource, valuesPhrase } from '../../data/valueSource';
 import { t, tj } from '../../i18n';
 import { continentName, countryName } from '../../i18n/countries';
 import { posFull, posLabel } from '../../i18n/labels';
@@ -274,7 +273,10 @@ function EndPanel({ won, gaveUp, target, feedback, mode, day, stats, onNext }: E
           </p>
         </div>
       </div>
-      <ValueCompare player={target} range />
+      <p class="reveal__value">
+        <small>{valuePhrase()}</small>
+        {formatEur(valueOf(target))}
+      </p>
       <div class="end__actions">
         <button class="btn" onClick={share}>
           {t('common.shareResult')}

@@ -29,12 +29,12 @@ export const GAMES: GameCard[] = [
       return s.played ? t('home.best.guess', { n: s.streak }) : null;
     },
   },
-  { path: 'road38', id: 'road', best: () => best(`road:pts:${valueSource.value}`, 'home.best.road') },
+  { path: 'road100', id: 'road', best: () => best(`road:pts:${valueSource.value}`, 'home.best.road') },
   { path: 'higher-lower', id: 'hl', best: () => best(`hl:${valueSource.value}`, 'home.best.hl') },
   {
     path: 'budget',
     id: 'budget',
-    best: () => best(`budget:300000000:${valueSource.value}`, 'home.best.budget', 1, { budget: formatEur(300_000_000) }),
+    best: () => best(`budget:200000000:${valueSource.value}`, 'home.best.budget', 1, { budget: formatEur(200_000_000) }),
   },
   { path: 'beat-model', id: 'beat', best: () => best('beat-model', 'home.best.beat') },
   { path: 'price-tag', id: 'price', best: () => best(`price-tag:${valueSource.value}`, 'home.best.price') },

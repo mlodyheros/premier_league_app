@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'preact/hooks';
 import { DailyDone, ModeTabs } from '../../components/ModeTabs';
 import { PlayerCard } from '../../components/PlayerCard';
-import { ValueCompare } from '../../components/ValueCompare';
 import { useCountdown } from '../../hooks/useCountdown';
 import { useDataset } from '../../data/store';
 import type { Player } from '../../data/types';
@@ -9,7 +8,9 @@ import { t, tj } from '../../i18n';
 import { trackEvent } from '../../lib/analytics';
 import { buzz, celebrate } from '../../lib/motion';
 import { dailyRand, dailyStreak, recordDaily, type Mode } from '../../lib/daily';
-import { formatEur } from '../../lib/format';
+import { formatEur, formatPct } from '../../lib/format';
+import { useCountUp } from '../../hooks/useCountUp';
+import { modelGap } from '../../data/valueSource';
 import { getBest, submitBest } from '../../lib/records';
 import { dayNumber, todayKey } from '../../lib/rng';
 import { shareText, siteUrl } from '../../lib/share';
@@ -124,6 +125,9 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
   }
 
   const right = revealed ? marks[index] : null;
+  // The model's figure counts up when an answer is given (not when coming back to it).
+  const [counting] = useState(() => answers.length === 0);
+  const modelShown = Math.round(useCountUp(player.model, revealed && counting, 800) / 100_000) * 100_000;
 
   return (
     <>
@@ -147,25 +151,38 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
       </ol>
 
       <PlayerCard player={player}>
-        <p class="bm__tm">
-          <small>{t('bm.tm')}</small>
-          {formatEur(player.tm)}
-        </p>
-        {!revealed ? (
-          <div class="hl__buttons">
-            <button class="btn btn--primary" onClick={() => answer('over')}>
-              {t('bm.more')}
-            </button>
-            <button class="btn btn--magenta" onClick={() => answer('under')}>
-              {t('bm.less')}
-            </button>
+        <div class={`duel ${revealed ? (right ? 'duel--right' : 'duel--wrong') : ''}`}>
+          <div class="duel__side">
+            <small>{t('bm.tm')}</small>
+            <b>{formatEur(player.tm)}</b>
           </div>
+          <span class="duel__vs" aria-hidden="true">
+            {revealed ? (player.model > player.tm ? '<' : '>') : '?'}
+          </span>
+          <div class={`duel__side duel__side--model ${revealed ? (player.model > player.tm ? 'up' : 'down') : ''}`}>
+            <small>{t('compare.model')}</small>
+            <b>{revealed ? formatEur(modelShown) : '?'}</b>
+            {revealed && <span class="duel__gap">{formatPct(modelGap(player))}</span>}
+          </div>
+        </div>
+        {!revealed ? (
+          <>
+            <p class="bm__question">{t('bm.question')}</p>
+            <div class="bm__buttons">
+              <button class="btn btn--primary btn--huge" onClick={() => answer('over')}>
+                <span aria-hidden="true">▲</span> {t('bm.more')}
+              </button>
+              <button class="btn btn--magenta btn--huge" onClick={() => answer('under')}>
+                <span aria-hidden="true">▼</span> {t('bm.less')}
+              </button>
+            </div>
+          </>
         ) : (
           <div class="bm__reveal">
-            <p class={`bm__verdict ${right ? 'good' : 'bad'}`}>
-              {t('bm.verdict', { mark: right ? t('bm.right') : t('bm.wrong'), value: formatEur(player.model) })}
+            <p class={`verdict ${right ? 'verdict--good' : 'verdict--bad'}`}>{right ? t('bm.right') : t('bm.wrong')}</p>
+            <p class="bm__range">
+              {t('bm.range', { low: formatEur(player.low), high: formatEur(player.high) })}
             </p>
-            <ValueCompare player={player} range />
             {modelNotes(player, meta.gameweek).length > 0 && (
               <ul class="bm__notes">
                 {modelNotes(player, meta.gameweek).map((n) => (
@@ -174,7 +191,7 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
               </ul>
             )}
             {!finished && (
-              <button class="btn btn--primary" onClick={() => setRevealed(false)}>
+              <button class="btn btn--primary btn--big" onClick={() => setRevealed(false)}>
                 {t('common.nextPlayerArrow')}
               </button>
             )}

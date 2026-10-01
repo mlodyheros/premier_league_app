@@ -12,9 +12,9 @@ time, and scores, streaks and settings live in the browser's local storage.
 | Game | What you do |
 |---|---|
 | **Guess the Player** | Wordle-style: find the hidden player from club, position, nationality, age and value clues. Daily and unlimited. |
-| **Road to 38-0** | Spin a club, draft one of its players, fill an XI, then play a 38-game season against the real league. Three draft modes (standard, random position, blind) and two season modes (realistic, arcade). |
+| **Road to 100** | Spin a club, draft one of its players, fill an XI, then play a 38-game season against the real league: the goal is 100 points. Three draft modes (standard, random position, blind) and two season modes (realistic, arcade); every player's goals and assists. |
 | **Higher or Lower** | Is the next player worth more or less? Pairs get closer as the streak grows. |
-| **Budget XI** | Build the strongest XI under €150M, €300M or €500M. |
+| **Budget XI** | Build the strongest XI on a themed budget, from a promoted side (€80M) to a sheikh's takeover (€1.5B), then play a season with it. |
 | **Beat the Model** | Does the model rate the player over or under his Transfermarkt value? Ten a round; daily and practice. |
 | **Price Tag** | Slide to the value you think a player has. Five a round, up to 100 points each; daily and practice. |
 
@@ -103,9 +103,9 @@ no consent banner is needed. It is off until you give it a site code:
 
 Counting is skipped on localhost and for browsers that send Do Not Track, and
 players can switch it off in Settings. Besides page views it records a few
-anonymous game events, such as `road/arcade/ovr-88/pos-1/w-30` or
-`beat/daily/score-7`. The Road to 38-0 events are meant for tuning its
-difficulty on real drafts: if arcade titles come too easily or 38-0 never
+anonymous game events, such as `road/arcade/standard/ovr-84/pos-1/pts-100` or
+`beat/daily/score-7`. The Road to 100 events are meant for tuning its
+difficulty on real drafts: if arcade titles come too easily or 100 points never
 happens, adjust `DIFFICULTY` in [`src/lib/season.ts`](src/lib/season.ts).
 
 ## Deploy
@@ -172,7 +172,7 @@ draws at random. Its hard mode draws from all 540 players.
 
 ## Ratings and the season simulation
 
-Road to 38-0 and Budget XI rate players on a FIFA-like overall (OVR), built in
+Road to 100 and Budget XI rate players on a FIFA-like overall (OVR), built in
 [`src/lib/strength.ts`](src/lib/strength.ts) in three steps:
 
 1. **Ability value.** The market value on the active source, corrected for age
@@ -198,9 +198,11 @@ Road to 38-0 and Budget XI rate players on a FIFA-like overall (OVR), built in
    themselves, get explicit `RATING_ADJUSTMENTS`. If that list grows, change
    the formula instead.
 
-Neighbouring roles cost nothing: CM ↔ DM, CM ↔ AM, LW ↔ LM, RW ↔ RM. Further out
-of position a player keeps part of his rating (a winger up front keeps 87%, a
-centre-back at full-back 85%; a goalkeeper only plays in goal).
+Neighbouring roles cost nothing: CM ↔ DM, CM ↔ AM, LW ↔ LM, RW ↔ RM. A little
+further out of position a player keeps nearly all of his rating (a 10 on the
+wing or a winger on the other flank 97–98%, a winger or a 10 up front 95%, a
+centre-back at full-back 93%), so a star is never far below his rating; a
+goalkeeper only plays in goal.
 
 - **Your XI's strength** is the mean rating of its eleven, after those penalties.
 - **A real club's strength** is the mean rating of its best 16 players: clubs
@@ -208,27 +210,39 @@ centre-back at full-back 85%; a goalkeeper only plays in goal).
   Today that runs from about 69 (the promoted clubs) to 85 (Arsenal, Man City).
 - **Your XI joins the league** in place of the weakest club, and every team plays
   every other home and away.
+- **Every real club gets a season's form**, a random swing of about ±2.5 rating
+  points (injuries, a new manager, luck), so the strongest squad doesn't win the
+  league every time: Arsenal and City about a third of the titles each,
+  Liverpool about a sixth, someone else the rest.
+- **Goals get scorers.** Each of your XI's goals is given a scorer drawn by the
+  slot he plays (a striker far more often than a centre-back, a goalkeeper
+  never) and his own goals-per-90 record against his position's norm; about
+  three goals in four also get an assister, drawn the same way
+  ([`src/lib/scorers.ts`](src/lib/scorers.ts)).
 - **Each match** draws goals from a Poisson distribution. The expected goals
   start at 1.45 a side, get ×1.12 at home (÷1.12 away), and move with the
   strength gap: a stronger side's goals rise by 5.5% per rating point, a weaker
   side's fall by 16.5%. Favourites therefore win 2-0 and 3-0 far more often than
   7-0.
 
-With these settings a simulated real league averages 2.7 goals a game, with
-a champion on about 96 points and a goal difference around +72. The **38-0 odds**
-shown for an XI are exact: the product of its win probabilities in all 38
-fixtures. Random drafts land around 79–85; a strong one (83) has about a 1 in 45
-million chance in realistic mode. No real club has ever done it.
+With these settings a simulated real league averages 2.7 goals a game, with a
+champion on about 96 points. The **100-point chance** shown for an XI is exact:
+dynamic programming over the win, draw and loss probabilities of all 38
+fixtures. Random drafts land around 79–85. In realistic mode a strong one (84)
+reaches 100 points about 2% of the time and the best (~85.5) about 12%; only
+one real Premier League side has ever done it (Manchester City, 2017/18).
 
-**Arcade mode** (an option in Road to 38-0) gives your XI +3 and a steeper
-curve (+9% / −27% per point). There a typical draft (~81.5) wins the title about
-a third of the time with 38-0 odds near 1 in 7,500, a strong one (83) about 1 in
-230, and the best drafts (~84.5) about 1 in 30.
+**Arcade mode** (an option in Road to 100) gives your XI +2.5 and a steeper
+curve (+7% / −21% per point). There a typical draft (~81.5) reaches 100 points
+about one season in ten, a strong one more often than not, the best about 85%
+of the time.
 
 **Draft modes**, from easiest to hardest: *standard* (spin a club, take any
 player for any open position), *random position* (the spin also draws the
 position to fill) and *blind* (a drawn position, names only: no ratings, no
-prices, an alphabetical list; the ratings are revealed after the season). Bests
+prices, an alphabetical list; the ratings are revealed after the season). In
+the position modes the club is drawn first, then the position, from those the
+club can fill. Bests
 are kept per draft mode and season mode.
 
 ## Data and credits

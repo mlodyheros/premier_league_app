@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { DailyDone, ModeTabs } from '../../components/ModeTabs';
 import { PlayerCard } from '../../components/PlayerCard';
-import { ValueCompare } from '../../components/ValueCompare';
 import { useCountdown } from '../../hooks/useCountdown';
 import { useDataset } from '../../data/store';
 import type { Player } from '../../data/types';
@@ -17,10 +16,10 @@ import { dayNumber, shuffled, todayKey } from '../../lib/rng';
 import { shareText, siteUrl } from '../../lib/share';
 import { notifyShare } from '../../components/Toast';
 import { readJson, writeJson } from '../../lib/storage';
-import { emoji, eurToSlider, MAX_POINTS, pool, ROUNDS, score, sliderToEur } from './logic';
+import { emoji, eurToSlider, MAX_POINTS, pool, ROUNDS, score, SLIDER_MID, sliderToEur } from './logic';
 
 const GAME = 'price';
-const START = eurToSlider(15_000_000);
+const START = eurToSlider(SLIDER_MID);
 const MODE_KEY = 'price:mode';
 const dailyKey = (day: string) => `price:daily:${day}`;
 
@@ -147,6 +146,7 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
   // The true value counts up when a guess is locked in (not when coming back to a finished round).
   const [counting] = useState(() => guesses.length === 0);
   const actualShown = Math.round(useCountUp(actual, revealed && counting, 800) / 100_000) * 100_000;
+  const pointsShown = useCountUp(revealed ? (points[index] ?? 0) : 0, revealed && counting, 900);
   const lastPoints = revealed ? points[index] : null;
 
   return (
@@ -154,7 +154,10 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
       <div class="scorebug scorebug--inline">
         <span>
           <small>{t('common.score')}</small>
-          <b>{total}</b>
+          <b>
+            {total}
+            <i>/{ROUNDS * MAX_POINTS}</i>
+          </b>
         </span>
         <span>
           <small>{t('common.best')}</small>
@@ -193,8 +196,8 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
               onInput={(e) => setSlider(Number((e.target as HTMLInputElement).value))}
             />
             <div class="pt__scale" aria-hidden="true">
-              {[500_000, 5_000_000, 50_000_000, 250_000_000].map((v) => (
-                <span>{formatEur(v)}</span>
+              {[500_000, 15_000_000, 40_000_000, 250_000_000].map((v) => (
+                <span style={{ left: `${eurToSlider(v) * 100}%` }}>{formatEur(v, undefined, true)}</span>
               ))}
             </div>
             <div class="pt__nudge">
@@ -211,16 +214,29 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
           </div>
         ) : (
           <div class="pt__reveal">
-            <p class={`bm__verdict ${lastPoints! >= 60 ? 'good' : lastPoints! >= 30 ? '' : 'bad'}`}>
-              {t('pt.reveal', {
-                emoji: emoji(lastPoints!),
-                points: lastPoints!,
-                guess: formatEur(guesses[index]),
-                actual: formatEur(actualShown),
-                pct: formatPct(guesses[index] / actual - 1),
-              })}
-            </p>
-            <ValueCompare player={player} />
+            <div class={`pt__score ${lastPoints! >= 60 ? 'good' : lastPoints! >= 30 ? 'mid' : 'bad'}`}>
+              <span class="pt__points">
+                +{Math.round(pointsShown)}
+                <small>{t('pt.pointsWord')}</small>
+              </span>
+              <span class="pt__emoji-big" aria-hidden="true">
+                {emoji(lastPoints!)}
+              </span>
+            </div>
+            <dl class="pt__compare">
+              <div>
+                <dt>{t('pt.yourGuess')}</dt>
+                <dd>{formatEur(guesses[index])}</dd>
+              </div>
+              <div class="pt__actual">
+                <dt>{valuePhrase(source)}</dt>
+                <dd>{formatEur(actualShown)}</dd>
+              </div>
+              <div>
+                <dt>{t('pt.off')}</dt>
+                <dd>{formatPct(guesses[index] / actual - 1)}</dd>
+              </div>
+            </dl>
             {!finished && (
               <button class="btn btn--primary" onClick={nextPlayer}>
                 {t('common.nextPlayerArrow')}

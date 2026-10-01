@@ -136,23 +136,26 @@ export function rating(player: Player, source: ValueSource): number {
 export type SlotType = PosCode;
 
 /**
- * How well a player of each position fills a slot (1 = natural). Positions not
- * listed cannot play there at all: no goalkeepers up front.
+ * How well a player of each position fills a slot (1 = natural). Neighbouring
+ * roles cost nothing or a few per cent, so a star is never far below his
+ * rating out of position; positions not listed cannot play there at all (no
+ * goalkeepers up front).
  */
 export const FIT: Record<SlotType, Partial<Record<PosCode, number>>> = {
   GK: { GK: 1 },
-  CB: { CB: 1, DM: 0.88, LB: 0.85, RB: 0.85 },
-  LB: { LB: 1, LM: 0.9, CB: 0.85, RB: 0.82, LW: 0.8 },
-  RB: { RB: 1, RM: 0.9, CB: 0.85, LB: 0.82, RW: 0.8 },
-  // Neighbouring roles cost nothing: CM <-> DM, CM <-> AM, winger <-> wide midfielder.
-  DM: { DM: 1, CM: 1, CB: 0.86, AM: 0.9 },
-  CM: { CM: 1, DM: 1, AM: 1, LM: 0.9, RM: 0.9 },
-  AM: { AM: 1, CM: 1, LW: 0.9, RW: 0.9, ST: 0.88, LM: 0.88, RM: 0.88 },
-  LM: { LM: 1, LW: 1, RM: 0.92, RW: 0.9, LB: 0.86, CM: 0.88, AM: 0.88 },
-  RM: { RM: 1, RW: 1, LM: 0.92, LW: 0.9, RB: 0.86, CM: 0.88, AM: 0.88 },
-  LW: { LW: 1, LM: 1, RW: 0.92, AM: 0.88, ST: 0.86 },
-  RW: { RW: 1, RM: 1, LW: 0.92, AM: 0.88, ST: 0.86 },
-  ST: { ST: 1, LW: 0.87, RW: 0.87, AM: 0.86 },
+  CB: { CB: 1, DM: 0.93, LB: 0.93, RB: 0.93 },
+  LB: { LB: 1, RB: 0.96, LM: 0.95, CB: 0.93, LW: 0.9 },
+  RB: { RB: 1, LB: 0.96, RM: 0.95, CB: 0.93, RW: 0.9 },
+  // The middle three are one family: a holding player can step up, a 10 can drop in.
+  DM: { DM: 1, CM: 1, AM: 0.97, CB: 0.93 },
+  CM: { CM: 1, DM: 1, AM: 1, LM: 0.94, RM: 0.94 },
+  AM: { AM: 1, CM: 1, DM: 0.97, LW: 0.97, RW: 0.97, LM: 0.97, RM: 0.97, ST: 0.95 },
+  // Wide players: same side costs nothing, the other flank or the middle a little.
+  LM: { LM: 1, LW: 1, RM: 0.98, RW: 0.98, AM: 0.97, CM: 0.94, LB: 0.93 },
+  RM: { RM: 1, RW: 1, LM: 0.98, LW: 0.98, AM: 0.97, CM: 0.94, RB: 0.93 },
+  LW: { LW: 1, LM: 1, RW: 0.98, RM: 0.98, AM: 0.97, ST: 0.95 },
+  RW: { RW: 1, RM: 1, LW: 0.98, LM: 0.98, AM: 0.97, ST: 0.95 },
+  ST: { ST: 1, AM: 0.95, LW: 0.95, RW: 0.95 },
 };
 
 export function fit(player: Player, slot: SlotType): number {

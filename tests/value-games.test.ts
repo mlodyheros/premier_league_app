@@ -82,6 +82,7 @@ describe('Price Tag', () => {
     expect(sliderToEur(0)).toBe(500_000);
     expect(sliderToEur(1)).toBe(250_000_000);
     expect(sliderToEur(eurToSlider(15_000_000))).toBe(15_000_000);
+    expect(sliderToEur(0.5)).toBe(40_000_000);
   });
 
   it('rounds to two significant figures', () => {

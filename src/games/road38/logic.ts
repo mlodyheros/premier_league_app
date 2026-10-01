@@ -1,8 +1,6 @@
 /** Road to 38-0: the draft rules and the season verdict. No UI here. */
 import type { Player } from '../../data/types';
 import type { ValueSource } from '../../data/valueSource';
-import type { Key } from '../../i18n';
-import type { MatchResult, TableRow } from '../../lib/season';
 import { fit, slotRating, type Formation, type Lineup, type Slot } from '../../lib/strength';
 
 export const RESPINS = 3;
@@ -72,30 +70,9 @@ export function fillableSlots(
   return new Set(openSlots(formation, lineup).filter((s) => squad.some((p) => fit(p, s.type))).map((s) => s.id));
 }
 
-export interface Record38 {
-  won: number;
-  drawn: number;
-  lost: number;
-  points: number;
-}
 
-export function badges(row: Record38, position: number): { icon: string; label: Key }[] {
-  const out: { icon: string; label: Key }[] = [];
-  if (row.won === 38) out.push({ icon: '⭐', label: 'road.badge.perfect' });
-  if (position === 1) out.push({ icon: '🏆', label: 'road.badge.champions' });
-  if (row.lost === 0 && row.won < 38) out.push({ icon: '🛡️', label: 'road.badge.invincible' });
-  if (row.points >= 100) out.push({ icon: '💯', label: 'road.badge.centurion' });
-  return out;
-}
 
-export function resultsGrid(results: readonly MatchResult[]): string {
-  const sq = results.map((r) => (r.outcome === 'W' ? '🟩' : r.outcome === 'D' ? '🟨' : '🟥'));
-  return [sq.slice(0, 19).join(''), sq.slice(19).join('')].filter(Boolean).join('\n');
-}
 
-export function userRow(table: readonly TableRow[], id: string): TableRow {
-  return table.find((r) => r.id === id)!;
-}
 
 /**
  * How much the draft tells you, from easiest to hardest:
@@ -121,9 +98,10 @@ export interface Spin {
 }
 
 /**
- * Draw the next spin. In the position modes the club and the slot are drawn
- * together, from the pairs where the club has someone who can play there.
- * `avoid` (the current spin, on a re-spin) is never drawn again.
+ * Draw the next spin. The club comes first, from the clubs that can still fill
+ * an open position; in the position modes the position is then drawn on its
+ * own, from the open positions that club can fill. `avoid` (the current spin,
+ * on a re-spin) is never drawn again.
  */
 export function drawSpin(
   players: readonly Player[],
@@ -134,20 +112,18 @@ export function drawSpin(
   rand: () => number,
   avoid?: Spin | null,
 ): Spin | null {
-  if (!drawsPosition(mode)) {
-    const pool = clubs.filter(
-      (c) => c !== avoid?.club && candidates(players, c, formation, lineup, 'tm').length > 0,
-    );
-    return pool.length ? { club: pool[Math.floor(rand() * pool.length)], slot: null } : null;
-  }
-  const pairs: Spin[] = [];
-  for (const club of clubs) {
-    for (const slot of fillableSlots(players, club, formation, lineup)) {
-      if (avoid && avoid.club === club && avoid.slot === slot) continue;
-      pairs.push({ club, slot });
-    }
-  }
-  return pairs.length ? pairs[Math.floor(rand() * pairs.length)] : null;
+  const options = clubs
+    .map((club) => ({ club, slots: [...fillableSlots(players, club, formation, lineup)] }))
+    .map((o) => ({
+      ...o,
+      // On a re-spin the same club may come back only with a different position.
+      slots: o.slots.filter((slot) => !(avoid && avoid.club === o.club && (!drawsPosition(mode) || avoid.slot === slot))),
+    }))
+    .filter((o) => o.slots.length > 0);
+  if (!options.length) return null;
+  const { club, slots } = options[Math.floor(rand() * options.length)];
+  if (!drawsPosition(mode)) return { club, slot: null };
+  return { club, slot: slots[Math.floor(rand() * slots.length)] };
 }
 
 /** In blind mode the list must not give the ratings away, so it is alphabetical. */

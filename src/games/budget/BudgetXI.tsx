@@ -10,12 +10,16 @@ import { fold, formatDecimal, formatEur, formatOdds } from '../../lib/format';
 import { clubsBeaten, clubTeams, withUserTeam } from '../../lib/league';
 import { celebrate } from '../../lib/motion';
 import { getBest, submitBest } from '../../lib/records';
-import { expectedPoints, perfectSeasonOdds } from '../../lib/season';
+import { expectedPoints } from '../../lib/season';
+import { trackEvent } from '../../lib/analytics';
 import { shareText, siteUrl } from '../../lib/share';
 import { notifyShare } from '../../components/Toast';
 import { readJson, writeJson } from '../../lib/storage';
 import { formationByKey, FORMATIONS, teamStrength, type Lineup, type Slot } from '../../lib/strength';
-import { BUDGETS, DEFAULT_BUDGET, grade, isComplete, options, spent, type SortKey } from './logic';
+import { grade, isComplete, options, spent, themeFor, THEMES, type SortKey } from './logic';
+import { SeasonResult } from '../../components/SeasonResult';
+import { playSeason, type PlayedSeason } from '../../lib/playSeason';
+import { POINTS_TARGET, pointsOdds } from '../../lib/season';
 
 interface Saved {
   budget: number;
@@ -33,13 +37,25 @@ export function BudgetXI() {
   const byName = useMemo(() => new Map(players.map((p) => [p.name, p])), [players]);
 
   const saved = readJson<Saved>(KEY);
-  const [budget, setBudget] = useState(saved?.budget ?? DEFAULT_BUDGET);
+  const [budget, setBudget] = useState(themeFor(saved?.budget).budget);
+  const theme = themeFor(budget);
+
+  // On phones the themes scroll sideways: keep the chosen one in view.
+  useEffect(() => {
+    const row = themesRef.current;
+    const chip = row?.querySelector<HTMLElement>('.theme--on');
+    if (row && chip && row.scrollWidth > row.clientWidth) {
+      row.scrollTo({ left: chip.offsetLeft - (row.clientWidth - chip.clientWidth) / 2, behavior: 'smooth' });
+    }
+  }, [budget]);
+  const [season, setSeason] = useState<PlayedSeason | null>(null);
   const [formationKey, setFormationKey] = useState(saved?.formation ?? '433');
   const [picks, setPicks] = useState<Record<string, string>>(saved?.picks ?? {});
   const [selected, setSelected] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<SortKey>('rating');
   const pickerRef = useRef<HTMLDivElement>(null);
+  const themesRef = useRef<HTMLDivElement>(null);
 
   const formation = formationByKey(formationKey);
   const lineup: Lineup = Object.fromEntries(
@@ -120,7 +136,7 @@ export function BudgetXI() {
     const opponents = league.slice(1).map((team) => team.strength);
     return {
       points: expectedPoints(strength, opponents),
-      perfect: perfectSeasonOdds(strength, opponents),
+      hundred: pointsOdds(strength, opponents, undefined, POINTS_TARGET),
       beaten: clubsBeaten(clubs, strength),
     };
   }, [complete, strength, clubs]);
@@ -128,7 +144,7 @@ export function BudgetXI() {
   async function share() {
     const lines = [...formation.slots].reverse().map((s) => lineup[s.id]?.short ?? '?');
     const head = t('budget.share', {
-      budget: formatEur(budget),
+      budget: `${theme.icon} ${t(`budget.theme.${theme.key}`)}`,
       ovr: formatDecimal(strength),
       grade: grade(strength),
       values: shareValues(source),
@@ -155,15 +171,29 @@ export function BudgetXI() {
         {tj('budget.lede', { values: <b>{valuesPhrase(source)}</b> })}
       </p>
 
+      <div class="themes" role="radiogroup" aria-label={t('budget.budget')} ref={themesRef}>
+        {THEMES.map((th) => (
+          <button
+            type="button"
+            role="radio"
+            aria-checked={th.key === theme.key}
+            class={`theme ${th.key === theme.key ? 'theme--on' : ''}`}
+            onClick={() => {
+              setBudget(th.budget);
+              setSeason(null);
+            }}
+          >
+            <span class="theme__icon" aria-hidden="true">
+              {th.icon}
+            </span>
+            <span class="theme__name">{t(`budget.theme.${th.key}`)}</span>
+            <span class="theme__amount">{formatEur(th.budget)}</span>
+          </button>
+        ))}
+      </div>
+      <p class="mode-help">{t(`budget.theme.${theme.key}.blurb`)}</p>
+
       <div class="controls">
-        <label>
-          {t('budget.budget')}
-          <select value={budget} onChange={(e) => setBudget(Number((e.target as HTMLSelectElement).value))}>
-            {BUDGETS.map((b) => (
-              <option value={b}>{formatEur(b)}</option>
-            ))}
-          </select>
-        </label>
         <label>
           {t('budget.formation')}
           <select value={formationKey} onChange={(e) => changeFormation((e.target as HTMLSelectElement).value)}>
@@ -256,18 +286,38 @@ export function BudgetXI() {
           <ul class="facts">
             <li>{tj('budget.beaten', { n: <b>{outlook.beaten}</b> })}</li>
             <li>{tj('budget.points', { n: <b>{Math.round(outlook.points)}</b> })}</li>
-            <li>{tj('budget.odds', { odds: <b>{formatOdds(outlook.perfect)}</b> })}</li>
+            <li>{tj('budget.odds', { odds: <b>{formatOdds(outlook.hundred)}</b> })}</li>
             <li>{tj('budget.spentOf', { v: <b>{formatEur(used)}</b>, budget: formatEur(budget) })}</li>
           </ul>
           <div class="end__actions">
+            <button
+              class="btn btn--primary"
+              onClick={() => {
+                setSeason(playSeason({ players, meta, source, formation, lineup, strength }));
+                trackEvent(`budget/${theme.key}/season`);
+              }}
+            >
+              {season ? t('budget.playAgain') : t('budget.playSeason')}
+            </button>
             <button class="btn" onClick={share}>
               {t('common.share')}
             </button>
-            <a class="btn btn--primary" href="#/road38">
+            <a class="btn btn--ghost" href="#/road100">
               {t('budget.tryRoad')}
             </a>
           </div>
         </div>
+      )}
+
+      {complete && season && (
+        <SeasonResult
+          key={season.results.map((r) => r.goalsFor).join('')}
+          season={season}
+          formation={formation}
+          lineup={lineup}
+          animate
+          chips={[`${theme.icon} ${t(`budget.theme.${theme.key}`)}`]}
+        />
       )}
     </section>
   );

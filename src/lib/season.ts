@@ -27,18 +27,20 @@ export type Difficulty = 'realistic' | 'arcade';
 
 /**
  * How a draft is simulated. Realistic: the league's own model, no help.
- * Arcade: a steeper curve, and your XI plays every match at its peak (+3).
- * Tuned on the real squads and simulated drafts so that, in arcade, a typical
- * draft (~81.5) wins the title about a third of the time with 38-0 odds near
- * 1 in 7,500, a strong one (~83) about 1 in 200, and the best (~84.5) about
- * 1 in 30.
+ * Arcade: a steeper curve, and your XI plays every match at its peak (+2.5).
+ * Tuned on the real squads and simulated drafts for the 100-point goal: in
+ * arcade a typical draft (~81.5) reaches 100 points about one season in ten,
+ * a strong one (~84) more often than not, the best (~85.5) about 85% of the
+ * time. Realistic keeps 100 points for the very best drafts (~2-12%).
  */
 
 /** A strong draft's strength, used to quote example odds. */
-export const STRONG_DRAFT = 83;
+export const STRONG_DRAFT = 84;
+/** The points Road to 100 is named after. */
+export const POINTS_TARGET = 100;
 export const DIFFICULTY: Record<Difficulty, { model: MatchModel; bonus: number }> = {
   realistic: { model: REALISTIC, bonus: 0 },
-  arcade: { model: { base: 1.45, home: 1.12, up: 0.09, down: 0.27 }, bonus: 3 },
+  arcade: { model: { base: 1.45, home: 1.12, up: 0.07, down: 0.21 }, bonus: 2.5 },
 };
 
 export const BASE_GOALS = REALISTIC.base;
@@ -130,12 +132,35 @@ export function sortTable(rows: TableRow[]): TableRow[] {
  * Play a full double round-robin. The focus team's fixtures alternate home and
  * away, in a shuffled order, so its results read like a real season.
  */
+/** A standard normal draw (Box-Muller). */
+function gaussian(rand: () => number): number {
+  const u = 1 - rand();
+  const v = rand();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+/**
+ * How much a real club's level drifts from season to season (form, injuries,
+ * a new manager), in rating points. Without it the strongest squad wins the
+ * league nearly every time; real seasons are less predictable.
+ */
+export const SEASON_FORM_SD = 2.5;
+
+/**
+ * Play a full double round-robin. Every club except the focus team first gets
+ * a season's form (`formSd` rating points, normally distributed). The focus
+ * team's fixtures alternate home and away, in a shuffled order.
+ */
 export function simulateSeason(
-  teams: Team[],
+  input: Team[],
   focusId: string,
   rand: () => number,
   m: MatchModel = REALISTIC,
+  formSd = 0,
 ): Season {
+  const teams = input.map((t) =>
+    t.id === focusId || !formSd ? t : { ...t, strength: t.strength + formSd * gaussian(rand) },
+  );
   const rows = new Map(teams.map((t) => [t.id, emptyRow(t)]));
   const results: MatchResult[] = [];
 
@@ -192,6 +217,33 @@ export function perfectSeasonOdds(strength: number, opponents: readonly number[]
     (p, opp) => p * winProbability(strength, opp, true, m).win * winProbability(strength, opp, false, m).win,
     1,
   );
+}
+
+/**
+ * Exact chance of finishing with at least `target` points against these
+ * opponents (home and away each), by dynamic programming over the 38 results.
+ */
+export function pointsOdds(
+  strength: number,
+  opponents: readonly number[],
+  m: MatchModel = REALISTIC,
+  target = 100,
+): number {
+  let dist = [1];
+  for (const opp of opponents) {
+    for (const home of [true, false]) {
+      const p = winProbability(strength, opp, home, m);
+      const next = new Array(dist.length + 3).fill(0);
+      dist.forEach((q, pts) => {
+        if (!q) return;
+        next[pts + 3] += q * p.win;
+        next[pts + 1] += q * p.draw;
+        next[pts] += q * p.loss;
+      });
+      dist = next;
+    }
+  }
+  return dist.reduce((sum, q, pts) => (pts >= target ? sum + q : sum), 0);
 }
 
 /** Expected points over the season against these opponents, home and away. */

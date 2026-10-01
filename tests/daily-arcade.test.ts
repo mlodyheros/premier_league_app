@@ -63,3 +63,32 @@ describe('Road to 38-0 difficulty', () => {
     expect(s.table.find((r) => r.id === 'YOU')!.won).toBeLessThan(38);
   });
 });
+
+describe('Road to 100', () => {
+  const clubs = clubTeams(players, meta, 'tm');
+
+  it('gives exact 100-point odds that behave like probabilities', async () => {
+    const { pointsOdds } = await import('../src/lib/season');
+    const opp = clubs.slice(1).map((c) => c.strength);
+    expect(pointsOdds(80, opp, undefined, 0)).toBeCloseTo(1, 9);
+    expect(pointsOdds(99, opp, undefined, 115)).toBe(0);
+    expect(pointsOdds(85, opp)).toBeGreaterThan(pointsOdds(82, opp));
+  });
+
+  it('lets other clubs than the strongest win the league', async () => {
+    const { simulateSeason, SEASON_FORM_SD, REALISTIC } = await import('../src/lib/season');
+    const champions = new Set<string>();
+    const rand = mulberry32(21);
+    for (let i = 0; i < 120; i++) champions.add(simulateSeason(clubs, 'none', rand, REALISTIC, SEASON_FORM_SD).table[0].id);
+    expect(champions.size).toBeGreaterThanOrEqual(3);
+  });
+
+  it('keeps attacking stars close to their rating out of position', async () => {
+    const { rating, slotRating, FORMATIONS } = await import('../src/lib/strength');
+    const lw = FORMATIONS[0].slots.find((s) => s.type === 'LW')!;
+    for (const name of ['Phil Foden', 'Rayan Cherki', 'Cole Palmer']) {
+      const p = players.find((x) => x.name === name)!;
+      expect(rating(p, 'tm') - slotRating(p, lw, 'tm')).toBeLessThanOrEqual(3);
+    }
+  });
+});
