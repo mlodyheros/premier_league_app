@@ -136,7 +136,7 @@ export function HigherLower() {
               <button class="btn btn--primary" onClick={() => call('higher')}>
                 {t('hl.higher')}
               </button>
-              <button class="btn btn--magenta" onClick={() => call('lower')}>
+              <button class="btn btn--accent" onClick={() => call('lower')}>
                 {t('hl.lower')}
               </button>
             </div>

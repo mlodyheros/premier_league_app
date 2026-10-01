@@ -1,8 +1,9 @@
 import type { FunctionComponent } from 'preact';
 import { useEffect } from 'preact/hooks';
+import { BottomNav } from './components/BottomNav';
 import { Header } from './components/Header';
 import { Toasts } from './components/Toast';
-import { dataset, loadError } from './data/store';
+import { dataset, loadDataset, loadError } from './data/store';
 import { BeatModel } from './games/beat-model/BeatModel';
 import { BudgetXI } from './games/budget/BudgetXI';
 import { GuessGame } from './games/guess/GuessGame';
@@ -44,7 +45,16 @@ export function App() {
       <Header />
       <main class="main">
         {loadError.value ? (
-          <p class="notice">{t('app.loadError', { error: loadError.value })}</p>
+          <div class="error-card" role="alert">
+            <span class="error-card__icon" aria-hidden="true">
+              ⚠️
+            </span>
+            <h2>{t('app.errorTitle')}</h2>
+            <p>{t('app.loadError', { error: loadError.value })}</p>
+            <button class="btn btn--primary" onClick={() => loadDataset()}>
+              {t('app.retry')}
+            </button>
+          </div>
         ) : dataset.value ? (
           // Keyed on the route so a game remounts (and re-reads its saved state) on each visit,
           // and the page animates in.
@@ -64,6 +74,7 @@ export function App() {
           </div>
         )}
       </main>
+      {dataset.value && <BottomNav />}
       <Toasts />
       {dataset.value && (
         <footer class="site-footer">

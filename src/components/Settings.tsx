@@ -1,17 +1,31 @@
-import { useRef, useState } from 'preact/hooks';
+import { signal } from '@preact/signals';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { valueSource, type ValueSource } from '../data/valueSource';
 import { lang, LANGS, t } from '../i18n';
 import { analyticsAvailable, analyticsEnabled } from '../lib/analytics';
 import { clearProgress } from '../lib/storage';
+
+/** Open the settings from anywhere (the header's gear, the bottom bar's "More"). */
+export const settingsOpen = signal(false);
 
 /** The gear button and its dialog: language, value source, and resetting progress. */
 export function Settings() {
   const dialog = useRef<HTMLDialogElement>(null);
   const [done, setDone] = useState(false);
 
+  useEffect(() => {
+    const d = dialog.current;
+    if (!d) return;
+    if (settingsOpen.value && !d.open) {
+      setDone(false);
+      d.showModal();
+    } else if (!settingsOpen.value && d.open) {
+      d.close();
+    }
+  }, [settingsOpen.value]);
+
   function open() {
-    setDone(false);
-    dialog.current?.showModal();
+    settingsOpen.value = true;
   }
 
   function reset() {
@@ -36,6 +50,7 @@ export function Settings() {
 
       <dialog
         ref={dialog}
+        onClose={() => (settingsOpen.value = false)}
         class="settings"
         aria-labelledby="settings-title"
         onClick={(e) => {

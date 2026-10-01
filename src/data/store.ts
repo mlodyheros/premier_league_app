@@ -23,6 +23,7 @@ async function fetchJson<T>(file: string): Promise<T> {
 }
 
 export async function loadDataset(): Promise<void> {
+  loadError.value = null;
   try {
     const [players, meta] = await Promise.all([
       fetchJson<Player[]>('players.json'),

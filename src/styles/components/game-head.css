@@ -8,7 +8,7 @@
 
 .game-head { display: grid; gap: 10px; margin-bottom: 16px; }
 
-.game-head__back { justify-self: start; color: var(--color-text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 600; padding: 4px 10px 4px 0; }
+.game-head__back { justify-self: start; display: inline-flex; align-items: center; min-height: var(--touch-min); margin: calc(-1 * var(--space-2)) 0; color: var(--color-text-muted); text-decoration: none; font-size: 0.9rem; font-weight: var(--weight-semibold); padding: 0 var(--space-3) 0 0; }
 
 .game-head__back:hover { color: var(--color-text); }
 
@@ -41,10 +41,11 @@
 .rules { border-radius: var(--radius-sm); background: var(--color-surface); border: 1px solid var(--color-border); }
 
 .rules summary {
+  min-height: var(--touch-min);
   cursor: pointer;
   list-style: none;
   padding: 9px 12px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   font-size: 0.88rem;
   color: var(--color-info);
   display: flex;
@@ -56,11 +57,11 @@
 
 .rules summary::before { content: 'ⓘ'; font-size: 1rem; }
 
-.rules summary::after { content: '▾'; margin-left: auto; transition: transform 0.2s ease; }
+.rules summary::after { content: '▾'; margin-left: auto; transition: transform var(--dur-base) ease; }
 
 .rules[open] summary::after { transform: rotate(180deg); }
 
-.rules__body { padding: 0 12px 10px; color: var(--color-text-muted); font-size: 0.9rem; }
+.rules__body { padding: 0 var(--space-3) var(--space-3); color: var(--color-text-muted); font-size: 1rem; line-height: 1.55; }
 
 .rules__body p { margin: 0; }
 
@@ -70,11 +71,12 @@
 
 .other-games { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--color-border); }
 
-.other-games p { margin: 0 0 8px; color: var(--color-text-muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.other-games p { margin: 0 0 8px; color: var(--color-text-muted); font-size: 0.72rem; font-weight: var(--weight-bold); letter-spacing: 0.1em; text-transform: uppercase; }
 
 .other-games ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 
 .other-games a {
+  min-height: var(--touch-min);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -84,11 +86,13 @@
   border: 1px solid var(--color-border);
   color: var(--color-text);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
   font-size: 0.88rem;
-  transition: border-color 0.15s ease, transform 0.12s ease;
+  transition: border-color var(--dur-fast) ease, transform var(--dur-fast) ease;
 }
 
 .other-games a:hover { border-color: var(--color-primary); }
 
 .other-games a:active { transform: scale(0.97); }
+
+.rules summary:hover { color: var(--color-text); }

@@ -171,9 +171,13 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
 
       <ol class="progress" aria-label={t('common.rounds')}>
         {Array.from({ length: ROUNDS }, (_, i) => (
-          <li
-            class={i < points.length ? (points[i] >= 60 ? 'ok' : points[i] >= 30 ? 'mid' : 'no') : i === index ? 'now' : ''}
-          />
+          <li class={i < points.length ? (points[i] >= 60 ? 'ok' : points[i] >= 30 ? 'mid' : 'no') : i === index ? 'now' : ''}>
+            <span class="sr-only">
+              {i < points.length
+                ? t('progress.points', { n: i + 1, points: points[i] })
+                : t(i === index ? 'progress.now' : 'progress.todo', { n: i + 1 })}
+            </span>
+          </li>
         ))}
       </ol>
 

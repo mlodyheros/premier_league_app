@@ -134,6 +134,8 @@ src/
   lib/season.ts      the match model and 38-game season simulation
   i18n/              en.ts (reference), pl.ts (typed against it), countries, labels
   pages/             home, how it works
+  styles/            tokens, base, layout, components, games, pages, motion
+docs/design-system.md  colour, type, spacing, motion and accessibility rules
 tests/               Vitest unit tests
 ```
 

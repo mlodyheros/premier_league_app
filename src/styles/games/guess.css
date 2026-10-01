@@ -13,15 +13,15 @@
 .guess__cols span {
   color: var(--color-text-muted);
   font-size: 0.68rem;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   text-align: center;
 }
 
-.guess__row { animation: rise 0.25s ease both; }
+.guess__row { animation: rise var(--dur-base) ease both; }
 
-.guess__who { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.92rem; margin-bottom: 5px; }
+.guess__who { display: flex; align-items: center; gap: 8px; font-weight: var(--weight-semibold); font-size: 0.92rem; margin-bottom: 5px; }
 
 .guess__row--win .guess__who { color: var(--color-primary); }
 
@@ -34,7 +34,7 @@
   min-height: 46px;
   padding: 4px;
   border-radius: var(--radius-sm);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   font-size: 0.88rem;
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -52,15 +52,15 @@
 
 .tile__dir { font-size: 0.7rem; opacity: 0.85; }
 
-.guess__tiles .tile { animation: flip 0.35s ease both; }
+.guess__tiles .tile { animation: flip var(--dur-slow) ease both; }
 
-.guess__tiles .tile:nth-child(2) { animation-delay: 0.06s; }
+.guess__tiles .tile:nth-child(2) { animation-delay: var(--dur-fast); }
 
-.guess__tiles .tile:nth-child(3) { animation-delay: 0.12s; }
+.guess__tiles .tile:nth-child(3) { animation-delay: var(--dur-fast); }
 
-.guess__tiles .tile:nth-child(4) { animation-delay: 0.18s; }
+.guess__tiles .tile:nth-child(4) { animation-delay: var(--dur-base); }
 
-.guess__tiles .tile:nth-child(5) { animation-delay: 0.24s; }
+.guess__tiles .tile:nth-child(5) { animation-delay: var(--dur-base); }
 
 @media (max-width: 420px) {
   .tile { font-size: 0.78rem; min-height: 42px; }
@@ -69,10 +69,25 @@
 
 .tile__club { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; max-width: 100%; }
 
-.tile__club small { font-size: 0.66rem; font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile__club small { font-size: 0.66rem; font-weight: var(--weight-bold); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .guess__row--win .guess__tiles .tile { box-shadow: 0 0 18px rgb(var(--primary-rgb) / 0.35); }
 
 .guess__legend { display: flex; gap: 6px; margin: 0 0 8px; }
 
 .guess__legend .tile { min-height: 0; padding: 2px 10px; font-size: 0.78rem; }
+
+/* Not colour alone: a mark for "correct" and "close" (WCAG 1.4.1). */
+.guess__tiles .tile--hit::after,
+.guess__tiles .tile--near::after {
+  position: absolute;
+  top: 2px;
+  right: 5px;
+  font-size: 0.66rem;
+  font-weight: var(--weight-bold);
+  opacity: 0.75;
+}
+.guess__tiles .tile--hit::after { content: '✓'; }
+.guess__tiles .tile--near::after { content: '≈'; }
+.guess__legend .tile--hit::before { content: '✓ '; }
+.guess__legend .tile--near::before { content: '≈ '; }

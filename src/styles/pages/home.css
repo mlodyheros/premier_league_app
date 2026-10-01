@@ -27,17 +27,17 @@
   border: 1px solid var(--color-border);
   color: var(--color-text);
   text-decoration: none;
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  transition: transform var(--dur-fast) ease, border-color var(--dur-fast) ease;
 }
 
 a.card:hover { transform: translateY(-2px); border-color: var(--color-primary); }
 
-.card p { margin: 0; color: var(--color-text-muted); font-size: 0.92rem; }
+.card p { margin: 0; color: var(--color-text-muted); font-size: 1rem; line-height: 1.45; }
 
 .card__tag {
   align-self: flex-start;
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 3px 8px;
@@ -46,7 +46,7 @@ a.card:hover { transform: translateY(-2px); border-color: var(--color-primary); 
   color: var(--color-primary);
 }
 
-.card__go { margin-top: auto; padding-top: 8px; color: var(--color-primary); font-weight: 700; font-size: 0.9rem; }
+.card__go { margin-top: auto; padding-top: 8px; color: var(--color-primary); font-weight: var(--weight-bold); font-size: 0.9rem; }
 
 .card--soon { opacity: 0.55; }
 
@@ -56,7 +56,7 @@ a.card:hover { transform: translateY(-2px); border-color: var(--color-primary); 
 
 .card__foot .card__go { margin: 0; padding: 0; }
 
-.card__best { color: var(--color-text-muted); font-size: 0.8rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.card__best { color: var(--color-text-muted); font-size: 0.8rem; font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; }
 
 .crest-row {
   display: grid;
@@ -75,19 +75,19 @@ a.card:hover { transform: translateY(-2px); border-color: var(--color-primary); 
 
 .card:active { transform: scale(0.985); }
 
-.cards li { animation: rise 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.cards li { animation: rise var(--dur-slow) var(--ease-out) both; }
 
-.cards li:nth-child(2) { animation-delay: 0.05s; }
+.cards li:nth-child(2) { animation-delay: var(--dur-fast); }
 
-.cards li:nth-child(3) { animation-delay: 0.1s; }
+.cards li:nth-child(3) { animation-delay: var(--dur-fast); }
 
-.cards li:nth-child(4) { animation-delay: 0.15s; }
+.cards li:nth-child(4) { animation-delay: var(--dur-fast); }
 
-.cards li:nth-child(5) { animation-delay: 0.2s; }
+.cards li:nth-child(5) { animation-delay: var(--dur-base); }
 
-.cards li:nth-child(6) { animation-delay: 0.25s; }
+.cards li:nth-child(6) { animation-delay: var(--dur-base); }
 
-.crest-row .crest { transition: transform 0.2s ease; }
+.crest-row .crest { transition: transform var(--dur-base) ease; }
 
 .crest-row .crest:hover { transform: translateY(-3px) scale(1.12); }
 
@@ -107,8 +107,8 @@ a.card:hover { transform: translateY(-2px); border-color: var(--color-primary); 
   border: 1px solid var(--color-border);
   color: var(--color-text);
   text-decoration: none;
-  transition: transform 0.12s ease, border-color 0.15s ease;
-  animation: rise 0.35s ease both;
+  transition: transform var(--dur-fast) ease, border-color var(--dur-fast) ease;
+  animation: rise var(--dur-slow) ease both;
 }
 
 .daily:hover { border-color: var(--color-primary); }
@@ -123,7 +123,7 @@ a.card:hover { transform: translateY(-2px); border-color: var(--color-primary); 
 
 .daily__text small { color: var(--color-text-muted); font-size: 0.78rem; }
 
-.daily__state { font-weight: 700; font-size: 0.85rem; color: var(--color-primary); white-space: nowrap; }
+.daily__state { font-weight: var(--weight-bold); font-size: 0.85rem; color: var(--color-primary); white-space: nowrap; }
 
 .daily--done { background: var(--color-surface); opacity: 0.8; }
 
@@ -135,7 +135,7 @@ a.card:hover { transform: translateY(-2px); border-color: var(--color-primary); 
   right: 16px;
   font-size: 2rem;
   opacity: 0.9;
-  transition: transform 0.25s cubic-bezier(0.2, 1.4, 0.4, 1);
+  transition: transform var(--dur-base) var(--ease-spring);
 }
 
 a.card:hover .card__icon { transform: scale(1.15) rotate(-6deg); }

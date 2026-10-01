@@ -151,7 +151,13 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
 
       <ol class="progress" aria-label={t('common.rounds')}>
         {Array.from({ length: ROUNDS }, (_, i) => (
-          <li class={i < marks.length ? (marks[i] ? 'ok' : 'no') : i === index ? 'now' : ''} />
+          <li class={i < marks.length ? (marks[i] ? 'ok' : 'no') : i === index ? 'now' : ''}>
+            <span class="sr-only">
+              {t(i < marks.length ? (marks[i] ? 'progress.right' : 'progress.wrong') : i === index ? 'progress.now' : 'progress.todo', {
+                n: i + 1,
+              })}
+            </span>
+          </li>
         ))}
       </ol>
 
@@ -177,7 +183,7 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
               <button class="btn btn--primary btn--huge" onClick={() => answer('over')}>
                 <span aria-hidden="true">▲</span> {t('bm.more')}
               </button>
-              <button class="btn btn--magenta btn--huge" onClick={() => answer('under')}>
+              <button class="btn btn--accent btn--huge" onClick={() => answer('under')}>
                 <span aria-hidden="true">▼</span> {t('bm.less')}
               </button>
             </div>

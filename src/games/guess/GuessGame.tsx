@@ -12,6 +12,7 @@ import { continentName, countryName } from '../../i18n/countries';
 import { posFull, posLabel } from '../../i18n/labels';
 import { formatDate, formatEur } from '../../lib/format';
 import { useCountdown } from '../../hooks/useCountdown';
+import { rovingKeys } from '../../lib/a11y';
 import { trackEvent } from '../../lib/analytics';
 import { buzz, celebrate } from '../../lib/motion';
 import { dayNumber, pick, previousDayKey, todayKey } from '../../lib/rng';
@@ -119,11 +120,21 @@ export function GuessGame() {
       <GameHeader
         game="guess"
         tabs={
-          <div class="tabs" role="tablist">
-            <button role="tab" aria-selected={mode === 'daily'} onClick={() => switchMode('daily')}>
+          <div class="tabs" role="tablist" onKeyDown={rovingKeys}>
+            <button
+              role="tab"
+              aria-selected={mode === 'daily'}
+              tabIndex={mode === 'daily' ? 0 : -1}
+              onClick={() => switchMode('daily')}
+            >
               {t('guess.daily', { n: dayNumber(day) })}
             </button>
-            <button role="tab" aria-selected={mode === 'unlimited'} onClick={() => switchMode('unlimited')}>
+            <button
+              role="tab"
+              aria-selected={mode === 'unlimited'}
+              tabIndex={mode === 'unlimited' ? 0 : -1}
+              onClick={() => switchMode('unlimited')}
+            >
               {t('guess.unlimited')}
             </button>
           </div>

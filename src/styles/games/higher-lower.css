@@ -5,7 +5,7 @@
 .hl__vs {
   justify-self: center;
   font-family: var(--display);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   font-size: 1.1rem;
   color: var(--color-accent);
   background: var(--color-bg-sunken);
@@ -16,7 +16,7 @@
   z-index: 1;
 }
 
-.hl__value { margin: 0; font-family: var(--display); font-size: 2.4rem; font-weight: 700; color: var(--color-primary); line-height: 1; display: flex; align-items: center; gap: 10px; }
+.hl__value { margin: 0; font-family: var(--display); font-size: 2.4rem; font-weight: var(--weight-bold); color: var(--color-primary); line-height: 1; display: flex; align-items: center; gap: 10px; }
 
 .hl__value.bad { color: var(--color-accent); }
 
@@ -29,8 +29,8 @@
   .hl__vs { align-self: center; margin: 0 -4px; }
 }
 
-.hl__pair { animation: page-in 0.3s ease both; }
+.hl__pair { animation: page-in var(--dur-slow) ease both; }
 
 .hl__value.counting { color: var(--color-info); }
 
-.hl__verdict { animation: land 0.35s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.hl__verdict { animation: land var(--dur-slow) var(--ease-spring) both; }

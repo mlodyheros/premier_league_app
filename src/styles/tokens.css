@@ -25,6 +25,8 @@
   --color-surface: #2a1234;
   --color-surface-raised: #361a42;
   --color-border: #4a2a57;
+  /* Borders of controls people interact with: 3:1 against every surface (WCAG 1.4.11). */
+  --color-border-strong: #8a6599;
   --color-text: #f6eff8;
   --color-text-soft: #e2d6e7;
   --color-text-muted: #b7a3bf;
@@ -34,6 +36,8 @@
   --color-primary: rgb(var(--primary-rgb));
   --color-on-primary: #062b18;
   --color-accent: rgb(var(--accent-rgb));
+  /* A deeper accent for filled buttons: white text on it passes WCAG AA (5.1:1). */
+  --color-accent-strong: #d4136a;
   --color-on-accent: #fff;
   --color-info: rgb(var(--info-rgb));
   --color-warning: rgb(var(--warning-rgb));
@@ -42,9 +46,45 @@
   --color-pitch-1: #0f5c34;
   --color-pitch-2: #0d5530;
 
-  /* Shape and type */
+  /* Shape */
   --radius: 14px;
   --radius-sm: 9px;
+  --radius-pill: 999px;
+
+  /* Spacing: an 8px grid, with 4px for the tightest gaps */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Touch: nothing tappable smaller than this (Apple HIG 44pt) */
+  --touch-min: 44px;
+
+  /* Elevation */
+  --shadow-md: 0 10px 30px rgb(var(--shadow-rgb) / 0.45);
+  --shadow-lg: 0 24px 60px rgb(var(--shadow-rgb) / 0.6);
+  --glow-primary: 0 0 22px rgb(var(--primary-rgb) / 0.35);
+
+  /* Motion: feedback within 300ms; only celebrations run longer */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-spring: cubic-bezier(0.2, 1.4, 0.4, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 300ms;
+
+  /* Layers */
+  --z-header: 20;
+  --z-nav: 40;
+  --z-toast: 60;
+  --z-confetti: 70;
+
+  /* Type: three weights only */
+  --weight-regular: 400;
+  --weight-semibold: 600;
+  --weight-bold: 700;
   --font: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --display: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
   --gutter: 16px;

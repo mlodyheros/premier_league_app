@@ -1,18 +1,18 @@
 /* Beat model. */
 
-.bm__tm { margin: 0 0 12px; font-family: var(--display); font-size: 2.2rem; font-weight: 700; line-height: 1; display: flex; flex-direction: column; }
+.bm__tm { margin: 0 0 12px; font-family: var(--display); font-size: 2.2rem; font-weight: var(--weight-bold); line-height: 1; display: flex; flex-direction: column; }
 
-.bm__tm small { font-family: var(--font); color: var(--color-text-muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.bm__tm small { font-family: var(--font); color: var(--color-text-muted); font-size: 0.7rem; font-weight: var(--weight-bold); letter-spacing: 0.1em; text-transform: uppercase; }
 
 .bm__reveal { display: grid; gap: 10px; justify-items: start; }
 
-.bm__verdict { margin: 0; font-weight: 700; font-size: 1.05rem; }
+.bm__verdict { margin: 0; font-weight: var(--weight-bold); font-size: 1.05rem; }
 
 .bm__verdict.good { color: var(--color-primary); }
 
 .bm__verdict.bad { color: var(--color-accent); }
 
-.bm__notes { margin: 0; padding-left: 18px; color: var(--color-text-muted); font-size: 0.88rem; }
+.bm__notes { margin: 0; padding-left: 18px; color: var(--color-text-muted); font-size: 0.95rem; }
 
 .bm__notes li + li { margin-top: 3px; }
 
@@ -20,7 +20,7 @@
 
 .duel__side { display: flex; flex-direction: column; justify-content: center; padding: 12px 14px; border-radius: var(--radius); background: var(--color-bg-sunken); border: 1px solid var(--color-border); min-width: 0; }
 
-.duel__side small { color: var(--color-text-muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.duel__side small { color: var(--color-text-muted); font-size: 0.7rem; font-weight: var(--weight-bold); letter-spacing: 0.1em; text-transform: uppercase; }
 
 .duel__side b { font-family: var(--display); font-size: clamp(1.7rem, 7vw, 2.4rem); line-height: 1.05; font-variant-numeric: tabular-nums; }
 
@@ -34,17 +34,17 @@
 
 .duel__side--model.down b { color: var(--color-accent); }
 
-.duel__gap { font-weight: 700; font-size: 0.85rem; color: var(--color-text-muted); }
+.duel__gap { font-weight: var(--weight-bold); font-size: 0.85rem; color: var(--color-text-muted); }
 
-.duel__vs { align-self: center; font-family: var(--display); font-size: 1.8rem; font-weight: 700; color: var(--color-text-muted); }
+.duel__vs { align-self: center; font-family: var(--display); font-size: 1.8rem; font-weight: var(--weight-bold); color: var(--color-text-muted); }
 
-.duel--right { animation: land 0.4s ease both; }
+.duel--right { animation: land var(--dur-slow) ease both; }
 
-.bm__question { margin: 0 0 10px; font-weight: 700; font-size: 1.05rem; text-align: center; }
+.bm__question { margin: 0 0 10px; font-weight: var(--weight-bold); font-size: 1.05rem; text-align: center; }
 
 .bm__buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-.verdict { margin: 0; padding: 10px 14px; border-radius: var(--radius); font-family: var(--display); font-size: 1.9rem; font-weight: 700; text-transform: uppercase; text-align: center; animation: land 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.verdict { margin: 0; padding: 10px 14px; border-radius: var(--radius); font-family: var(--display); font-size: 1.9rem; font-weight: var(--weight-bold); text-transform: uppercase; text-align: center; animation: land var(--dur-slow) var(--ease-spring) both; }
 
 .verdict--good { background: rgb(var(--primary-rgb) / 0.16); color: var(--color-primary); }
 

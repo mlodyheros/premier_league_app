@@ -12,6 +12,7 @@ import { clubsBeaten, clubTeams, withUserTeam } from '../../lib/league';
 import { celebrate } from '../../lib/motion';
 import { getBest, submitBest } from '../../lib/records';
 import { expectedPoints } from '../../lib/season';
+import { rovingKeys } from '../../lib/a11y';
 import { trackEvent } from '../../lib/analytics';
 import { shareText, siteUrl } from '../../lib/share';
 import { notifyShare } from '../../components/Toast';
@@ -175,12 +176,13 @@ export function BudgetXI() {
         </p>
       </GameHeader>
 
-      <div class="themes" role="radiogroup" aria-label={t('budget.budget')} ref={themesRef}>
+      <div class="themes" role="radiogroup" aria-label={t('budget.budget')} ref={themesRef} onKeyDown={rovingKeys}>
         {THEMES.map((th) => (
           <button
             type="button"
             role="radio"
             aria-checked={th.key === theme.key}
+            tabIndex={th.key === theme.key ? 0 : -1}
             class={`theme ${th.key === theme.key ? 'theme--on' : ''}`}
             onClick={() => {
               setBudget(th.budget);
