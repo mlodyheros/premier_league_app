@@ -1,0 +1,78 @@
+/* Guess. */
+
+.legend { display: inline-flex; gap: 4px; vertical-align: middle; }
+
+.legend .tile { min-height: 0; padding: 1px 7px; font-size: 0.75rem; }
+
+.guess__input { display: flex; gap: 8px; align-items: center; }
+
+.guess__board { margin-top: 18px; display: grid; gap: 10px; }
+
+.guess__cols, .guess__tiles { display: grid; grid-template-columns: 1.35fr 0.8fr 0.8fr 0.9fr 1.2fr; gap: 5px; }
+
+.guess__cols span {
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.guess__row { animation: rise 0.25s ease both; }
+
+.guess__who { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.92rem; margin-bottom: 5px; }
+
+.guess__row--win .guess__who { color: var(--color-primary); }
+
+.tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 46px;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  line-height: 1.1;
+  overflow: hidden;
+}
+
+.tile__v { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+.tile--hit { background: var(--color-primary); color: var(--color-on-primary); }
+
+.tile--near { background: var(--color-warning); color: var(--color-on-warning); }
+
+.tile--miss { background: var(--color-neutral); color: var(--color-text); }
+
+.tile__dir { font-size: 0.7rem; opacity: 0.85; }
+
+.guess__tiles .tile { animation: flip 0.35s ease both; }
+
+.guess__tiles .tile:nth-child(2) { animation-delay: 0.06s; }
+
+.guess__tiles .tile:nth-child(3) { animation-delay: 0.12s; }
+
+.guess__tiles .tile:nth-child(4) { animation-delay: 0.18s; }
+
+.guess__tiles .tile:nth-child(5) { animation-delay: 0.24s; }
+
+@media (max-width: 420px) {
+  .tile { font-size: 0.78rem; min-height: 42px; }
+  .guess__cols, .guess__tiles { gap: 4px; }
+}
+
+.tile__club { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; max-width: 100%; }
+
+.tile__club small { font-size: 0.66rem; font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.guess__row--win .guess__tiles .tile { box-shadow: 0 0 18px rgb(var(--primary-rgb) / 0.35); }
+
+.guess__legend { display: flex; gap: 6px; margin: 0 0 8px; }
+
+.guess__legend .tile { min-height: 0; padding: 2px 10px; font-size: 0.78rem; }

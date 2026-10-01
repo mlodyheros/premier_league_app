@@ -1,0 +1,87 @@
+/* A played season: points, results strip, XI, table. */
+
+.season { display: grid; gap: 14px; }
+
+.season__record { margin: 0; font-family: var(--display); font-size: clamp(3rem, 14vw, 5rem); font-weight: 700; line-height: 0.95; font-variant-numeric: tabular-nums; }
+
+.strip { list-style: none; display: grid; grid-template-columns: repeat(19, 1fr); gap: 3px; padding: 0; margin: 14px 0 0; }
+
+.strip__m { aspect-ratio: 1; border-radius: 3px; }
+
+.strip__m--W { background: var(--color-primary); }
+
+.strip__m--D { background: var(--color-warning); }
+
+.strip__m--L { background: var(--color-accent); }
+
+.table-wrap { border-radius: var(--radius); background: var(--color-surface); border: 1px solid var(--color-border); padding: 10px 12px; }
+
+.table-wrap summary { cursor: pointer; font-weight: 700; padding: 4px 0; }
+
+.league { width: 100%; border-collapse: collapse; font-size: 0.86rem; font-variant-numeric: tabular-nums; margin-top: 6px; }
+
+.league th { color: var(--color-text-muted); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 5px 4px; text-align: center; }
+
+.league td { padding: 6px 4px; text-align: center; border-top: 1px solid var(--color-border); }
+
+.league .l { text-align: left; }
+
+.league tr.you td { background: rgb(var(--primary-rgb) / 0.12); color: var(--color-primary); font-weight: 700; }
+
+.league tr:nth-child(4) td { border-bottom: 1px dashed var(--color-text-muted); }
+
+.league__team { display: inline-flex; align-items: center; gap: 7px; }
+
+.league__you { width: 18px; text-align: center; color: var(--color-primary); }
+
+.season--fresh .strip__m { animation: tick-in 0.26s ease both; animation-delay: calc(var(--i) * 32ms); }
+
+.season--fresh .badges li { animation: rise 0.4s ease both; animation-delay: 1.4s; }
+
+.season__record { font-variant-numeric: tabular-nums; }
+
+.xi-reveal { border-radius: var(--radius); background: var(--color-surface); border: 1px solid var(--color-border); padding: 12px 14px; }
+
+.xi-reveal h2 { font-size: 1.2rem; margin-bottom: 8px; }
+
+.xi-reveal ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+
+@media (min-width: 640px) { .xi-reveal ul { grid-template-columns: 1fr 1fr; column-gap: 12px; } }
+
+.xi-reveal li { display: flex; align-items: center; gap: 9px; padding: 5px 6px; border-radius: var(--radius-sm); background: var(--color-bg-sunken); }
+
+.season--fresh .xi-reveal li { animation: rise 0.3s ease both; animation-delay: calc(0.9s + var(--i) * 45ms); }
+
+.xi-reveal__pos { width: 34px; color: var(--color-text-muted); font-size: 0.75rem; font-weight: 700; }
+
+.xi-reveal__name { flex: 1; min-width: 0; font-weight: 600; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.xi-reveal__ovr { font-family: var(--display); font-weight: 700; font-size: 1.15rem; color: var(--color-primary); min-width: 26px; text-align: right; }
+
+.season__points { margin: 4px 0 10px; font-family: var(--display); font-size: 1.9rem; font-weight: 700; text-transform: uppercase; color: var(--color-accent); }
+
+.season__points--hit { color: var(--color-primary); text-shadow: 0 0 18px rgb(var(--primary-rgb) / 0.45); }
+
+.xi-reveal__legend { display: flex; justify-content: flex-end; gap: 14px; margin: -4px 4px 6px; color: var(--color-text-muted); font-size: 0.72rem; font-weight: 600; }
+
+.xi-reveal__ga { display: inline-flex; gap: 8px; font-variant-numeric: tabular-nums; }
+
+.xi-reveal__ga b { min-width: 18px; text-align: right; }
+
+.xi-reveal__ga b::before { content: '⚽ '; font-weight: 400; font-size: 0.8em; }
+
+.xi-reveal__ga i { font-style: normal; min-width: 18px; text-align: right; color: var(--color-text-muted); }
+
+.xi-reveal__ga i::before { content: '🅰️ '; font-size: 0.8em; }
+
+.xi-reveal li.top { box-shadow: inset 0 0 0 1px var(--color-warning); }
+
+.xi-reveal li.top .xi-reveal__ga b { color: var(--color-warning); }
+
+.season__pts { margin: 0; font-family: var(--display); font-size: clamp(4.2rem, 20vw, 6.5rem); font-weight: 700; line-height: 0.9; font-variant-numeric: tabular-nums; color: var(--color-text); }
+
+.season__pts small { font-size: 0.32em; margin-left: 6px; color: var(--color-text-muted); }
+
+.season__pts--hit { color: var(--color-primary); text-shadow: 0 0 28px rgb(var(--primary-rgb) / 0.45); }
+
+.season__line { margin: 6px 0 12px; font-family: var(--display); font-size: 1.5rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }

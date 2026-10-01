@@ -1,0 +1,52 @@
+/*
+ * Design tokens: the only place raw values live. Components use the semantic
+ * names (what a colour is for), never hex codes. Channel tokens (*-rgb) exist
+ * so any colour can take an alpha: rgb(var(--primary-rgb) / 0.16).
+ *
+ * Palette, by intent: deep purple surfaces (premium, night match), electric
+ * green as the primary/success colour (go, correct, the pitch), magenta as
+ * the accent/negative (energy, wrong, lower), cyan for information and focus,
+ * amber for "close" and warnings.
+ */
+:root {
+  /* Channels */
+  --bg-rgb: 22 8 29;
+  --backdrop-rgb: 10 3 14;
+  --primary-rgb: 0 255 133;
+  --accent-rgb: 255 40 130;
+  --info-rgb: 4 245 255;
+  --warning-rgb: 255 197 61;
+  --shadow-rgb: 0 0 0;
+  --white-rgb: 255 255 255;
+
+  /* Surfaces and text */
+  --color-bg: rgb(var(--bg-rgb));
+  --color-bg-sunken: #1f0c28;
+  --color-surface: #2a1234;
+  --color-surface-raised: #361a42;
+  --color-border: #4a2a57;
+  --color-text: #f6eff8;
+  --color-text-soft: #e2d6e7;
+  --color-text-muted: #b7a3bf;
+  --color-white: #fff;
+
+  /* Brand and meaning */
+  --color-primary: rgb(var(--primary-rgb));
+  --color-on-primary: #062b18;
+  --color-accent: rgb(var(--accent-rgb));
+  --color-on-accent: #fff;
+  --color-info: rgb(var(--info-rgb));
+  --color-warning: rgb(var(--warning-rgb));
+  --color-on-warning: #2d2100;
+  --color-neutral: #3b2146;
+  --color-pitch-1: #0f5c34;
+  --color-pitch-2: #0d5530;
+
+  /* Shape and type */
+  --radius: 14px;
+  --radius-sm: 9px;
+  --font: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --display: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --gutter: 16px;
+  color-scheme: dark;
+}

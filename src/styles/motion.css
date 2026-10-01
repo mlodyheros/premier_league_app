@@ -1,0 +1,27 @@
+/* Keyframes, and the reduced-motion switch that turns them all off. */
+
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+@keyframes flip { from { transform: rotateX(90deg); } to { transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+@keyframes pulse { 50% { box-shadow: 0 0 0 7px rgb(var(--info-rgb) / 0.08); } }
+
+@keyframes page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+@keyframes pulse-glow { 50% { box-shadow: 0 0 0 8px rgb(var(--primary-rgb) / 0.18), 0 0 26px rgb(var(--primary-rgb) / 0.35); } }
+
+@keyframes toast-in { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: none; } }
+
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+@keyframes reel-in { from { opacity: 0.2; transform: translateY(-45%); } to { opacity: 1; transform: none; } }
+
+@keyframes land { 0% { transform: scale(0.86); } 60% { transform: scale(1.06); } 100% { transform: none; } }
+
+@keyframes slot-pop { from { transform: translate(-50%, -50%) scale(0.4); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+
+@keyframes tick-in { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: none; } }
