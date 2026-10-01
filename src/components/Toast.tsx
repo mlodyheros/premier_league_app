@@ -17,9 +17,9 @@ export function toast(text: string, ms = 2200): void {
 }
 
 /** Feedback for a shareText() result. */
-export function notifyShare(result: 'shared' | 'copied' | 'failed'): void {
+export function notifyShare(result: 'shared' | 'copied' | 'downloaded' | 'failed'): void {
   if (result === 'shared') return; // the system sheet was feedback enough
-  toast(t(result === 'copied' ? 'share.copied' : 'share.failed'));
+  toast(t(result === 'copied' ? 'share.copied' : result === 'downloaded' ? 'share.downloaded' : 'share.failed'));
 }
 
 export function Toasts() {

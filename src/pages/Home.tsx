@@ -6,7 +6,11 @@ import { GAME_LIST, type GameMeta } from '../games/meta';
 import { t, tj, type Key } from '../i18n';
 import { formatDecimal, formatEur } from '../lib/format';
 import { getBest } from '../lib/records';
+import { dailyResult, dayNumber } from '../lib/daily';
 import { todayKey } from '../lib/rng';
+import { shareText, siteUrl } from '../lib/share';
+import { useCountdown } from '../hooks/useCountdown';
+import { notifyShare } from '../components/Toast';
 import { loadStats } from '../lib/stats';
 import { href } from '../router';
 
@@ -40,15 +44,29 @@ export function Home() {
   const { meta } = useDataset();
   const [day] = useState(todayKey);
   const dailies = GAME_LIST.filter((g) => g.daily);
+  const allDone = dailies.every((g) => g.daily!.done(day));
+  const countdown = useCountdown(allDone);
+
+  /** One message with all three of today's results. */
+  async function shareAll() {
+    const lines = dailies.map((g) => `${g.icon} ${t(`game.${g.id}.title`)}: ${dailyResult(g.id, day) ?? '✓'}`);
+    notifyShare(await shareText(`${t('home.shareAll', { n: dayNumber(day) })}\n${lines.join('\n')}\n${siteUrl()}`));
+  }
 
   return (
     <section class="home">
       <div class="hero">
-        <div class="crest-row" aria-hidden="true">
+        <nav class="crest-row" aria-label={t('home.crests')}>
           {Object.keys(meta.clubs).map((code) => (
-            <Crest code={code} size={28} />
+            <a
+              href={`${href('budget')}?club=${code}`}
+              title={t('home.crestLink', { club: meta.clubs[code].name })}
+              aria-label={t('home.crestLink', { club: meta.clubs[code].name })}
+            >
+              <Crest code={code} size={28} />
+            </a>
           ))}
-        </div>
+        </nav>
         <p class="eyebrow">{t('home.eyebrow', { season: meta.season, players: meta.players, gw: meta.gameweek })}</p>
         <h1>
           {t('home.title')} <em>{t('home.titleEm')}</em>
@@ -59,13 +77,27 @@ export function Home() {
             values: <b>{valuesPhrase()}</b>,
           })}
         </p>
+        <p class="hero__note">
+          <a href={href('how')}>{t('home.tmNoteLink')}</a>
+        </p>
       </div>
 
       <h2 class="section-title">{t('home.daily')}</h2>
+      {allDone && (
+        <div class="all-done" role="status">
+          <p>
+            <b>{t('home.allDone')}</b> {tj('home.allDoneNext', { time: <b class="mono">{countdown}</b> })}
+          </p>
+          <button class="btn btn--primary btn--sm" onClick={shareAll}>
+            {t('home.shareAllButton')}
+          </button>
+        </div>
+      )}
       <ul class="dailies">
         {dailies.map((g) => {
           const done = g.daily!.done(day);
           const streak = g.daily!.streak();
+          const result = done ? dailyResult(g.id, day) : null;
           return (
             <li>
               <a class={`daily ${done ? 'daily--done' : ''}`} href={href(g.path)}>
@@ -76,7 +108,9 @@ export function Home() {
                   <b>{t(`game.${g.id}.title`)}</b>
                   <small>{streak > 0 ? t('home.dailyStreak', { count: streak }) : t(`game.${g.id}.tag`)}</small>
                 </span>
-                <span class="daily__state">{done ? `✓ ${t('home.dailyDone')}` : `${t('home.dailyPlay')} →`}</span>
+                <span class="daily__state">
+                  {done ? (result ? <>✓ <b>{result}</b></> : `✓ ${t('home.dailyDone')}`) : `${t('home.dailyPlay')} →`}
+                </span>
               </a>
             </li>
           );

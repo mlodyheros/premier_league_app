@@ -71,8 +71,22 @@ export function fillableSlots(
 }
 
 
+/** Each extra player from the same club adds this much to the XI's rating. */
+export const CHEMISTRY_STEP = 0.3;
+export const CHEMISTRY_MAX = 1.5;
 
-
+/**
+ * Team-mates know each other: for every club with n players in the XI, add
+ * (n − 1) × CHEMISTRY_STEP, up to CHEMISTRY_MAX in all. It gives a reason to
+ * take a weaker player from a club already in the side.
+ */
+export function chemistry(lineup: Lineup): { bonus: number; links: Record<string, number> } {
+  const counts: Record<string, number> = {};
+  for (const p of Object.values(lineup)) if (p) counts[p.club] = (counts[p.club] ?? 0) + 1;
+  const links = Object.fromEntries(Object.entries(counts).filter(([, n]) => n > 1));
+  const raw = Object.values(links).reduce((sum, n) => sum + (n - 1) * CHEMISTRY_STEP, 0);
+  return { bonus: Math.round(Math.min(CHEMISTRY_MAX, raw) * 10) / 10, links };
+}
 
 /**
  * How much the draft tells you, from easiest to hardest:

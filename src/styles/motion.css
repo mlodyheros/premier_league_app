@@ -27,3 +27,5 @@
 @keyframes tick-in { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: none; } }
 
 @keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+
+@keyframes grow { from { transform: scaleX(0); } to { transform: none; } }

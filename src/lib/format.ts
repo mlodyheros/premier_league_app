@@ -24,6 +24,7 @@ export function formatEur(value: number, l: Lang = lang.value, compact = false):
     return l === 'pl' ? `${m}${NBSP}mln${euro}` : `€${m}M`;
   }
   const k = Math.round(value / 1000);
+  if (k === 0) return l === 'pl' ? `0${euro}` : '€0';
   return l === 'pl' ? `${k}${NBSP}tys.${euro}` : `€${k}K`;
 }
 

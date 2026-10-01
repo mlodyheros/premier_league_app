@@ -9,7 +9,7 @@ export function StatsPanel({ stats, highlight }: { stats: GameStats; highlight?:
     <div class="stats">
       <dl class="stats__tiles">
         <div><dt>{t('stats.played')}</dt><dd>{stats.played}</dd></div>
-        <div><dt>{t('stats.winPct')}</dt><dd>{winPct}</dd></div>
+        <div><dt>{t('stats.winPct')}</dt><dd>{winPct}%</dd></div>
         <div><dt>{t('stats.streak')}</dt><dd>{stats.streak}</dd></div>
         <div><dt>{t('stats.best')}</dt><dd>{stats.bestStreak}</dd></div>
       </dl>

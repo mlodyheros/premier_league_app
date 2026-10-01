@@ -7,6 +7,24 @@ import { fold } from '../lib/format';
 import { Avatar } from './Avatar';
 
 const MAX_RESULTS = 8;
+const MAX_SUGGESTIONS = 4;
+
+/** Edit distance (Levenshtein), stopping early once it exceeds `limit`. */
+function distance(a: string, b: string, limit: number): number {
+  if (Math.abs(a.length - b.length) > limit) return limit + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const row = [i];
+    let rowMin = i;
+    for (let j = 1; j <= b.length; j++) {
+      row[j] = Math.min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      rowMin = Math.min(rowMin, row[j]);
+    }
+    if (rowMin > limit) return limit + 1;
+    prev = row;
+  }
+  return prev[b.length];
+}
 
 interface Props {
   onPick: (player: Player) => void;
@@ -28,9 +46,9 @@ export function PlayerSearch({ onPick, exclude, placeholder = t('search.placehol
     [players],
   );
 
-  const results = useMemo(() => {
+  const { results, fuzzy } = useMemo(() => {
     const q = fold(query.trim());
-    if (q.length < 2) return [];
+    if (q.length < 2) return { results: [], fuzzy: false };
     const starts: Player[] = [];
     const contains: Player[] = [];
     for (const { p, key } of index) {
@@ -40,7 +58,21 @@ export function PlayerSearch({ onPick, exclude, placeholder = t('search.placehol
       else if (key.includes(q)) contains.push(p);
     }
     const byValue = (a: Player, b: Player) => b.tm - a.tm;
-    return [...starts.sort(byValue), ...contains.sort(byValue)].slice(0, MAX_RESULTS);
+    const exact = [...starts.sort(byValue), ...contains.sort(byValue)].slice(0, MAX_RESULTS);
+    if (exact.length || q.length < 3) return { results: exact, fuzzy: false };
+
+    // Nothing matches: suggest the names closest to what was typed ("Odegard" → Ødegaard is
+    // already folded; this catches "Saliva", "Haaland" typed as "Halland", and so on).
+    const limit = q.length <= 5 ? 1 : 2;
+    const near: { p: Player; d: number }[] = [];
+    for (const { p, key } of index) {
+      if (exclude?.has(p.id)) continue;
+      const words = [...key.split(/[\s.'-]+/), key];
+      const d = Math.min(...words.map((w) => Math.min(distance(q, w, limit), distance(q, w.slice(0, q.length), limit) + 1)));
+      if (d <= limit) near.push({ p, d });
+    }
+    near.sort((a, b) => a.d - b.d || b.p.tm - a.p.tm);
+    return { results: near.slice(0, MAX_SUGGESTIONS).map((n) => n.p), fuzzy: true };
   }, [query, index, exclude]);
 
   function choose(p: Player) {
@@ -97,7 +129,12 @@ export function PlayerSearch({ onPick, exclude, placeholder = t('search.placehol
         </p>
       )}
       {results.length > 0 && (
-        <ul class="search__list" id={listId} role="listbox">
+        <ul class="search__list" id={listId} role="listbox" aria-label={fuzzy ? t('search.didYouMean') : undefined}>
+          {fuzzy && (
+            <li class="search__hint" role="presentation">
+              {t('search.didYouMean')}
+            </li>
+          )}
           {results.map((p, i) => (
             <li
               id={`ps-${p.id}`}

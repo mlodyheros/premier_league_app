@@ -48,3 +48,18 @@
 
 /* Attention, used sparingly: the one button that moves the game on */
 .btn--pulse { animation: pulse-glow 1.6s ease-in-out infinite; }
+
+/* A game's answer buttons: on phones they stick above the bottom bar, so the
+   answer is always in thumb reach however long the card above is. */
+@media (max-width: 720px) {
+  .action-bar {
+    position: sticky;
+    bottom: calc(64px + env(safe-area-inset-bottom) + var(--space-2));
+    z-index: 2;
+    padding: var(--space-2);
+    margin: 0 calc(-1 * var(--space-2));
+    border-radius: var(--radius);
+    background: rgb(var(--bg-rgb) / 0.88);
+    backdrop-filter: blur(8px);
+  }
+}

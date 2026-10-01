@@ -50,10 +50,13 @@ function StatRow({ title, stats, note }: { title: string; stats: Stat[]; note?: 
 export function PlayerCard({
   player,
   children,
+  head,
   compact = false,
 }: {
   player: Player;
   children?: ComponentChildren;
+  /** Shown right under the name, above the record: what the question is about. */
+  head?: ComponentChildren;
   compact?: boolean;
 }) {
   const s = player.stats;
@@ -69,6 +72,7 @@ export function PlayerCard({
           </p>
         </div>
       </div>
+      {head && <div class="pcard__head">{head}</div>}
       {!compact && (
         <div class="pcard__record">
           <StatRow title={t('card.thisSeason')} stats={seasonStats(player)} />
@@ -90,7 +94,7 @@ export function PlayerCard({
             />
           ) : (
             <div class="pcard__block">
-              <p class="pcard__label">{t('card.noPl')}</p>
+              <p class="pcard__label">{t('card.history')}</p>
               <p class="pcard__none">{t('card.noRecord')}</p>
             </div>
           )}

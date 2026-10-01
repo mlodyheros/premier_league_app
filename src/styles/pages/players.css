@@ -1,0 +1,39 @@
+/* Players: every player, searchable and sortable. */
+
+.players__head h1 { font-size: clamp(2rem, 8vw, 2.8rem); }
+
+.players__head .lede { margin: var(--space-1) 0 var(--space-4); color: var(--color-text-muted); }
+
+.players__tools { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin-bottom: var(--space-2); }
+
+.players__tools input { grid-column: 1 / -1; }
+
+@media (min-width: 760px) { .players__tools { grid-template-columns: 2fr 1fr 1fr; } .players__tools input { grid-column: auto; } }
+
+.players__tools input,
+.players__tools select {
+  min-height: var(--touch-min);
+  min-width: 0;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.players__count { margin: var(--space-3) 0 var(--space-2); color: var(--color-text-muted); font-size: 0.85rem; }
+
+.players__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+
+.players__rank { min-width: 24px; color: var(--color-text-muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; text-align: right; }
+
+.players__list .prow__name small { display: flex; align-items: center; gap: 4px; }
+
+.players__list .prow__price { min-width: 72px; }
+
+.players__card { margin: var(--space-1) 0 var(--space-2); }
+
+.players__card .value-compare { margin: 0; }
+
+.players__more { display: block; margin: var(--space-4) auto 0; }

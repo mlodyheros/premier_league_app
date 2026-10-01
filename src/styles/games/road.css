@@ -83,3 +83,35 @@
 .reel__empty { font-family: var(--display); font-size: 2.6rem; color: var(--color-border); }
 
 .reel .btn { width: 100%; }
+
+/* Setup folded into one line: "4-3-3 · Standard · Realistic   Change". */
+
+.setup { margin-bottom: var(--space-3); border-radius: var(--radius-sm); background: var(--color-surface); border: 1px solid var(--color-border); }
+
+.setup summary { display: flex; align-items: center; gap: var(--space-2); min-height: var(--touch-min); padding: var(--space-2) var(--space-3); cursor: pointer; list-style: none; }
+
+.setup summary::-webkit-details-marker { display: none; }
+
+.setup__now { flex: 1; min-width: 0; font-weight: var(--weight-semibold); font-size: 0.92rem; }
+
+.setup__edit { color: var(--color-info); font-weight: var(--weight-semibold); font-size: 0.88rem; }
+
+.setup__edit::after { content: ' ▾'; display: inline-block; transition: transform var(--dur-base) ease; }
+
+.setup[open] .setup__edit::after { transform: rotate(180deg); }
+
+.setup > .controls, .setup > .mode-help { margin: 0 var(--space-3) var(--space-3); }
+
+.chem { display: inline-block; margin-left: var(--space-2); padding: 2px 8px; border-radius: 999px; background: rgb(var(--info-rgb) / 0.12); color: var(--color-info); font-weight: var(--weight-semibold); }
+
+.chem-hint { margin: 0 0 var(--space-2); color: var(--color-info); font-size: 0.88rem; font-weight: var(--weight-semibold); }
+
+.kickoff__preview { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin: 0; width: 100%; }
+
+.kickoff__preview div { display: flex; flex-direction: column-reverse; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: var(--color-bg-sunken); }
+
+.kickoff__preview dt { color: var(--color-text-muted); font-size: 0.72rem; font-weight: var(--weight-bold); letter-spacing: 0.06em; text-transform: uppercase; }
+
+.kickoff__preview dd { margin: 0; font-family: var(--display); font-size: 1.8rem; font-weight: var(--weight-bold); color: var(--color-primary); line-height: 1.1; }
+
+.reel--on .reel__window { cursor: pointer; }

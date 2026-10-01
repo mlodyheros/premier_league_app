@@ -15,3 +15,9 @@ window.addEventListener('hashchange', () => {
 export function href(path: string): string {
   return `#/${path}`;
 }
+
+/** A query parameter of the current hash route: "#/budget?club=ARS" → club = "ARS". */
+export function routeParam(name: string): string | null {
+  const query = location.hash.split('?')[1];
+  return query ? new URLSearchParams(query).get(name) : null;
+}

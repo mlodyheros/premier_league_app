@@ -12,17 +12,39 @@ time, and scores, streaks and settings live in the browser's local storage.
 | Game | What you do |
 |---|---|
 | **Guess the Player** | Wordle-style: find the hidden player from club, position, nationality, age and value clues. Daily and unlimited. |
-| **Road to 100** | Spin a club, draft one of its players, fill an XI, then play a 38-game season against the real league: the goal is 100 points. Three draft modes (standard, random position, blind) and two season modes (realistic, arcade); every player's goals and assists. |
-| **Higher or Lower** | Is the next player worth more or less? Pairs get closer as the streak grows. |
-| **Budget XI** | Build the strongest XI on a themed budget, from a promoted side (€80M) to a sheikh's takeover (€1.5B), then play a season with it. |
+| **Road to 100** | Spin a club, draft one of its players, fill an XI, then play a 38-game season against the real league: the goal is 100 points. Three draft modes (standard, random position, blind) and two season modes (realistic, arcade); club chemistry; the expected points and 100-point chance before kick-off; every player's goals and assists, every match result. |
+| **Higher or Lower** | Is the next player worth more or less? Pairs get closer as the streak grows. Themed runs: forwards, midfielders, defenders, goalkeepers, the Big Six. |
+| **Budget XI** | Build the strongest XI on a themed budget, from a promoted side (€80M) to a sheikh's takeover (€1.5B), then play a season with it. "Fill the rest" completes an XI within the money left. |
 | **Beat the Model** | Does the model rate the player over or under his Transfermarkt value? Ten a round; daily and practice. |
-| **Price Tag** | Slide to the value you think a player has. Five a round, up to 100 points each; daily and practice. |
+| **Price Tag** | Slide (or step through round amounts) to the value you think a player has. Five a round, up to 100 points each; daily and practice. |
+
+A **Players** page (`#/stats`) lists all of them: search, filter by club and
+position, sort by rating, value, model-vs-TM gap, goals, assists, minutes or
+age, and open any player's full card.
 
 The daily rounds (Guess the Player, Beat the Model, Price Tag) are the same for
 everyone on a given date, can be played once, and keep a daily streak.
 
-Every game has a shareable result and keeps personal bests in the browser.
+Every game has a shareable result (text, and for Guess the Player and the
+seasons a picture too) and keeps personal bests in the browser. The home page
+shows today's three daily results and, once all three are done, shares them in
+one message.
 
+**Difficulty** (in Settings) decides which players the free-play rounds draw
+from ([`src/lib/pools.ts`](src/lib/pools.ts)):
+
+| Level | Players | Who |
+|---|---|---|
+| Easy | ~110 | worth €30M+ with 2,500+ Premier League minutes |
+| Normal | ~290 | 1,800+ Premier League minutes (last four seasons plus this one), or €50M+ with 4,000+ minutes in another big league |
+| Expert | all 540 | youth and reserves included |
+
+Daily rounds always use Normal, from 2 October 2026; earlier dates keep the
+pool they were played with, so a finished round never changes.
+
+**On a phone** the site installs to the home screen and works offline (a web
+app manifest and a service worker: pages and data come from the network first,
+the rest from the cache). A first visit gets two short screens on how it works.
 **Languages:** English and Polish. The ⚙ Settings dialog switches language
 (first visit follows the browser), switches the value source, and resets scores
 and progress. The **How it works** page explains the model, its accuracy and
@@ -125,15 +147,17 @@ domain root or under a sub-path without configuration.
 ```
 pipeline/            export from pl-value → public/data/ (Python)
 public/data/         players.json, meta.json: the only files a data update changes
+public/sw.js         the service worker; manifest.webmanifest and icons/ beside it
 src/
   data/              types, loading (store.ts), the value-source switch
-  lib/               seeded randomness, formatting, storage, stats, sharing
+  lib/               seeded randomness, formatting, storage, stats, sharing,
+                     difficulty pools (pools.ts), result pictures (shareImage.ts)
   components/        header and toggle, avatars, search, value comparison, stats
   games/<game>/      logic.ts (pure rules) and <Game>.tsx (UI), one folder per game
   lib/strength.ts    ratings, formations, positional fit, squad strength
   lib/season.ts      the match model and 38-game season simulation
   i18n/              en.ts (reference), pl.ts (typed against it), countries, labels
-  pages/             home, how it works
+  pages/             home, players, how it works
   styles/            tokens, base, layout, components, games, pages, motion
 docs/design-system.md  colour, type, spacing, motion and accessibility rules
 tests/               Vitest unit tests
@@ -167,10 +191,15 @@ Find the hidden player in 8 guesses. Each guess is compared on five things:
 | Age | same age | within 2 years; the arrow points towards the answer |
 | Value | same value | within 25% on the active value source; arrow as for age |
 
-The **daily** player is the same for everyone. The pool of well-known players is
-shuffled with a fixed seed and walked one player per day, so no one repeats until
-the pool runs out. The pool can change when the data is updated. **Unlimited**
-draws at random. Its hard mode draws from all 540 players.
+The **daily** player is the same for everyone. The Normal pool (see Difficulty)
+is shuffled with a fixed seed and walked one player per day, so no one repeats
+until the pool runs out. The pool can change when the data is updated.
+**Unlimited** draws at random from the difficulty level in Settings.
+
+Under the search box a counter says how many players in the pool still fit every
+answer so far. After five misses the club can be revealed as a hint (marked 💡
+in the shared result). A name with a typo ("Halland") gets "did you mean"
+suggestions.
 
 ## Ratings and the season simulation
 
@@ -248,8 +277,12 @@ prices, an alphabetical list; the ratings are revealed after the season). In
 the position modes the club and the position have a reel and a button each, in
 either order: the club is drawn from those that can fill the drawn position,
 the position from those the drawn club can fill. A re-draw (club, position or
-both at once) costs one of the three re-spins. Bests
-are kept per draft mode and season mode.
+both at once) costs one of the three re-spins; a tap on a spinning reel stops
+it at once. Bests are kept per draft mode and season mode.
+
+**Chemistry**: every extra player from a club already in your XI adds 0.3 to
+its rating, up to +1.5 (five from one club, or several smaller groups). It is a
+reason to take a slightly weaker player from a club you already have.
 
 ## Data and credits
 

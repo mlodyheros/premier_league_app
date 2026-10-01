@@ -6,7 +6,21 @@
 
 .strip { list-style: none; display: grid; grid-template-columns: repeat(19, 1fr); gap: 3px; padding: 0; margin: 14px 0 0; }
 
-.strip__m { aspect-ratio: 1; border-radius: 3px; }
+.strip__m { aspect-ratio: 1; border-radius: 3px; position: relative; }
+
+.strip__m button { position: absolute; inset: -2px; width: auto; padding: 0; background: none; border: 0; border-radius: 4px; cursor: pointer; }
+
+.strip__m.on { box-shadow: 0 0 0 2px var(--color-text); }
+
+.strip__detail { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); min-height: 28px; margin: var(--space-2) 0 0; color: var(--color-text-muted); font-size: 0.85rem; }
+
+.strip__badge { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 4px; font-weight: var(--weight-bold); font-size: 0.78rem; color: var(--color-on-primary); }
+
+.strip__badge--W { background: var(--color-primary); }
+
+.strip__badge--D { background: var(--color-warning); color: var(--color-on-warning); }
+
+.strip__badge--L { background: var(--color-accent-strong); color: var(--color-white); }
 
 .strip__m--W { background: var(--color-primary); }
 

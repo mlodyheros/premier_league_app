@@ -9,9 +9,9 @@ import { shareValues, valueOf, valueSource, valuesPhrase, type ValueSource } fro
 import { t, tj } from '../../i18n';
 import { posLabel } from '../../i18n/labels';
 import { trackEvent } from '../../lib/analytics';
-import { formatDecimal, formatEur, ordinal } from '../../lib/format';
+import { formatDecimal, formatEur, formatOdds, ordinal } from '../../lib/format';
 import { buzz, reducedMotion } from '../../lib/motion';
-import { playSeason, type PlayedSeason } from '../../lib/playSeason';
+import { playSeason, previewSeason, type PlayedSeason } from '../../lib/playSeason';
 import { getBest, submitBest } from '../../lib/records';
 import { pick } from '../../lib/rng';
 import { DIFFICULTY, type Difficulty } from '../../lib/season';
@@ -21,6 +21,8 @@ import { formationByKey, FORMATIONS, teamStrength, type Lineup, type Slot } from
 import {
   byName,
   candidates,
+  chemistry,
+  CHEMISTRY_STEP,
   draftedIds,
   clubOptions,
   slotOptions,
@@ -94,6 +96,8 @@ export function Road38() {
   const [landed, setLanded] = useState<{ club: boolean; slot: boolean }>({ club: false, slot: false });
   const [justPlayed, setJustPlayed] = useState(false);
   const timers = useRef<number[]>([]);
+  /** Lands the reels at once (a tap while they spin); null when still. */
+  const finish = useRef<(() => void) | null>(null);
 
   useEffect(() => writeJson(KEY, state), [state]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
@@ -102,7 +106,10 @@ export function Road38() {
   const lineup: Lineup = Object.fromEntries(Object.entries(state.picks).map(([s, n]) => [s, playerByName.get(n)]));
   const open = openSlots(formation, lineup);
   const complete = open.length === 0;
-  const strength = teamStrength(formation, lineup, source);
+  const chem = chemistry(lineup);
+  const base = teamStrength(formation, lineup, source);
+  /** The XI's rating with the chemistry bonus: what the season is played with. */
+  const strength = base ? Math.round((base + chem.bonus) * 10) / 10 : 0;
   const difficulty: Difficulty = state.difficulty ?? 'realistic';
   const draft: DraftMode = state.draft ?? 'standard';
   const blind = hidesRatings(draft);
@@ -184,13 +191,23 @@ export function Road38() {
       end = runReel(setSlotReel, faces, slot!, which === 'both' ? 220 : 0, () => setLanded((l) => ({ ...l, slot: true })));
     }
     // Both reels show their landing; then the draw is saved and the reels let go.
-    timers.current.push(
-      window.setTimeout(() => {
-        commit();
-        setClubReel(null);
-        setSlotReel(null);
-      }, end + 350),
-    );
+    finish.current = () => {
+      timers.current.forEach(clearTimeout);
+      timers.current = [];
+      finish.current = null;
+      setLanded({ club: which !== 'slot', slot: which !== 'club' });
+      commit();
+      setClubReel(null);
+      setSlotReel(null);
+    };
+    timers.current.push(window.setTimeout(() => finish.current?.(), end + 350));
+  }
+
+  /** A tap while the reels spin stops them on the drawn club and position. */
+  function stopReels() {
+    if (!finish.current) return;
+    buzz('good');
+    finish.current();
   }
 
   function choose(playerName: string, slot: Slot) {
@@ -204,6 +221,11 @@ export function Road38() {
     if (lineup[slot.id] || !ready || drawnSlot) return;
     setSelected(selected === slot.id ? null : slot.id);
   }
+
+  const preview = useMemo(
+    () => (complete ? previewSeason({ players, meta, source, strength, difficulty, without: draftedIds(lineup) }) : null),
+    [complete, strength, difficulty, source, state.picks],
+  );
 
   function kickOff() {
     const season = playSeason({
@@ -237,6 +259,12 @@ export function Road38() {
     setState(fresh(state.formation, difficulty, draft));
     setSelected(null);
     setJustPlayed(false);
+  }
+
+  /** The same XI, another season: luck and form are drawn again. */
+  function replay() {
+    trackEvent('road/replay');
+    kickOff();
   }
 
   async function share(season: SavedSeason) {
@@ -285,6 +313,13 @@ export function Road38() {
 
       {!state.season && (
         <>
+          <details class="setup">
+            <summary>
+              <span class="setup__now">
+                {formation.label} · {t(`road.draft.${draft}`)} · {t(`road.mode.${difficulty}`)}
+              </span>
+              <span class="setup__edit">{t('road.setup')}</span>
+            </summary>
           <div class="controls">
             <label>
               {t('budget.formation')}
@@ -327,7 +362,16 @@ export function Road38() {
           <p class="mode-help">
             {t(`road.draft.help.${draft}`)} {t(`road.mode.help.${difficulty}`, { bonus: DIFFICULTY.arcade.bonus })}
           </p>
-          <p class="controls__info">{t('road.progress', { picked: 11 - open.length, count: state.respins })}</p>
+          {started && <p class="mode-help">{t('road.setupLocked')}</p>}
+          </details>
+          <p class="controls__info">
+            {t('road.progress', { picked: 11 - open.length, count: state.respins })}
+            {chem.bonus > 0 && (
+              <span class="chem" title={t('road.chemHelp', { step: CHEMISTRY_STEP })}>
+                🔗 {t('road.chem', { n: formatDecimal(chem.bonus) })}
+              </span>
+            )}
+          </p>
 
           <div class="squad-layout">
             <Pitch
@@ -346,6 +390,7 @@ export function Road38() {
                   <ReelBox
                     label={t('road.reel.club')}
                     spinning={clubReel !== null}
+                    onStop={stopReels}
                     landed={landed.club}
                     face={clubReel ?? spun?.club ?? null}
                     render={(code) => (
@@ -355,7 +400,11 @@ export function Road38() {
                       </>
                     )}
                   >
-                    {!spun?.club ? (
+                    {spinning ? (
+                      <button class="btn btn--spin" onClick={stopReels}>
+                        {t('road.stop')}
+                      </button>
+                    ) : !spun?.club ? (
                       <button class="btn btn--primary btn--spin" onClick={() => draw('club')} disabled={spinning || !clubPool.length}>
                         {t('road.drawClub')}
                       </button>
@@ -369,13 +418,18 @@ export function Road38() {
                     <ReelBox
                       label={t('road.reel.slot')}
                       spinning={slotReel !== null}
+                      onStop={stopReels}
                       landed={landed.slot}
                       face={slotReel ?? spun?.slot ?? null}
                       render={(id) => (
                         <span class="reel__pos">{posLabel(formation.slots.find((sl) => sl.id === id)?.type ?? 'CM')}</span>
                       )}
                     >
-                      {!spun?.slot ? (
+                      {spinning ? (
+                        <button class="btn btn--spin" onClick={stopReels}>
+                          {t('road.stop')}
+                        </button>
+                      ) : !spun?.slot ? (
                         <button class="btn btn--primary btn--spin" onClick={() => draw('slot')} disabled={spinning || !slotPool.length}>
                           {t('road.drawSlot')}
                         </button>
@@ -396,6 +450,9 @@ export function Road38() {
 
               {ready && !spinning && (
                 <>
+                  {Object.values(lineup).some((p) => p?.club === spun!.club) ? (
+                    <p class="chem-hint">🔗 {t('road.chemNext', { club: meta.clubs[spun!.club!].short, step: CHEMISTRY_STEP })}</p>
+                  ) : null}
                   <p class="picker__hint">
                     {drawnSlot
                       ? t('road.pickForSlot', { pos: posLabel(drawnSlot.type) })
@@ -429,6 +486,18 @@ export function Road38() {
                   <p>
                     {blind ? t('road.completeBlind') : tj('road.complete', { ovr: <b>{formatDecimal(strength)}</b> })}
                   </p>
+                  {preview && !blind && (
+                    <dl class="kickoff__preview">
+                      <div>
+                        <dt>{t('road.expected')}</dt>
+                        <dd>{Math.round(preview.points)}</dd>
+                      </div>
+                      <div>
+                        <dt>{t('road.odds100')}</dt>
+                        <dd>{formatOdds(preview.odds)}</dd>
+                      </div>
+                    </dl>
+                  )}
                   <button class="btn btn--primary btn--big btn--pulse" onClick={kickOff}>
                     {t('road.kickoff')}
                   </button>
@@ -441,10 +510,12 @@ export function Road38() {
 
       {state.season && (
         <SeasonResult
+          key={state.season.results.map((r) => `${r.goalsFor}${r.goalsAgainst}`).join('')}
           season={state.season}
           formation={formation}
           lineup={lineup}
           animate={justPlayed}
+          imageTitle={t('game.road.title')}
           chips={[
             state.season.draft && state.season.draft !== 'standard' ? t(`road.draft.${state.season.draft as DraftMode}`) : '',
             state.season.difficulty === 'arcade' ? t('road.mode.arcade') : '',
@@ -453,6 +524,9 @@ export function Road38() {
             <>
               <button class="btn btn--primary" onClick={newDraft}>
                 {t('road.newDraft')}
+              </button>
+              <button class="btn" onClick={replay}>
+                {t('road.replay')}
               </button>
               <button class="btn" onClick={() => share(state.season!)}>
                 {t('common.share')}
@@ -473,8 +547,10 @@ function ReelBox({
   spinning,
   landed,
   render,
+  onStop,
   children,
 }: {
+  onStop: () => void;
   label: string;
   face: string | null;
   spinning: boolean;
@@ -485,7 +561,12 @@ function ReelBox({
   return (
     <div class={`reel ${spinning ? 'reel--on' : ''} ${landed ? 'reel--landed' : ''}`}>
       <span class="reel__label">{label}</span>
-      <div class="reel__window">
+      <div
+        class="reel__window"
+        onClick={spinning ? onStop : undefined}
+        role={spinning ? 'button' : undefined}
+        aria-label={spinning ? t('road.stop') : undefined}
+      >
         {face ? (
           <div class="reel__face" key={face}>
             {render(face)}

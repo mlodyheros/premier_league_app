@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Player } from '../src/data/types';
-import { compare, dailyPool, dailyTarget, shareGrid } from '../src/games/guess/logic';
+import { compare, dailyPool, dailyTarget, shareGrid, stillPossible } from '../src/games/guess/logic';
 
 let nextId = 0;
 function player(over: Partial<Player>): Player {
@@ -73,10 +73,17 @@ describe('compare', () => {
 });
 
 describe('daily target', () => {
-  const players = Array.from({ length: 30 }, (_, i) => player({ name: `P${String(i).padStart(2, '0')}`, known: i % 3 !== 0 }));
+  // The known players are also the ones with Premier League minutes, so the old
+  // pool (known) and the new one (minutes, from POOL_V2_FROM) are the same 20.
+  const players = Array.from({ length: 30 }, (_, i) => {
+    const known = i % 3 !== 0;
+    const p = player({ name: `P${String(i).padStart(2, '0')}`, known });
+    p.stats = { ...p.stats, plMinutes: known ? 3000 : 0 };
+    return p;
+  });
 
   it('only picks from the known pool', () => {
-    const pool = new Set(dailyPool(players).map((p) => p.name));
+    const pool = new Set(dailyPool(players, '2026-10-15').map((p) => p.name));
     for (let d = 1; d <= 28; d++) {
       expect(pool.has(dailyTarget(players, `2026-10-${String(d).padStart(2, '0')}`).name)).toBe(true);
     }
@@ -89,7 +96,7 @@ describe('daily target', () => {
   });
 
   it('does not repeat a player until the pool is used up', () => {
-    const size = dailyPool(players).length; // 20
+    const size = dailyPool(players, '2026-10-15').length; // 20
     const seen = new Set<string>();
     for (let d = 0; d < size; d++) {
       const date = new Date(2026, 8, 30 + d);
@@ -105,5 +112,19 @@ describe('shareGrid', () => {
     const t = player({});
     const grid = shareGrid([compare(player({ club: 'CHE', age: 40 }), t, 'tm'), compare(t, t, 'tm')]);
     expect(grid.split('\n')).toEqual(['⬛🟩🟩⬛🟩', '🟩🟩🟩🟩🟩']);
+  });
+});
+
+describe('stillPossible', () => {
+  it('keeps exactly the players who would have given the same feedback', () => {
+    const target = player({ club: 'LIV', pos: 'ST', group: 'FWD', age: 30, tm: 80_000_000 });
+    const sameClub = player({ club: 'LIV', pos: 'ST', group: 'FWD', age: 29, tm: 75_000_000 });
+    const other = player({ club: 'CHE', pos: 'GK', group: 'GK', age: 22, tm: 5_000_000 });
+    const guess = player({ club: 'LIV', pos: 'CB', group: 'DEF', age: 31, tm: 10_000_000 });
+    const pool = [target, sameClub, other];
+    const left = stillPossible(pool, [guess], [compare(guess, target, 'tm')], 'tm');
+    expect(left).toContain(target);
+    expect(left).toContain(sameClub);
+    expect(left).not.toContain(other);
   });
 });

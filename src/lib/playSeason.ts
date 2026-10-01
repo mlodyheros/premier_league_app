@@ -5,6 +5,7 @@ import { clubTeams, USER_TEAM_ID, withUserTeam } from './league';
 import { attributeGoals, type Tally } from './scorers';
 import {
   DIFFICULTY,
+  expectedPoints,
   POINTS_TARGET,
   pointsOdds,
   SEASON_FORM_SD,
@@ -64,5 +65,24 @@ export function playSeason(opts: {
     table: season.table,
     position: season.position,
     scorers: attributeGoals(formation, lineup, season.results, rand),
+  };
+}
+
+/** What to expect before kick-off: average points and the chance of POINTS_TARGET. */
+export function previewSeason(opts: {
+  players: readonly Player[];
+  meta: Meta;
+  source: ValueSource;
+  strength: number;
+  difficulty?: Difficulty;
+  without?: ReadonlySet<number>;
+}): { points: number; odds: number } {
+  const { model, bonus } = DIFFICULTY[opts.difficulty ?? 'realistic'];
+  const clubs = clubTeams(opts.players, opts.meta, opts.source, opts.without);
+  const { league } = withUserTeam(clubs, opts.strength + bonus);
+  const opponents = league.filter((t) => t.id !== USER_TEAM_ID).map((t) => t.strength);
+  return {
+    points: expectedPoints(opts.strength + bonus, opponents, model),
+    odds: pointsOdds(opts.strength + bonus, opponents, model, POINTS_TARGET),
   };
 }

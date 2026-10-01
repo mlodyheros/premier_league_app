@@ -2,6 +2,7 @@ import type { FunctionComponent } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { BottomNav } from './components/BottomNav';
 import { Header } from './components/Header';
+import { Onboarding } from './components/Onboarding';
 import { Toasts } from './components/Toast';
 import { dataset, loadDataset, loadError } from './data/store';
 import { BeatModel } from './games/beat-model/BeatModel';
@@ -15,6 +16,7 @@ import { trackPage } from './lib/analytics';
 import { formatDate } from './lib/format';
 import { Home } from './pages/Home';
 import { HowItWorks } from './pages/HowItWorks';
+import { Players } from './pages/Players';
 import { route } from './router';
 
 const PAGES: Record<string, { page: FunctionComponent; title?: Key }> = {
@@ -28,6 +30,7 @@ const PAGES: Record<string, { page: FunctionComponent; title?: Key }> = {
   'beat-model': { page: BeatModel, title: 'game.beat.title' },
   'price-tag': { page: PriceTag, title: 'game.price.title' },
   how: { page: HowItWorks, title: 'how.title' },
+  stats: { page: Players, title: 'players.title' },
 };
 
 export function App() {
@@ -75,6 +78,7 @@ export function App() {
         )}
       </main>
       {dataset.value && <BottomNav />}
+      {dataset.value && <Onboarding />}
       <Toasts />
       {dataset.value && (
         <footer class="site-footer">

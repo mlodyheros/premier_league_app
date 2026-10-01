@@ -152,3 +152,48 @@
 
 .slot:not(:disabled):hover .slot__pos,
 .slot:not(:disabled):hover .avatar { box-shadow: 0 0 0 3px rgb(var(--info-rgb) / 0.35); }
+
+.picker__left { margin-left: auto; color: var(--color-text-muted); font-size: 0.85rem; }
+
+.picker__left b { color: var(--color-text); }
+
+.picker__close { display: none; }
+
+.picker__filter { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1); margin: 0 0 var(--space-2); color: var(--color-warning); font-size: 0.88rem; }
+
+.picker-backdrop { display: none; }
+
+/* Phones: Budget XI's picker is a bottom sheet over the pitch, so choosing a
+   player never means scrolling away from the slot. */
+@media (max-width: 720px) {
+  .budget .picker--open {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    max-height: 64vh;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-3) var(--space-4) max(var(--space-4), env(safe-area-inset-bottom));
+    border-radius: var(--radius) var(--radius) 0 0;
+    border-bottom: 0;
+    box-shadow: 0 -12px 40px rgb(var(--shadow-rgb) / 0.5);
+    animation: sheet-up var(--dur-slow) var(--ease-out) both;
+  }
+  .budget .picker--open .picker__list { max-height: none; flex: 1; min-height: 0; }
+  .budget .picker--open .picker__tools { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .budget .picker__close {
+    display: grid;
+    place-items: center;
+    width: var(--touch-min);
+    height: var(--touch-min);
+    margin-right: calc(-1 * var(--space-2));
+    background: none;
+    border: 0;
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+  .budget .picker-backdrop { display: block; position: fixed; inset: 0; z-index: 59; background: rgb(var(--backdrop-rgb) / 0.45); }
+}

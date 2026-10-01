@@ -34,3 +34,34 @@
 .hl__value.counting { color: var(--color-info); }
 
 .hl__verdict { animation: land var(--dur-slow) var(--ease-spring) both; }
+
+.hl .chips { margin-bottom: var(--space-2); }
+
+.hl__question { margin: 0; color: var(--color-text-muted); font-weight: var(--weight-semibold); }
+
+@media (min-width: 760px) {
+  .hl__buttons { grid-column: 3; }
+}
+
+/* Phones: the answer is always in thumb reach, above the bottom bar. */
+@media (max-width: 720px) {
+  .hl .pcard { padding: 12px; }
+  .hl .pcard__name { font-size: 1.35rem; }
+  .hl .pcard__record { margin-top: 10px; gap: 6px; }
+  .hl .pcard__foot { margin-top: 10px; }
+  .hl__value { font-size: 2rem; }
+}
+
+/* Phones: both players and the buttons fit on one screen; the PL history
+   stays on wider screens. */
+@media (max-width: 720px) {
+  .hl .pcard__record { grid-template-columns: 1fr; }
+  .hl .pcard__record > .pcard__block:nth-child(2) { display: none; }
+  .hl .pcard .avatar { width: 48px !important; height: 48px !important; }
+}
+
+/* The known player's value is all that matters: his record folds away on phones. */
+@media (max-width: 720px) {
+  .hl__pair > .pcard:first-child .pcard__record { display: none; }
+  .hl__pair > .pcard:first-child .pcard__foot { margin-top: var(--space-2); }
+}

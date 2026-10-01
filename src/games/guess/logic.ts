@@ -1,6 +1,7 @@
 /** Guess the Player: feedback rules, target choice and share text. No UI here. */
 import type { Player } from '../../data/types';
 import { valueOf, type ValueSource } from '../../data/valueSource';
+import { dailyPoolFor } from '../../lib/pools';
 import { dayNumber, hashString, mulberry32, shuffled } from '../../lib/rng';
 
 export const MAX_GUESSES = 8;
@@ -49,9 +50,9 @@ export function compare(guess: Player, target: Player, source: ValueSource): Fee
   };
 }
 
-/** Players who can be a daily answer, in a stable order independent of ids. */
-export function dailyPool(players: readonly Player[]): Player[] {
-  return players.filter((p) => p.known).sort((a, b) => a.name.localeCompare(b.name));
+/** Players who can be the daily answer on `day`, in a stable order independent of ids. */
+export function dailyPool(players: readonly Player[], day: string): Player[] {
+  return dailyPoolFor(players, day, (p) => p.known).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /**
@@ -59,7 +60,7 @@ export function dailyPool(players: readonly Player[]): Player[] {
  * player per day, so no player repeats until the whole pool has been used.
  */
 export function dailyTarget(players: readonly Player[], dateKey: string): Player {
-  const pool = dailyPool(players);
+  const pool = dailyPool(players, dateKey);
   const order = shuffled(pool, mulberry32(hashString('guess-the-player')));
   const day = dayNumber(dateKey);
   const lap = Math.floor((day - 1) / order.length);
@@ -68,6 +69,33 @@ export function dailyTarget(players: readonly Player[], dateKey: string): Player
   const index = (((day - 1) % order.length) + order.length) % order.length;
   return lapOrder[index];
 }
+
+/** Same marks and arrows: two feedbacks tell the player the same thing. */
+function sameFeedback(a: Feedback, b: Feedback): boolean {
+  return (
+    a.club === b.club &&
+    a.pos === b.pos &&
+    a.nat === b.nat &&
+    a.age.mark === b.age.mark &&
+    a.age.dir === b.age.dir &&
+    a.value.mark === b.value.mark &&
+    a.value.dir === b.value.dir &&
+    a.correct === b.correct
+  );
+}
+
+/** Players in `pool` who would have produced every piece of feedback so far. */
+export function stillPossible(
+  pool: readonly Player[],
+  guesses: readonly Player[],
+  feedback: readonly Feedback[],
+  source: ValueSource,
+): Player[] {
+  return pool.filter((c) => guesses.every((g, i) => sameFeedback(compare(g, c, source), feedback[i])));
+}
+
+/** After this many misses a hint (the club) can be revealed. */
+export const HINT_AFTER = 5;
 
 const SQUARE: Record<Mark, string> = { hit: '🟩', near: '🟨', miss: '⬛' };
 

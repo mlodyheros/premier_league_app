@@ -1,14 +1,34 @@
 /** Higher or Lower: who comes next, and whether a call was right. */
 import type { Player } from '../../data/types';
 import { valueOf, type ValueSource } from '../../data/valueSource';
+import { inPool, type PoolLevel } from '../../lib/pools';
 
 /** Players below this Transfermarkt value are too obscure to be fair. */
-export const MIN_VALUE = 5_000_000;
+export const MIN_VALUE = 3_000_000;
 
 export type Call = 'higher' | 'lower';
 
-export function pool(players: readonly Player[]): Player[] {
-  return players.filter((p) => p.tm >= MIN_VALUE);
+export type Theme = 'all' | 'FWD' | 'MID' | 'DEF' | 'GK' | 'big6';
+export const THEMES: Theme[] = ['all', 'FWD', 'MID', 'DEF', 'GK', 'big6'];
+const BIG_SIX = new Set(['ARS', 'CHE', 'LIV', 'MCI', 'MUN', 'TOT']);
+/** Below this many players a themed pool is widened one level (easy → normal → expert). */
+const MIN_POOL = 16;
+
+function themed(p: Player, theme: Theme): boolean {
+  if (theme === 'all') return true;
+  if (theme === 'big6') return BIG_SIX.has(p.club);
+  return p.group === theme;
+}
+
+/** Players for a run: the chosen level and theme, widened if that leaves too few. */
+export function pool(players: readonly Player[], level: PoolLevel = 'normal', theme: Theme = 'all'): Player[] {
+  const pick = (lvl: PoolLevel) => players.filter((p) => p.tm >= MIN_VALUE && inPool(p, lvl) && themed(p, theme));
+  const order: PoolLevel[] = ['easy', 'normal', 'expert'];
+  for (const lvl of order.slice(order.indexOf(level))) {
+    const chosen = pick(lvl);
+    if (chosen.length >= MIN_POOL || lvl === 'expert') return chosen;
+  }
+  return pick('expert');
 }
 
 /**

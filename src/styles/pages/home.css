@@ -143,3 +143,29 @@ a.card:hover .card__icon { transform: scale(1.15) rotate(-6deg); }
 .card h2 { padding-right: 44px; }
 
 .hero { padding-bottom: 8px; }
+
+.crest-row a { display: grid; place-items: center; min-height: 36px; border-radius: var(--radius-sm); }
+
+.crest-row a:hover .crest { transform: translateY(-3px) scale(1.12); }
+
+.hero__note { margin: var(--space-3) 0 0; color: var(--color-text-muted); font-size: 0.88rem; }
+
+.hero__note a { color: var(--color-info); font-weight: var(--weight-semibold); white-space: nowrap; }
+
+.all-done {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  background: rgb(var(--primary-rgb) / 0.12);
+  border: 1px solid rgb(var(--primary-rgb) / 0.4);
+  animation: rise var(--dur-slow) ease both;
+}
+
+.all-done p { margin: 0; }
+
+.daily__state b { font-family: var(--display); font-size: 1.1rem; }

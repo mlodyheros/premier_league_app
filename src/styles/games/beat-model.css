@@ -57,3 +57,25 @@
 .bm__reveal .btn--big { justify-self: stretch; }
 
 .bm__reveal .verdict, .bm__reveal .btn--big { justify-self: stretch; }
+
+.bm__buttons { margin-top: var(--space-3); }
+
+.bm__next { display: grid; margin-top: var(--space-3); }
+
+.gapbar { margin: -4px 0 14px; }
+
+.gapbar__track { position: relative; height: 10px; border-radius: 999px; background: var(--color-bg-sunken); border: 1px solid var(--color-border); overflow: hidden; }
+
+.gapbar__fill { position: absolute; top: 0; bottom: 0; transform-origin: left; animation: grow var(--dur-slow) var(--ease-out) both; }
+
+.gapbar__fill.up { background: var(--color-primary); }
+
+.gapbar__fill.down { background: var(--color-accent); transform-origin: right; }
+
+.gapbar__tm { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 2px; margin-left: -1px; background: var(--color-text); }
+
+.gapbar__labels { display: flex; justify-content: space-between; margin-top: 3px; color: var(--color-text-muted); font-size: 0.68rem; font-weight: var(--weight-semibold); }
+
+@media (max-width: 720px) {
+  .bm__buttons .btn--huge { font-size: 1.05rem; padding-left: var(--space-2); padding-right: var(--space-2); white-space: nowrap; }
+}

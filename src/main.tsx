@@ -8,3 +8,13 @@ import { loadDataset } from './data/store';
 
 loadDataset();
 render(<App />, document.getElementById('app')!);
+
+// Offline play and "Add to Home Screen". Only in the build: in development the
+// cache would serve stale modules.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {
+      /* no offline support; the site still works */
+    });
+  });
+}

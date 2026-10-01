@@ -77,6 +77,15 @@ export function BottomNav() {
               );
             })}
             <li>
+              <a href={href('stats')} onClick={close} aria-current={here === 'stats' ? 'page' : undefined}>
+                <span aria-hidden="true">📊</span>
+                <span>
+                  <b>{t('nav.players')}</b>
+                  <small>{t('players.blurb')}</small>
+                </span>
+              </a>
+            </li>
+            <li>
               <a href={href('how')} onClick={close} aria-current={here === 'how' ? 'page' : undefined}>
                 <span aria-hidden="true">📘</span>
                 <span>

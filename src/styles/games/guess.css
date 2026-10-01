@@ -91,3 +91,9 @@
 .guess__tiles .tile--near::after { content: '≈'; }
 .guess__legend .tile--hit::before { content: '✓ '; }
 .guess__legend .tile--near::before { content: '≈ '; }
+
+.guess__status { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-1) var(--space-2); margin: var(--space-1) 0 0; color: var(--color-text-muted); font-size: 0.85rem; flex-basis: 100%; }
+
+.guess__hint { flex-basis: 100%; margin: var(--space-1) 0 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: rgb(var(--warning-rgb) / 0.12); color: var(--color-warning); font-weight: var(--weight-semibold); animation: rise var(--dur-base) ease both; }
+
+.guess__hint .club-chip { color: var(--color-text); }

@@ -78,7 +78,24 @@ it stops, haptics included.
 - **Wider screens:** the header's links.
 - **Every game** starts with the same header (back, icon, title, score,
   one-line pitch), keeps its rules folded under "How to play", and ends with
-  links to the other games.
+  links to the other games. On a return visit the header shrinks to one line
+  (back, icon, title, ⓘ for the rules): the game itself starts higher.
+
+## Phone layouts
+
+- **The answer is always in thumb reach.** A game's answer buttons carry
+  `.action-bar`: on phones they stick above the bottom bar however long the
+  card above them is (Higher or Lower, Beat the Model).
+- **What the question is about comes first.** `PlayerCard`'s `head` slot sits
+  between the name and the record: Beat the Model's two prices, Price Tag's
+  slider. The record follows for whoever wants it.
+- **Pickers are bottom sheets.** Budget XI's player list opens as a sheet over
+  the pitch (backdrop, ✕, Escape), so choosing never scrolls away from the slot.
+- **`.page` must not keep a transform**: its entrance animation fills
+  `backwards` only, or `position: fixed` children would be fixed to the page
+  instead of the screen.
+- **Choices in a row are chips** (`Chips`, a radio group): Higher or Lower's
+  themes, the Players page's positions. They scroll sideways rather than wrap.
 
 ## Accessibility checklist
 

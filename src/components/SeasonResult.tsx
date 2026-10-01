@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact';
-import { useEffect } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { useCountUp } from '../hooks/useCountUp';
 import { t, tj } from '../i18n';
 import { posLabel } from '../i18n/labels';
@@ -10,6 +10,8 @@ import type { PlayedSeason } from '../lib/playSeason';
 import { DIFFICULTY, type TableRow } from '../lib/season';
 import { rating, type Formation, type Lineup } from '../lib/strength';
 import { Avatar, Crest } from './Avatar';
+import { shareImage, type Cell } from '../lib/shareImage';
+import { notifyShare } from './Toast';
 
 export function userRow(table: readonly TableRow[]): TableRow {
   return table.find((r) => r.id === USER_TEAM_ID)!;
@@ -45,7 +47,10 @@ export function SeasonResult({
   animate,
   chips = [],
   actions,
+  imageTitle,
 }: {
+  /** The game's name: offers the result as a picture too. */
+  imageTitle?: string;
   season: PlayedSeason;
   formation: Formation;
   lineup: Lineup;
@@ -54,6 +59,8 @@ export function SeasonResult({
   actions?: ComponentChildren;
 }) {
   const row = userRow(season.table);
+  const [match, setMatch] = useState<number | null>(null);
+  const picked = match === null ? null : season.results[match];
   const earned = seasonBadges(row, season.position);
   const won = useCountUp(row.won, animate, 1400);
   const drawn = useCountUp(row.drawn, animate, 1400);
@@ -69,6 +76,18 @@ export function SeasonResult({
     }, 1500);
     return () => clearTimeout(timer);
   }, [animate]);
+
+  async function shareAsImage() {
+    const cells: Cell[] = season.results.map((r) => (r.outcome === 'W' ? 'good' : r.outcome === 'D' ? 'mid' : 'bad'));
+    const result = await shareImage({
+      kicker: [imageTitle, ...chips].join(' · '),
+      big: `${row.points} ${t('pt.pointsWord')}`,
+      sub: t('season.line', { record: `${row.won}-${row.drawn}-${row.lost}`, pos: ordinal(season.position) }),
+      rows: [cells.slice(0, 19), cells.slice(19)],
+      file: 'pl-games-season',
+    });
+    notifyShare(result);
+  }
 
   const boost = season.difficulty === 'arcade' ? t('road.boost', { n: DIFFICULTY.arcade.bonus }) : '';
   const scorers = season.scorers ?? {};
@@ -118,18 +137,44 @@ export function SeasonResult({
         </p>
         <ol class="strip" aria-label={t('road.results')}>
           {season.results.map((r, i) => (
-            <li
-              class={`strip__m strip__m--${r.outcome}`}
-              style={{ '--i': i }}
-              title={`${i + 1}. ${t(r.home ? 'road.home' : 'road.away', { opp: r.opponent })} ${r.goalsFor}-${r.goalsAgainst}`}
-            >
-              <span class="sr-only">
-                {t(r.home ? 'road.home' : 'road.away', { opp: r.opponent })} {r.goalsFor}-{r.goalsAgainst}
-              </span>
+            <li style={{ '--i': i }} class={`strip__m strip__m--${r.outcome} ${match === i ? 'on' : ''}`}>
+              <button
+                type="button"
+                aria-pressed={match === i}
+                title={`${i + 1}. ${t(r.home ? 'road.home' : 'road.away', { opp: r.opponent })} ${r.goalsFor}-${r.goalsAgainst}`}
+                onClick={() => setMatch(match === i ? null : i)}
+              >
+                <span class="sr-only">
+                  {i + 1}. {t(r.home ? 'road.home' : 'road.away', { opp: r.opponent })} {r.goalsFor}-{r.goalsAgainst}
+                </span>
+              </button>
             </li>
           ))}
         </ol>
-        {actions && <div class="end__actions">{actions}</div>}
+        <p class="strip__detail" aria-live="polite">
+          {picked ? (
+            <>
+              <span class={`strip__badge strip__badge--${picked.outcome}`}>{t(`road.outcome.${picked.outcome}`)}</span>
+              {t('road.matchLine', {
+                n: match! + 1,
+                match: t(picked.home ? 'road.home' : 'road.away', { opp: picked.opponent }),
+                score: `${picked.goalsFor}:${picked.goalsAgainst}`,
+              })}
+            </>
+          ) : (
+            t('road.tapMatch')
+          )}
+        </p>
+        {(actions || imageTitle) && (
+          <div class="end__actions">
+            {actions}
+            {imageTitle && (
+              <button class="btn" onClick={shareAsImage}>
+                📷 {t('common.shareImage')}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div class="xi-reveal">

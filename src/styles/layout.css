@@ -87,7 +87,8 @@
   .site-header__tools { margin-left: auto; }
 }
 
-.page { animation: page-in var(--dur-slow) var(--ease-out) both; }
+/* "backwards", not "both": a transform left on .page would trap position: fixed children (the Budget XI sheet). */
+.page { animation: page-in var(--dur-slow) var(--ease-out) backwards; }
 
 .toasts {
   position: fixed;

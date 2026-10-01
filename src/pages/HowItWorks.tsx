@@ -1,3 +1,4 @@
+import { CHEMISTRY_MAX, CHEMISTRY_STEP } from '../games/road38/logic';
 import { useMemo } from 'preact/hooks';
 import { PlayerCard } from '../components/PlayerCard';
 import { ValueCompare } from '../components/ValueCompare';
@@ -192,7 +193,7 @@ export function HowItWorks() {
           {GAME_NOTES.map(([title, body]) => (
             <div>
               <dt>{t(title)}</dt>
-              <dd>{t(body)}</dd>
+              <dd>{t(body, { chem: formatDecimal(CHEMISTRY_STEP), chemMax: formatDecimal(CHEMISTRY_MAX) })}</dd>
             </div>
           ))}
         </dl>

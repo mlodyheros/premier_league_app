@@ -13,7 +13,11 @@ import { getBest, submitBest } from '../../lib/records';
 import { pick } from '../../lib/rng';
 import { shareText, siteUrl } from '../../lib/share';
 import { notifyShare } from '../../components/Toast';
-import { isCorrect, nextChallenger, pool, type Call } from './logic';
+import { Chips } from '../../components/Chips';
+import { PoolNote } from '../../components/PoolNote';
+import { poolLevel } from '../../lib/pools';
+import { readJson, writeJson } from '../../lib/storage';
+import { isCorrect, nextChallenger, pool, THEMES, type Call, type Theme } from './logic';
 
 /** Long enough for the value to count up and the verdict to land. */
 const REVEAL_MS = 1700;
@@ -25,7 +29,11 @@ type Phase = 'ask' | 'reveal' | 'over';
 export function HigherLower() {
   const { players } = useDataset();
   const source = valueSource.value;
-  const candidates = useMemo(() => pool(players), [players]);
+  const [theme, setTheme] = useState<Theme>(() => readJson<Theme>('hlTheme') ?? 'all');
+  const level = poolLevel.value;
+  const candidates = useMemo(() => pool(players, level, theme), [players, level, theme]);
+  /** Records are kept per theme: a goalkeepers-only streak is a different game. */
+  const bestKey = theme === 'all' ? `hl:${source}` : `hl:${source}:${theme}`;
   const recent = useRef<number[]>([]);
 
   const [current, setCurrent] = useState<Player>(() => pick(candidates));
@@ -35,10 +43,10 @@ export function HigherLower() {
   const [streak, setStreak] = useState(0);
   const [phase, setPhase] = useState<Phase>('ask');
   const [lastCall, setLastCall] = useState<{ call: Call; right: boolean } | null>(null);
-  const [best, setBest] = useState(() => getBest(`hl:${source}`) ?? 0);
+  const [best, setBest] = useState(() => getBest(bestKey) ?? 0);
   const [newBest, setNewBest] = useState(false);
 
-  useEffect(() => setBest(getBest(`hl:${source}`) ?? 0), [source]);
+  useEffect(() => setBest(getBest(bestKey) ?? 0), [bestKey]);
 
   // A value-source switch can make the pair tie; draw a new challenger if so.
   useEffect(() => {
@@ -69,14 +77,24 @@ export function HigherLower() {
       }, REVEAL_MS);
     } else {
       setTimeout(() => {
-        const isNew = submitBest(`hl:${source}`, streak);
-        trackEvent(`hl/${source}/streak-${streak < 10 ? streak : Math.floor(streak / 5) * 5}`);
+        const isNew = submitBest(bestKey, streak);
+        trackEvent(`hl/${source}/${theme}/streak-${streak < 10 ? streak : Math.floor(streak / 5) * 5}`);
         setNewBest(isNew && streak > 0);
         if (isNew && streak >= 5) celebrate(streak >= 15);
-        setBest(getBest(`hl:${source}`) ?? 0);
+        setBest(getBest(bestKey) ?? 0);
         setPhase('over');
       }, REVEAL_MS);
     }
+  }
+
+  // A new theme or level means a new pool: start over from it.
+  useEffect(() => {
+    if (!candidates.some((p) => p.id === current.id)) restart();
+  }, [candidates]);
+
+  function chooseTheme(next: Theme) {
+    setTheme(next);
+    writeJson('hlTheme', next);
   }
 
   function restart() {
@@ -91,7 +109,8 @@ export function HigherLower() {
   }
 
   async function share() {
-    const head = t('hl.share', { n: streak, icon: streak >= 10 ? '🔥' : '⚽', values: shareValues(source) });
+    const themeName = theme === 'all' ? '' : ` (${t(`hl.theme.${theme}`)})`;
+    const head = t('hl.share', { n: streak, icon: streak >= 10 ? '🔥' : '⚽', values: shareValues(source) }) + themeName;
     notifyShare(await shareText(`${head}\n${siteUrl()}#/higher-lower`));
   }
 
@@ -119,6 +138,20 @@ export function HigherLower() {
         </p>
       </GameHeader>
 
+      {(streak === 0 || phase === 'over') && (
+        <>
+          <Chips
+            label={t('hl.theme')}
+            options={THEMES}
+            value={theme}
+            onChange={chooseTheme}
+            name={(o) => t(`hl.theme.${o}`)}
+            disabled={phase === 'reveal'}
+          />
+          <PoolNote />
+        </>
+      )}
+
       <div class="hl__pair" key={current.id}>
         <PlayerCard player={current}>
           <p class="hl__value">{formatEur(valueOf(current, source))}</p>
@@ -132,16 +165,20 @@ export function HigherLower() {
           {revealed ? (
             <RevealValue value={valueOf(challenger, source)} right={!!lastCall?.right} />
           ) : (
-            <div class="hl__buttons">
-              <button class="btn btn--primary" onClick={() => call('higher')}>
-                {t('hl.higher')}
-              </button>
-              <button class="btn btn--accent" onClick={() => call('lower')}>
-                {t('hl.lower')}
-              </button>
-            </div>
+            <p class="hl__question">{t('hl.question', { a: current.name })}</p>
           )}
         </PlayerCard>
+
+        {!revealed && (
+          <div class="hl__buttons action-bar">
+            <button class="btn btn--primary btn--big" onClick={() => call('higher')}>
+              {t('hl.higher')}
+            </button>
+            <button class="btn btn--accent btn--big" onClick={() => call('lower')}>
+              {t('hl.lower')}
+            </button>
+          </div>
+        )}
       </div>
 
       {phase === 'over' && (

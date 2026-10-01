@@ -137,3 +137,58 @@
 .seg label:has(input:focus-visible) { outline: 2px solid var(--color-info); outline-offset: 2px; }
 
 .seg label:not(.on):hover { color: var(--color-text); }
+
+/* Chips: a scrollable single-choice row. */
+
+.chips { display: flex; gap: var(--space-2); overflow-x: auto; scrollbar-width: none; margin: 0 calc(-1 * var(--gutter)); padding: 2px var(--gutter); }
+
+.chips::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex-shrink: 0;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border-radius: 999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+
+.chip:hover:not(:disabled) { color: var(--color-text); }
+
+.chip[aria-checked='true'] { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); }
+
+.chip:disabled { opacity: 0.5; cursor: default; }
+
+/* "Level: Normal · Change" under a free-play round. */
+
+.pool-note { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-3); color: var(--color-text-muted); font-size: 0.88rem; }
+
+.pool-note b { color: var(--color-text); }
+
+.link-btn { min-height: var(--touch-min); padding: 0 var(--space-2); background: none; border: 0; color: var(--color-info); font: inherit; font-weight: var(--weight-semibold); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+/* First-visit onboarding (a dialog styled like Settings). */
+
+.onboard .settings__inner { justify-items: center; text-align: center; padding: var(--space-5) var(--space-4) var(--space-4); }
+
+.onboard h2 { margin: 0; font-size: 1.8rem; }
+
+.onboard__icon { font-size: 2.6rem; line-height: 1; }
+
+.onboard__body { margin: 0; color: var(--color-text-muted); line-height: 1.55; }
+
+.onboard__body b { color: var(--color-text); }
+
+.onboard__dots { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; }
+
+.onboard__dots li { width: 8px; height: 8px; border-radius: 50%; background: var(--color-border-strong); transition: background-color var(--dur-base) ease, transform var(--dur-base) ease; }
+
+.onboard__dots li.on { background: var(--color-primary); transform: scale(1.25); }
+
+.onboard__actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); width: 100%; }

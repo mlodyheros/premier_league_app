@@ -1,6 +1,7 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { DailyDone, ModeTabs } from '../../components/ModeTabs';
+import { PoolNote } from '../../components/PoolNote';
 import { PlayerCard } from '../../components/PlayerCard';
 import { useCountdown } from '../../hooks/useCountdown';
 import { useDataset } from '../../data/store';
@@ -17,7 +18,8 @@ import { dayNumber, shuffled, todayKey } from '../../lib/rng';
 import { shareText, siteUrl } from '../../lib/share';
 import { notifyShare } from '../../components/Toast';
 import { readJson, writeJson } from '../../lib/storage';
-import { emoji, eurToSlider, MAX_POINTS, pool, ROUNDS, score, SLIDER_MID, sliderToEur } from './logic';
+import { emoji, eurToSlider, legacyPool, MAX_POINTS, ROUNDS, score, SLIDER_MID, sliderToEur, stepPrice } from './logic';
+import { dailyPoolFor, poolLevel, poolOf } from '../../lib/pools';
 
 const GAME = 'price';
 const START = eurToSlider(SLIDER_MID);
@@ -37,13 +39,15 @@ export function PriceTag() {
   const { players } = useDataset();
   const [day] = useState(todayKey);
   const [mode, setMode] = useState<Mode>(() => readJson<Mode>(MODE_KEY) ?? 'daily');
-  const candidates = useMemo(() => pool(players), [players]);
-
-  const dailyRound = useMemo(() => shuffled(candidates, dailyRand(GAME, day)).slice(0, ROUNDS), [candidates, day]);
+  const dailyRound = useMemo(
+    () => shuffled(dailyPoolFor(players, day, legacyPool), dailyRand(GAME, day)).slice(0, ROUNDS),
+    [players, day],
+  );
+  const practicePool = () => poolOf(players, poolLevel.value);
   const [daily, setDaily] = useState<Progress>(
     () => readJson<Progress>(dailyKey(day)) ?? { source: valueSource.value, guesses: [] },
   );
-  const [practiceRound, setPracticeRound] = useState(() => shuffled(candidates).slice(0, ROUNDS));
+  const [practiceRound, setPracticeRound] = useState(() => shuffled(practicePool()).slice(0, ROUNDS));
   const [practice, setPractice] = useState<Progress>({ source: valueSource.value, guesses: [] });
 
   function switchMode(m: Mode) {
@@ -57,7 +61,7 @@ export function PriceTag() {
   }
 
   function newPractice() {
-    setPracticeRound(shuffled(candidates).slice(0, ROUNDS));
+    setPracticeRound(shuffled(practicePool()).slice(0, ROUNDS));
     setPractice({ source: valueSource.value, guesses: [] });
   }
 
@@ -127,7 +131,7 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
       const sum = next.reduce((a, g, i) => a + score(g, valueOf(round[i], source)), 0);
       setNewBest(submitBest(bestKey, sum));
       setBest(getBest(bestKey));
-      if (mode === 'daily') recordDaily(GAME, day);
+      if (mode === 'daily') recordDaily(GAME, day, true, `${sum}/${ROUNDS * MAX_POINTS}`);
       trackEvent(`price/${mode}/${source}/score-${Math.floor(sum / 50) * 50}`);
     }
   }
@@ -165,7 +169,12 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
           <b>{best ?? '–'}</b>
         </span>
       </div>
-      {mode === 'practice' && <p class="mode-help">{t('mode.practiceHint')}</p>}
+      {mode === 'practice' && (
+        <>
+          <p class="mode-help">{t('mode.practiceHint')}</p>
+          <PoolNote />
+        </>
+      )}
 
       {switched && !finished && <p class="notice-inline">{t('pt.locked', { values: valuesPhrase(source) })}</p>}
 
@@ -181,74 +190,79 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
         ))}
       </ol>
 
-      <PlayerCard player={player}>
-        {!revealed ? (
-          <div class="pt__guess">
-            <output class="pt__amount" for="pt-slider">
-              {formatEur(guess)}
-            </output>
-            <input
-              id="pt-slider"
-              class="pt__slider"
-              type="range"
-              min={0}
-              max={1}
-              step={0.001}
-              value={slider}
-              aria-label={t('pt.aria')}
-              aria-valuetext={formatEur(guess)}
-              onInput={(e) => setSlider(Number((e.target as HTMLInputElement).value))}
-            />
-            <div class="pt__scale" aria-hidden="true">
-              {[500_000, 15_000_000, 40_000_000, 250_000_000].map((v) => (
-                <span style={{ left: `${eurToSlider(v) * 100}%` }}>{formatEur(v, undefined, true)}</span>
-              ))}
-            </div>
-            <div class="pt__nudge">
-              <button class="btn btn--ghost" onClick={() => setSlider((s) => Math.max(0, s - 0.004))} aria-label={t('pt.less')}>
-                −
-              </button>
-              <button class="btn btn--primary" onClick={lockIn}>
-                {t('pt.lock')}
-              </button>
-              <button class="btn btn--ghost" onClick={() => setSlider((s) => Math.min(1, s + 0.004))} aria-label={t('pt.more')}>
-                +
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div class="pt__reveal">
-            <div class={`pt__score ${lastPoints! >= 60 ? 'good' : lastPoints! >= 30 ? 'mid' : 'bad'}`}>
-              <span class="pt__points">
-                +{Math.round(pointsShown)}
-                <small>{t('pt.pointsWord')}</small>
-              </span>
-              <span class="pt__emoji-big" aria-hidden="true">
-                {emoji(lastPoints!)}
-              </span>
-            </div>
-            <dl class="pt__compare">
-              <div>
-                <dt>{t('pt.yourGuess')}</dt>
-                <dd>{formatEur(guesses[index])}</dd>
+      <PlayerCard
+        player={player}
+        head={
+          <>
+            {!revealed ? (
+              <div class="pt__guess">
+                <output class="pt__amount" for="pt-slider">
+                  {formatEur(guess)}
+                </output>
+                <input
+                  id="pt-slider"
+                  class="pt__slider"
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.001}
+                  value={slider}
+                  aria-label={t('pt.aria')}
+                  aria-valuetext={formatEur(guess)}
+                  onInput={(e) => setSlider(Number((e.target as HTMLInputElement).value))}
+                />
+                <div class="pt__scale" aria-hidden="true">
+                  {[500_000, 15_000_000, 40_000_000, 250_000_000].map((v) => (
+                    <span style={{ left: `${eurToSlider(v) * 100}%` }}>{formatEur(v, undefined, true)}</span>
+                  ))}
+                </div>
+                <div class="pt__nudge">
+                  <button class="btn btn--ghost" onClick={() => setSlider((s) => eurToSlider(stepPrice(sliderToEur(s), -1)))} aria-label={t('pt.less')}>
+                    −
+                  </button>
+                  <button class="btn btn--primary" onClick={lockIn}>
+                    {t('pt.lock')}
+                  </button>
+                  <button class="btn btn--ghost" onClick={() => setSlider((s) => eurToSlider(stepPrice(sliderToEur(s), 1)))} aria-label={t('pt.more')}>
+                    +
+                  </button>
+                </div>
               </div>
-              <div class="pt__actual">
-                <dt>{valuePhrase(source)}</dt>
-                <dd>{formatEur(actualShown)}</dd>
+            ) : (
+              <div class="pt__reveal">
+                <div class={`pt__score ${lastPoints! >= 60 ? 'good' : lastPoints! >= 30 ? 'mid' : 'bad'}`}>
+                  <span class="pt__points">
+                    +{Math.round(pointsShown)}
+                    <small>{t('pt.pointsWord')}</small>
+                  </span>
+                  <span class="pt__emoji-big" aria-hidden="true">
+                    {emoji(lastPoints!)}
+                  </span>
+                </div>
+                <dl class="pt__compare">
+                  <div>
+                    <dt>{t('pt.yourGuess')}</dt>
+                    <dd>{formatEur(guesses[index])}</dd>
+                  </div>
+                  <div class="pt__actual">
+                    <dt>{valuePhrase(source)}</dt>
+                    <dd>{formatEur(actualShown)}</dd>
+                  </div>
+                  <div>
+                    <dt>{t('pt.off')}</dt>
+                    <dd>{formatPct(guesses[index] / actual - 1)}</dd>
+                  </div>
+                </dl>
+                {!finished && (
+                  <button class="btn btn--primary" onClick={nextPlayer}>
+                    {t('common.nextPlayerArrow')}
+                  </button>
+                )}
               </div>
-              <div>
-                <dt>{t('pt.off')}</dt>
-                <dd>{formatPct(guesses[index] / actual - 1)}</dd>
-              </div>
-            </dl>
-            {!finished && (
-              <button class="btn btn--primary" onClick={nextPlayer}>
-                {t('common.nextPlayerArrow')}
-              </button>
             )}
-          </div>
-        )}
-      </PlayerCard>
+          </>
+        }
+      />
 
       {finished && (
         <div class={`end ${total >= 300 ? 'end--win' : 'end--lose'}`}>

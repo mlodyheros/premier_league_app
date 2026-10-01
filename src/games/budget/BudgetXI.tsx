@@ -18,7 +18,8 @@ import { shareText, siteUrl } from '../../lib/share';
 import { notifyShare } from '../../components/Toast';
 import { readJson, writeJson } from '../../lib/storage';
 import { formationByKey, FORMATIONS, teamStrength, type Lineup, type Slot } from '../../lib/strength';
-import { grade, isComplete, options, spent, themeFor, THEMES, type SortKey } from './logic';
+import { autoFill, defaultSort, grade, isComplete, options, spent, themeFor, THEMES, type SortKey } from './logic';
+import { routeParam } from '../../router';
 import { SeasonResult } from '../../components/SeasonResult';
 import { playSeason, type PlayedSeason } from '../../lib/playSeason';
 import { POINTS_TARGET, pointsOdds } from '../../lib/season';
@@ -54,8 +55,12 @@ export function BudgetXI() {
   const [formationKey, setFormationKey] = useState(saved?.formation ?? '433');
   const [picks, setPicks] = useState<Record<string, string>>(saved?.picks ?? {});
   const [selected, setSelected] = useState<string | null>(null);
+  // "#/budget?club=ARS" (a crest on the home page) opens the picker filtered to that club.
+  const clubParam = routeParam('club');
+  const [clubFilter, setClubFilter] = useState<string | null>(clubParam && meta.clubs[clubParam] ? clubParam : null);
   const [query, setQuery] = useState('');
-  const [sort, setSort] = useState<SortKey>('rating');
+  const [sort, setSort] = useState<SortKey>(() => defaultSort(budget));
+  useEffect(() => setSort(defaultSort(budget)), [budget]);
   const pickerRef = useRef<HTMLDivElement>(null);
   const themesRef = useRef<HTMLDivElement>(null);
 
@@ -90,14 +95,41 @@ export function BudgetXI() {
     if (!slot) return [];
     const q = fold(query.trim());
     return options(players, slot, lineup, budget, source, sort)
+      .filter((o) => !clubFilter || o.player.club === clubFilter)
       .filter((o) => !q || fold(`${o.player.name} ${o.player.short} ${meta.clubs[o.player.club].short}`).includes(q))
       .slice(0, MAX_ROWS);
-  }, [slot, query, sort, picks, budget, source, players]);
+  }, [slot, query, sort, picks, budget, source, players, clubFilter]);
+
+  // Coming from a crest: open the first empty slot straight away.
+  useEffect(() => {
+    if (clubFilter && !selected) {
+      const empty = formation.slots.find((s) => !picks[s.id]);
+      if (empty) setSelected(empty.id);
+    }
+  }, []);
+
+  // On phones the picker is a bottom sheet: Escape closes it.
+  useEffect(() => {
+    if (!selected) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setSelected(null);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selected]);
+
+  function fillRest() {
+    const filled = autoFill(players, formation, lineup, budget, source);
+    setPicks(Object.fromEntries(Object.entries(filled).flatMap(([id, p]) => (p ? [[id, p.name]] : []))));
+    setSelected(null);
+    trackEvent(`budget/${theme.key}/autofill`);
+  }
 
   function openSlot(s: Slot) {
     setSelected(s.id === selected ? null : s.id);
     setQuery('');
-    requestAnimationFrame(() => pickerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+    // On phones the picker is a sheet over the page; elsewhere bring it into view.
+    if (!matchMedia('(max-width: 720px)').matches) {
+      requestAnimationFrame(() => pickerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+    }
   }
 
   function choose(p: Player) {
@@ -208,6 +240,9 @@ export function BudgetXI() {
             ))}
           </select>
         </label>
+        <button class="btn" onClick={fillRest} disabled={isComplete(formation, lineup)}>
+          ✨ {t('budget.autofill')}
+        </button>
         <button class="btn btn--ghost" onClick={reset} disabled={!Object.keys(picks).length}>
           {t('budget.clear')}
         </button>
@@ -227,7 +262,8 @@ export function BudgetXI() {
       <div class="squad-layout">
         <Pitch formation={formation} lineup={lineup} source={source} selected={selected} onSlot={openSlot} />
 
-        <div class="picker" ref={pickerRef}>
+        {slot && <div class="picker-backdrop" onClick={() => setSelected(null)} aria-hidden="true" />}
+        <div class={`picker ${slot ? 'picker--open' : ''}`} ref={pickerRef} role={slot ? 'dialog' : undefined} aria-label={slot ? posLabel(slot.type) : undefined}>
           {!slot ? (
             <p class="picker__hint">
               {complete ? t('budget.hintSwap') : t('budget.hintPick')}
@@ -236,12 +272,24 @@ export function BudgetXI() {
             <>
               <div class="picker__head">
                 <h2>{posLabel(slot.type)}</h2>
+                <span class="picker__left">{tj('budget.left', { v: <b>{formatEur(Math.max(0, budget - used))}</b> })}</span>
                 {lineup[slot.id] && (
                   <button class="btn btn--ghost btn--sm" onClick={removeFromSlot}>
                     {t('budget.remove', { name: lineup[slot.id]!.short })}
                   </button>
                 )}
+                <button class="picker__close" onClick={() => setSelected(null)} aria-label={t('common.close')}>
+                  ✕
+                </button>
               </div>
+              {clubFilter && (
+                <p class="picker__filter">
+                  {t('budget.clubFilter', { club: meta.clubs[clubFilter].name })}
+                  <button class="link-btn" onClick={() => setClubFilter(null)}>
+                    {t('budget.clubFilterOff')}
+                  </button>
+                </p>
+              )}
               <div class="picker__tools">
                 <input
                   type="search"
@@ -323,6 +371,7 @@ export function BudgetXI() {
           lineup={lineup}
           animate
           chips={[`${theme.icon} ${t(`budget.theme.${theme.key}`)}`]}
+          imageTitle={t('game.budget.title')}
         />
       )}
       <OtherGames current="budget" />

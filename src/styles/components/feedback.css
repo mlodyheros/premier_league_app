@@ -17,9 +17,9 @@
 
 .stats__tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 0; }
 
-.stats__tiles div { background: var(--color-bg-sunken); border-radius: var(--radius-sm); padding: 8px; text-align: center; }
+.stats__tiles div { display: flex; flex-direction: column-reverse; justify-content: flex-end; background: var(--color-bg-sunken); border-radius: var(--radius-sm); padding: 8px 4px; text-align: center; min-width: 0; }
 
-.stats__tiles dt { color: var(--color-text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.stats__tiles dt { color: var(--color-text-muted); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.2; overflow-wrap: anywhere; }
 
 .stats__tiles dd { margin: 0; font-family: var(--display); font-size: 1.6rem; font-weight: var(--weight-bold); }
 

@@ -92,3 +92,53 @@ export function grade(strength: number): string {
   if (strength >= 75) return 'D';
   return 'E';
 }
+
+/**
+ * Fill the empty slots as well as the money left allows. Each slot first gets
+ * a fair share of what is left (keeping enough back for the cheapest player
+ * in every other empty slot), then a second pass spends any change on upgrades.
+ */
+export function autoFill(
+  players: readonly Player[],
+  formation: Formation,
+  lineup: Lineup,
+  budget: number,
+  source: ValueSource,
+): Lineup {
+  const out: Lineup = { ...lineup };
+  const empty = formation.slots.filter((s) => !out[s.id]);
+  const taken = () => new Set(Object.values(out).map((p) => p?.id));
+  const eligible = (slot: Slot) =>
+    players.filter((p) => fit(p, slot.type) && !taken().has(p.id)).map((p) => ({ p, r: slotRating(p, slot, source), v: valueOf(p, source) }));
+  const cheapest = (slot: Slot) => Math.min(...eligible(slot).map((o) => o.v));
+  const left = () => budget - spent(out, source);
+
+  empty.forEach((slot, i) => {
+    const rest = empty.slice(i + 1).filter((s) => !out[s.id]);
+    const reserve = rest.reduce((sum, s) => sum + cheapest(s), 0);
+    const share = (left() - reserve) / (rest.length + 1);
+    const cap = Math.min(left() - reserve, share * 1.6);
+    const options = eligible(slot).filter((o) => o.v <= cap);
+    const pool = options.length ? options : eligible(slot).filter((o) => o.v <= left());
+    const best = pool.sort((a, b) => b.r - a.r || a.v - b.v)[0];
+    if (best) out[slot.id] = best.p;
+  });
+
+  // Upgrades with the change, biggest rating gain first.
+  for (const slot of empty) {
+    const current = out[slot.id];
+    if (!current) continue;
+    const room = left() + valueOf(current, source);
+    const now = slotRating(current, slot, source);
+    const better = eligible(slot)
+      .filter((o) => o.v <= room && o.r > now)
+      .sort((a, b) => b.r - a.r)[0];
+    if (better) out[slot.id] = better.p;
+  }
+  return out;
+}
+
+/** Tight budgets are about value for money; big ones about the best player. */
+export function defaultSort(budget: number): SortKey {
+  return budget <= 200_000_000 ? 'bargain' : 'rating';
+}

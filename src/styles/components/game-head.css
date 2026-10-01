@@ -96,3 +96,40 @@
 .other-games a:active { transform: scale(0.97); }
 
 .rules summary:hover { color: var(--color-text); }
+
+/* Return visits: one line, rules behind ⓘ. */
+
+.game-head--compact { gap: var(--space-2); margin-bottom: var(--space-3); }
+
+.game-head--compact .game-head__row { flex-wrap: nowrap; gap: var(--space-2); }
+
+.game-head--compact .game-head__icon { width: 36px; height: 36px; border-radius: 11px; font-size: 1.15rem; }
+
+.game-head--compact .game-head__title { flex: 1; min-width: 0; font-size: clamp(1.45rem, 5.5vw, 2rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.game-head__home,
+.game-head__info {
+  display: grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 1.2rem;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--dur-fast) ease, background-color var(--dur-fast) ease;
+}
+
+.game-head__home { margin-left: calc(-1 * var(--space-3)); }
+
+.game-head__home:hover,
+.game-head__info:hover,
+.game-head__info.on { color: var(--color-info); background: rgb(var(--info-rgb) / 0.1); }
+
+.game-head__score .scorebug { margin-left: 0; }
+
+.rules--inline { padding: var(--space-3); animation: rise var(--dur-base) ease both; }

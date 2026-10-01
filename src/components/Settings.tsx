@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { valueSource, type ValueSource } from '../data/valueSource';
 import { lang, LANGS, t } from '../i18n';
 import { analyticsAvailable, analyticsEnabled } from '../lib/analytics';
+import { poolLevel, POOL_LEVELS } from '../lib/pools';
 import { clearProgress } from '../lib/storage';
 
 /** Open the settings from anywhere (the header's gear, the bottom bar's "More"). */
@@ -101,6 +102,25 @@ export function Settings() {
               ))}
             </div>
             <p class="settings__help">{t('settings.valuesHelp')}</p>
+          </fieldset>
+
+          <fieldset>
+            <legend>{t('pool.label')}</legend>
+            <div class="seg">
+              {POOL_LEVELS.map((lvl) => (
+                <label class={poolLevel.value === lvl ? 'on' : ''}>
+                  <input
+                    type="radio"
+                    name="pool"
+                    value={lvl}
+                    checked={poolLevel.value === lvl}
+                    onChange={() => (poolLevel.value = lvl)}
+                  />
+                  <span>{t(`pool.${lvl}`)}</span>
+                </label>
+              ))}
+            </div>
+            <p class="settings__help">{t(`pool.help.${poolLevel.value}`)}</p>
           </fieldset>
 
           <fieldset>

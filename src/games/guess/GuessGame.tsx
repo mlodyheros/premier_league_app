@@ -14,13 +14,17 @@ import { formatDate, formatEur } from '../../lib/format';
 import { useCountdown } from '../../hooks/useCountdown';
 import { rovingKeys } from '../../lib/a11y';
 import { trackEvent } from '../../lib/analytics';
+import { poolLevel, poolOf } from '../../lib/pools';
+import { PoolNote } from '../../components/PoolNote';
 import { buzz, celebrate } from '../../lib/motion';
+import { saveDailyResult } from '../../lib/daily';
 import { dayNumber, pick, previousDayKey, todayKey } from '../../lib/rng';
 import { shareText, siteUrl } from '../../lib/share';
 import { notifyShare } from '../../components/Toast';
+import { shareImage, type Cell } from '../../lib/shareImage';
 import { loadStats, recordResult, saveStats } from '../../lib/stats';
 import { readJson, writeJson } from '../../lib/storage';
-import { compare, dailyPool, dailyTarget, MAX_GUESSES, shareGrid, type Feedback, type Mark } from './logic';
+import { compare, dailyPool, dailyTarget, HINT_AFTER, MAX_GUESSES, shareGrid, stillPossible, type Feedback, type Mark } from './logic';
 
 type Mode = 'daily' | 'unlimited';
 
@@ -32,17 +36,17 @@ interface Round {
   target: string;
   guesses: string[];
   recorded: boolean;
-  hard?: boolean;
   gaveUp?: boolean;
+  /** The club hint was revealed. */
+  hint?: boolean;
 }
 
 const MODE_KEY = 'guess:mode';
 const dailyKey = (day: string) => `guess:daily:${day}`;
 const UNLIMITED_KEY = 'guess:unlimited';
 
-function newUnlimitedRound(players: Player[], hard: boolean): Round {
-  const pool = hard ? players : dailyPool(players);
-  return { target: pick(pool).name, guesses: [], recorded: false, hard };
+function newUnlimitedRound(players: Player[]): Round {
+  return { target: pick(poolOf(players, poolLevel.value)).name, guesses: [], recorded: false };
 }
 
 export function GuessGame() {
@@ -62,7 +66,7 @@ export function GuessGame() {
       return saved && saved.target === target ? saved : { target, guesses: [], recorded: false };
     }
     const saved = readJson<Round>(UNLIMITED_KEY);
-    return saved && byName.has(saved.target) ? saved : newUnlimitedRound(players, false);
+    return saved && byName.has(saved.target) ? saved : newUnlimitedRound(players);
   }
 
   function switchMode(m: Mode) {
@@ -96,6 +100,7 @@ export function GuessGame() {
     );
     saveStats(statsKey, next);
     setStats(next);
+    if (mode === 'daily') saveDailyResult('guess', day, `${won ? guesses.length : 'X'}/${MAX_GUESSES}`);
     trackEvent(`guess/${mode}/${won ? `won-${guesses.length}` : round.gaveUp ? 'gave-up' : 'lost'}`);
     // Let the last row's tiles flip before the celebration.
     if (won) setTimeout(() => celebrate(guesses.length <= 3), 700);
@@ -113,6 +118,17 @@ export function GuessGame() {
   }
 
   const guessedIds = useMemo(() => new Set(guesses.map((g) => g.id)), [guesses]);
+  // Who could it still be? Counted over the pool the answer was drawn from.
+  const answerPool = useMemo(
+    () => (mode === 'daily' ? dailyPool(players, day) : poolOf(players, poolLevel.value)),
+    [mode, players, day, poolLevel.value],
+  );
+  const possible = useMemo(
+    () => (guesses.length ? stillPossible(answerPool, guesses, feedback, source).length : answerPool.length),
+    [answerPool, round.guesses, source],
+  );
+  const clubKnown = feedback.some((f) => f.club === 'hit');
+  const canHint = !over && !round.hint && !clubKnown && guesses.length >= HINT_AFTER;
   const rows = guesses.map((g, i) => ({ g, f: feedback[i] })).reverse();
 
   return (
@@ -162,6 +178,22 @@ export function GuessGame() {
       {!over && (
         <div class="guess__input">
           <PlayerSearch onPick={guess} exclude={guessedIds} placeholder={t('guess.placeholder', { n: guesses.length + 1, max: MAX_GUESSES })} />
+          <p class="guess__status" aria-live="polite">
+            <span>
+              {t('guess.tries', { n: guesses.length + 1, max: MAX_GUESSES })} ·{' '}
+              {t(guesses.length ? 'guess.possible' : 'guess.pool', { count: Math.max(possible, 1) })}
+            </span>
+            {canHint && (
+              <button class="link-btn" onClick={() => setRound((r) => ({ ...r, hint: true }))}>
+                💡 {t('guess.hintButton')}
+              </button>
+            )}
+          </p>
+          {round.hint && !clubKnown && (
+            <p class="guess__hint">
+              💡 {tj('guess.hintClub', { club: <ClubChip code={target.club} /> })}
+            </p>
+          )}
           {mode === 'unlimited' && guesses.length > 0 && (
             <button class="btn btn--ghost" onClick={giveUp}>
               {t('guess.giveUp')}
@@ -179,24 +211,12 @@ export function GuessGame() {
           mode={mode}
           day={day}
           stats={stats}
-          onNext={
-            mode === 'unlimited'
-              ? () => setRound(newUnlimitedRound(players, !!round.hard))
-              : undefined
-          }
+          hinted={!!round.hint}
+          onNext={mode === 'unlimited' ? () => setRound(newUnlimitedRound(players)) : () => switchMode('unlimited')}
         />
       )}
 
-      {mode === 'unlimited' && !over && guesses.length === 0 && (
-        <label class="check">
-          <input
-            type="checkbox"
-            checked={!!round.hard}
-            onChange={(e) => setRound(newUnlimitedRound(players, (e.target as HTMLInputElement).checked))}
-          />
-          {t('guess.hard', { n: players.length })}
-        </label>
-      )}
+      {mode === 'unlimited' && !over && guesses.length === 0 && <PoolNote />}
 
       {rows.length > 0 && (
         <div class="guess__board" role="table" aria-label={t('guess.board')}>
@@ -268,18 +288,33 @@ interface EndProps {
   mode: Mode;
   day: string;
   stats: ReturnType<typeof loadStats>;
-  onNext?: () => void;
+  hinted: boolean;
+  onNext: () => void;
 }
 
-function EndPanel({ won, gaveUp, target, feedback, mode, day, stats, onNext }: EndProps) {
+function EndPanel({ won, gaveUp, target, feedback, mode, day, stats, hinted, onNext }: EndProps) {
   const { meta } = useDataset();
   const countdown = useCountdown(mode === 'daily');
   const tries = won ? feedback.length : 'X';
 
   async function share() {
     const title = mode === 'daily' ? t('guess.shareDaily', { n: dayNumber(day) }) : t('guess.shareUnlimited');
-    const text = `${title} ${tries}/${MAX_GUESSES} · ${shareValues()}\n${shareGrid(feedback)}\n${siteUrl()}#/guess`;
+    const text = `${title} ${tries}/${MAX_GUESSES}${hinted ? ' 💡' : ''} · ${shareValues()}\n${shareGrid(feedback)}\n${siteUrl()}#/guess`;
     notifyShare(await shareText(text));
+  }
+
+  async function shareAsImage() {
+    const cell: Record<Mark, Cell> = { hit: 'good', near: 'mid', miss: 'none' };
+    const title = mode === 'daily' ? t('guess.shareDaily', { n: dayNumber(day) }) : t('guess.shareUnlimited');
+    notifyShare(
+      await shareImage({
+        kicker: title,
+        big: `${tries}/${MAX_GUESSES}${hinted ? ' 💡' : ''}`,
+        sub: won ? t('guess.won', { n: feedback.length }) : t('guess.lost'),
+        rows: feedback.map((f) => [f.club, f.pos, f.nat, f.age.mark, f.value.mark].map((m) => cell[m])),
+        file: 'pl-games-guess',
+      }),
+    );
   }
 
   return (
@@ -302,11 +337,12 @@ function EndPanel({ won, gaveUp, target, feedback, mode, day, stats, onNext }: E
         <button class="btn" onClick={share}>
           {t('common.shareResult')}
         </button>
-        {onNext && (
-          <button class="btn btn--primary" onClick={onNext}>
-            {t('common.nextPlayer')}
-          </button>
-        )}
+        <button class="btn" onClick={shareAsImage}>
+          📷 {t('common.shareImage')}
+        </button>
+        <button class="btn btn--primary" onClick={onNext}>
+          {mode === 'daily' ? t('guess.keepPlaying') : t('common.nextPlayer')}
+        </button>
       </div>
       {mode === 'daily' && (
         <p class="end__note">

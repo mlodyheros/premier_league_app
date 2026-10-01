@@ -1,6 +1,7 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { useMemo, useState } from 'preact/hooks';
 import { DailyDone, ModeTabs } from '../../components/ModeTabs';
+import { PoolNote } from '../../components/PoolNote';
 import { PlayerCard } from '../../components/PlayerCard';
 import { useCountdown } from '../../hooks/useCountdown';
 import { useDataset } from '../../data/store';
@@ -9,6 +10,7 @@ import { t, tj } from '../../i18n';
 import { trackEvent } from '../../lib/analytics';
 import { buzz, celebrate } from '../../lib/motion';
 import { dailyRand, dailyStreak, recordDaily, type Mode } from '../../lib/daily';
+import { dailyPoolFor, poolLevel, poolOf } from '../../lib/pools';
 import { formatEur, formatPct } from '../../lib/format';
 import { useCountUp } from '../../hooks/useCountUp';
 import { modelGap } from '../../data/valueSource';
@@ -29,8 +31,15 @@ export function BeatModel() {
   const [day] = useState(todayKey);
   const [mode, setMode] = useState<Mode>(() => readJson<Mode>(MODE_KEY) ?? 'daily');
 
-  const dailyQuestions = useMemo(() => drawRound(players, dailyRand(GAME, day)), [players, day]);
-  const [practice, setPractice] = useState(() => drawRound(players));
+  const dailyQuestions = useMemo(
+    () =>
+      drawRound(
+        dailyPoolFor(players, day, () => true),
+        dailyRand(GAME, day),
+      ),
+    [players, day],
+  );
+  const [practice, setPractice] = useState(() => drawRound(poolOf(players, poolLevel.value)));
   const [practiceAnswers, setPracticeAnswers] = useState<Side[]>([]);
   const [dailyAnswers, setDailyAnswers] = useState<Side[]>(() => readJson<Side[]>(dailyKey(day)) ?? []);
 
@@ -52,23 +61,26 @@ export function BeatModel() {
   }
 
   function newPractice() {
-    setPractice(drawRound(players));
+    setPractice(drawRound(poolOf(players, poolLevel.value)));
     setPracticeAnswers([]);
   }
 
   return (
     <section class="game bm">
-      <GameHeader
-        game="beat"
-        tabs={
-          <ModeTabs mode={mode} day={day} onChange={switchMode} />
-        }
-      >
+      <GameHeader game="beat" tabs={<ModeTabs mode={mode} day={day} onChange={switchMode} />}>
         <p>
-          {tj('bm.lede', { over: <b>{t('bm.overWord')}</b>, under: <b>{t('bm.underWord')}</b> })}
+          {tj('bm.lede', {
+            over: <b>{t('bm.overWord')}</b>,
+            under: <b>{t('bm.underWord')}</b>,
+          })}
         </p>
       </GameHeader>
-      {mode === 'practice' && <p class="mode-help">{t('mode.practiceHint')}</p>}
+      {mode === 'practice' && (
+        <>
+          <p class="mode-help">{t('mode.practiceHint')}</p>
+          <PoolNote />
+        </>
+      )}
       <Round
         key={mode === 'daily' ? `daily-${day}` : `practice-${practice.map((p) => p.id).join('-')}`}
         mode={mode}
@@ -118,7 +130,7 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
       setNewBest(isNew);
       if (final >= 8) celebrate(final === ROUNDS);
       setBest(getBest(BEST_KEY));
-      if (mode === 'daily') recordDaily(GAME, day);
+      if (mode === 'daily') recordDaily(GAME, day, true, `${final}/${ROUNDS}`);
       trackEvent(`beat/${mode}/score-${final}`);
     }
   }
@@ -153,46 +165,59 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
         {Array.from({ length: ROUNDS }, (_, i) => (
           <li class={i < marks.length ? (marks[i] ? 'ok' : 'no') : i === index ? 'now' : ''}>
             <span class="sr-only">
-              {t(i < marks.length ? (marks[i] ? 'progress.right' : 'progress.wrong') : i === index ? 'progress.now' : 'progress.todo', {
-                n: i + 1,
-              })}
+              {t(
+                i < marks.length
+                  ? marks[i]
+                    ? 'progress.right'
+                    : 'progress.wrong'
+                  : i === index
+                    ? 'progress.now'
+                    : 'progress.todo',
+                {
+                  n: i + 1,
+                },
+              )}
             </span>
           </li>
         ))}
       </ol>
 
-      <PlayerCard player={player}>
-        <div class={`duel ${revealed ? (right ? 'duel--right' : 'duel--wrong') : ''}`}>
-          <div class="duel__side">
-            <small>{t('bm.tm')}</small>
-            <b>{formatEur(player.tm)}</b>
-          </div>
-          <span class="duel__vs" aria-hidden="true">
-            {revealed ? (player.model > player.tm ? '<' : '>') : '?'}
-          </span>
-          <div class={`duel__side duel__side--model ${revealed ? (player.model > player.tm ? 'up' : 'down') : ''}`}>
-            <small>{t('compare.model')}</small>
-            <b>{revealed ? formatEur(modelShown) : '?'}</b>
-            {revealed && <span class="duel__gap">{formatPct(modelGap(player))}</span>}
-          </div>
-        </div>
-        {!revealed ? (
+      <PlayerCard
+        player={player}
+        head={
           <>
-            <p class="bm__question">{t('bm.question')}</p>
-            <div class="bm__buttons">
-              <button class="btn btn--primary btn--huge" onClick={() => answer('over')}>
-                <span aria-hidden="true">▲</span> {t('bm.more')}
-              </button>
-              <button class="btn btn--accent btn--huge" onClick={() => answer('under')}>
-                <span aria-hidden="true">▼</span> {t('bm.less')}
-              </button>
+            <div class={`duel ${revealed ? (right ? 'duel--right' : 'duel--wrong') : ''}`}>
+              <div class="duel__side">
+                <small>{t('bm.tm')}</small>
+                <b>{formatEur(player.tm)}</b>
+              </div>
+              <span class="duel__vs" aria-hidden="true">
+                {revealed ? (player.model > player.tm ? '<' : '>') : '?'}
+              </span>
+              <div class={`duel__side duel__side--model ${revealed ? (player.model > player.tm ? 'up' : 'down') : ''}`}>
+                <small>{t('compare.model')}</small>
+                <b>{revealed ? formatEur(modelShown) : '?'}</b>
+                {revealed && <span class="duel__gap">{formatPct(modelGap(player))}</span>}
+              </div>
             </div>
+            {revealed ? (
+              <>
+                <GapBar tm={player.tm} model={player.model} />
+                <p class={`verdict ${right ? 'verdict--good' : 'verdict--bad'}`}>{right ? t('bm.right') : t('bm.wrong')}</p>
+              </>
+            ) : (
+              <p class="bm__question">{t('bm.question')}</p>
+            )}
           </>
-        ) : (
+        }
+      >
+        {revealed && (
           <div class="bm__reveal">
-            <p class={`verdict ${right ? 'verdict--good' : 'verdict--bad'}`}>{right ? t('bm.right') : t('bm.wrong')}</p>
             <p class="bm__range">
-              {t('bm.range', { low: formatEur(player.low), high: formatEur(player.high) })}
+              {t('bm.range', {
+                low: formatEur(player.low),
+                high: formatEur(player.high),
+              })}
             </p>
             {modelNotes(player, meta.gameweek).length > 0 && (
               <ul class="bm__notes">
@@ -201,14 +226,28 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
                 ))}
               </ul>
             )}
-            {!finished && (
-              <button class="btn btn--primary btn--big" onClick={() => setRevealed(false)}>
-                {t('common.nextPlayerArrow')}
-              </button>
-            )}
           </div>
         )}
       </PlayerCard>
+
+      {!revealed ? (
+        <div class="bm__buttons action-bar">
+          <button class="btn btn--primary btn--huge" onClick={() => answer('over')}>
+            <span aria-hidden="true">▲</span> {t('bm.more')}
+          </button>
+          <button class="btn btn--accent btn--huge" onClick={() => answer('under')}>
+            <span aria-hidden="true">▼</span> {t('bm.less')}
+          </button>
+        </div>
+      ) : (
+        !finished && (
+          <div class="bm__next action-bar">
+            <button class="btn btn--primary btn--big" onClick={() => setRevealed(false)}>
+              {t('common.nextPlayerArrow')}
+            </button>
+          </div>
+        )
+      )}
 
       {finished && (
         <div class={`end ${score >= 7 ? 'end--win' : 'end--lose'}`}>
@@ -234,5 +273,31 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * The gap at a glance: Transfermarkt in the middle, the model's figure to the
+ * right (more) or left (less), on a scale that tops out at ±60%.
+ */
+function GapBar({ tm, model }: { tm: number; model: number }) {
+  const gap = model / tm - 1;
+  const reach = Math.min(Math.abs(gap) / 0.6, 1) * 50;
+  const up = gap > 0;
+  return (
+    <div class="gapbar" aria-hidden="true">
+      <div class="gapbar__track">
+        <span
+          class={`gapbar__fill ${up ? 'up' : 'down'}`}
+          style={{ [up ? 'left' : 'right']: '50%', width: `${reach}%` }}
+        />
+        <span class="gapbar__tm" />
+      </div>
+      <div class="gapbar__labels">
+        <span>−60%</span>
+        <span>{t('bm.tm')}</span>
+        <span>+60%</span>
+      </div>
+    </div>
   );
 }

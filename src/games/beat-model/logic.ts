@@ -19,8 +19,9 @@ export function sideOf(p: Player): Side {
   return modelGap(p) > 0 ? 'over' : 'under';
 }
 
-export function pool(players: readonly Player[]): Player[] {
-  return players.filter((p) => p.tm >= MIN_VALUE && Math.abs(modelGap(p)) >= MIN_GAP);
+/** Players in `base` the question can fairly be asked about. */
+export function pool(base: readonly Player[]): Player[] {
+  return base.filter((p) => p.tm >= MIN_VALUE && Math.abs(modelGap(p)) >= MIN_GAP);
 }
 
 /**
