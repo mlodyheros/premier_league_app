@@ -616,4 +616,7 @@ export const pl: Dictionary = {
   'players.goalsShort': 'G',
   'players.assistsShort': 'A',
   'how.games.transfer': 'Przejmij klub, sprzedaj do trzech piłkarzy i kup do trzech z innych klubów w ramach budżetu od zarządu. Prognoza (200 symulowanych sezonów z tymi samymi losowaniami) zmienia się po każdym transferze; potem rozegraj sezon i spróbuj skończyć wyżej niż prognoza sprzed okna. Kupiony piłkarz odchodzi ze swojego klubu.',
+  'theme.label': 'Kolory',
+  'theme.night': 'Nocny',
+  'theme.pl': 'Premier League',
 };

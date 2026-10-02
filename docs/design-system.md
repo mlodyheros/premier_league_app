@@ -42,6 +42,17 @@ motion.css          keyframes, and the reduced-motion switch
 | `--color-text`, `--color-text-muted` | body and secondary text | 17:1 and 8:1 on the background |
 | `--color-border`, `--color-border-strong` | decorative lines; control outlines | controls need 3:1 (WCAG 1.4.11) |
 
+**Two palettes**, chosen in Settings → Colours: *Night* (the default above)
+and *Premier League*, the league's own purple `#37003c` for the surfaces with
+its green, raspberry and cyan. A theme only redefines tokens
+(`:root[data-theme='pl']` in `tokens.css`); no component knows which is on. A
+tiny script in `index.html` applies the saved theme before the first paint.
+
+**Scrolling stays cheap**: no `background-attachment: fixed` (the page glow is
+a fixed `body::before` layer instead) and no `backdrop-filter` on the bars over
+scrolling content (header, bottom bar, answer bar), which re-render on every
+frame and made phones stutter.
+
 Colour is never the only signal: Guess the Player marks correct tiles ✓ and
 close ones ≈, progress dots carry screen-reader text, results have titles.
 

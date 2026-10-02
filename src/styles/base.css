@@ -7,15 +7,28 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(1200px 500px at 85% -10%, rgb(var(--accent-rgb) / 0.16), transparent 60%),
-    radial-gradient(900px 500px at -10% 10%, rgb(var(--info-rgb) / 0.10), transparent 60%),
-    var(--color-bg);
-  background-attachment: fixed;
+  background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font);
   font-size: 16px;
   line-height: 1.5;
+}
+
+/*
+ * The glow behind every page, on its own fixed layer. As a fixed body
+ * background (background-attachment: fixed) the browser repainted it on every
+ * frame of a scroll, which made scrolling stutter on phones.
+ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 500px at 85% -10%, rgb(var(--accent-rgb) / 0.16), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgb(var(--info-rgb) / 0.10), transparent 60%);
+  transform: translateZ(0);
 }
 
 a { color: var(--color-info); }

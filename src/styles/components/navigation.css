@@ -11,9 +11,7 @@
     grid-template-columns: repeat(5, 1fr);
     gap: var(--space-1);
     padding: var(--space-1) var(--space-2) max(var(--space-1), env(safe-area-inset-bottom));
-    background: rgb(var(--bg-rgb) / 0.92);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    background: rgb(var(--bg-rgb) / 0.97);
     border-top: 1px solid var(--color-border);
   }
   .bottom-nav__item {

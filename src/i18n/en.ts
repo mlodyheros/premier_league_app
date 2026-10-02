@@ -592,4 +592,7 @@ export const en = {
   'players.goalsShort': 'G',
   'players.assistsShort': 'A',
   'how.games.transfer': 'Take over a club, sell up to three players and buy up to three from the other clubs within the board\'s budget. The forecast (200 simulated seasons with the same random draws) moves with every deal; then play the season and try to finish above the forecast made before the window. A player you buy leaves his club.',
+  'theme.label': 'Colours',
+  'theme.night': 'Night',
+  'theme.pl': 'Premier League',
 } satisfies Record<string, Entry>;

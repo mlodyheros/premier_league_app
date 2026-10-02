@@ -94,6 +94,31 @@ export function Home() {
         </p>
       </div>
 
+      <h2 class="section-title">{t('home.allGames')}</h2>
+      <ul class="cards">
+        {GAME_LIST.map((g) => {
+          const rec = record(g);
+          return (
+            <li>
+              <a class={`card card--${g.id}`} href={href(g.path)}>
+                <span class="card__icon" aria-hidden="true">
+                  <Icon name={g.icon} size={26} />
+                </span>
+                <span class="card__tag">{t(`game.${g.id}.tag`)}</span>
+                <h2>{t(`game.${g.id}.title`)}</h2>
+                <p>{t(`game.${g.id}.blurb`)}</p>
+                <span class="card__foot">
+                  <span class="card__go" aria-hidden="true">
+                    {t('home.play')}
+                  </span>
+                  {rec && <span class="card__best">{rec}</span>}
+                </span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+
       <h2 class="section-title">{t('home.daily')}</h2>
       {allDone && (
         <div class="all-done" role="status">
@@ -143,30 +168,6 @@ export function Home() {
         </a>
       )}
 
-      <h2 class="section-title">{t('home.allGames')}</h2>
-      <ul class="cards">
-        {GAME_LIST.map((g) => {
-          const rec = record(g);
-          return (
-            <li>
-              <a class={`card card--${g.id}`} href={href(g.path)}>
-                <span class="card__icon" aria-hidden="true">
-                  <Icon name={g.icon} size={26} />
-                </span>
-                <span class="card__tag">{t(`game.${g.id}.tag`)}</span>
-                <h2>{t(`game.${g.id}.title`)}</h2>
-                <p>{t(`game.${g.id}.blurb`)}</p>
-                <span class="card__foot">
-                  <span class="card__go" aria-hidden="true">
-                    {t('home.play')}
-                  </span>
-                  {rec && <span class="card__best">{rec}</span>}
-                </span>
-              </a>
-            </li>
-          );
-        })}
-      </ul>
     </section>
   );
 }

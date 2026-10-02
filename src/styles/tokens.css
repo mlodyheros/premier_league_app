@@ -90,3 +90,30 @@
   --gutter: 16px;
   color-scheme: dark;
 }
+
+/*
+ * "Premier League" colours (Settings → Colours): the league's own purple
+ * (#37003c) for the surfaces, its green, raspberry and cyan for meaning. Only
+ * the tokens change; every component follows. Text and control contrast was
+ * checked against each surface (text 12:1+, muted 7:1+, accent 4.2:1+,
+ * control borders 4.4:1+; white on the filled accent 5.9:1).
+ */
+:root[data-theme='pl'] {
+  --bg-rgb: 55 0 60;
+  --backdrop-rgb: 24 0 27;
+  --primary-rgb: 0 255 133;
+  --accent-rgb: 255 92 163;
+  --info-rgb: 4 245 255;
+
+  --color-bg-sunken: #2b0030;
+  --color-surface: #4a0a51;
+  --color-surface-raised: #5a1662;
+  --color-border: #6e2a76;
+  --color-border-strong: #b98cc0;
+  --color-text: #ffffff;
+  --color-text-soft: #f1e4f3;
+  --color-text-muted: #d9c2dd;
+  --color-on-primary: #37003c;
+  --color-accent-strong: #c8004a;
+  --color-neutral: #5e1d66;
+}

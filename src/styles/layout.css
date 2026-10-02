@@ -4,9 +4,8 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgb(var(--bg-rgb) / 0.86);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  /* Solid rather than blurred: a backdrop blur re-renders on every scroll frame. */
+  background: rgb(var(--bg-rgb) / 0.97);
   border-bottom: 1px solid var(--color-border);
 }
 

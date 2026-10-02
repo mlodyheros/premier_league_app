@@ -4,6 +4,7 @@ import { valueSource, type ValueSource } from '../data/valueSource';
 import { lang, LANGS, t } from '../i18n';
 import { analyticsAvailable, analyticsEnabled } from '../lib/analytics';
 import { poolLevel, POOL_LEVELS } from '../lib/pools';
+import { theme, THEMES } from '../lib/theme';
 import { clearProgress } from '../lib/storage';
 
 /** Open the settings from anywhere (the header's gear, the bottom bar's "More"). */
@@ -102,6 +103,29 @@ export function Settings() {
               ))}
             </div>
             <p class="settings__help">{t('settings.valuesHelp')}</p>
+          </fieldset>
+
+          <fieldset>
+            <legend>{t('theme.label')}</legend>
+            <div class="seg seg--themes">
+              {THEMES.map((th) => (
+                <label class={theme.value === th ? 'on' : ''}>
+                  <input
+                    type="radio"
+                    name="theme"
+                    value={th}
+                    checked={theme.value === th}
+                    onChange={() => (theme.value = th)}
+                  />
+                  <span class={`swatch swatch--${th}`} aria-hidden="true">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                  <span>{t(`theme.${th}`)}</span>
+                </label>
+              ))}
+            </div>
           </fieldset>
 
           <fieldset>

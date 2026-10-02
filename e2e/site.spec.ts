@@ -144,3 +144,13 @@ test('Road to 100: draw club and position at once, then start over', async ({ pa
   await page.getByRole('button', { name: 'Start over' }).click();
   await expect(page.locator('.controls__info')).toContainText('0/11');
 });
+
+test('the Premier League colours can be chosen and are kept', async ({ page }) => {
+  await open(page, '');
+  await page.getByRole('button', { name: 'Settings' }).first().click();
+  await page.locator('.seg--themes label', { hasText: 'Premier League' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'pl');
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'pl');
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(55, 0, 60)');
+});

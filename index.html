@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#1a0b24" />
+    <!-- Apply the saved colour theme before the first paint, so the page never flashes the default. -->
+    <script>
+      try {
+        if (JSON.parse(localStorage.getItem('plg:theme')) === 'pl') {
+          document.documentElement.dataset.theme = 'pl';
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#37003c');
+        }
+      } catch (e) {}
+    </script>
     <meta name="description" content="Premier League mini-games powered by real player values and a machine-learning valuation model. In English and Polish." />
     <meta property="og:title" content="PL Games" />
     <meta property="og:description" content="Guess the Player, Road to 100, Higher or Lower, Budget XI, Beat the Model and Price Tag: Premier League games priced by data." />
