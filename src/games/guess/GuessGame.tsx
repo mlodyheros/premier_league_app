@@ -25,7 +25,8 @@ import { notifyShare } from '../../components/Toast';
 import { shareImage, type Cell } from '../../lib/shareImage';
 import { loadStats, recordResult, saveStats } from '../../lib/stats';
 import { readJson, writeJson } from '../../lib/storage';
-import { compare, dailyPool, dailyTarget, HINT_AFTER, MAX_GUESSES, shareGrid, stillPossible, type Feedback, type Mark } from './logic';
+import { guessTarget } from '../../lib/dailyRounds';
+import { compare, dailyPool, HINT_AFTER, MAX_GUESSES, shareGrid, stillPossible, type Feedback, type Mark } from './logic';
 
 type Mode = 'daily' | 'unlimited';
 
@@ -51,7 +52,7 @@ function newUnlimitedRound(players: Player[]): Round {
 }
 
 export function GuessGame() {
-  const { players } = useDataset();
+  const { players, schedule } = useDataset();
   const byName = useMemo(() => new Map(players.map((p) => [p.name, p])), [players]);
   const source = valueSource.value;
 
@@ -62,7 +63,7 @@ export function GuessGame() {
 
   function loadRound(m: Mode): Round {
     if (m === 'daily') {
-      const target = dailyTarget(players, day).name;
+      const target = guessTarget(players, schedule, day).name;
       const saved = readJson<Round>(dailyKey(day));
       return saved && saved.target === target ? saved : { target, guesses: [], recorded: false };
     }

@@ -596,4 +596,5 @@ export const en = {
   'theme.night': 'Night',
   'theme.pl': 'Premier League',
   'theme.light': 'Light',
+  'tw.overBudget': 'At these prices the window is {v} over budget: undo a purchase or sell someone first.',
 } satisfies Record<string, Entry>;

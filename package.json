@@ -8,10 +8,11 @@
     "build": "tsc --noEmit && tsc --noEmit -p tests && tsc --noEmit -p e2e && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "export-data": "sh pipeline/update_data.sh",
+    "export-data": "sh pipeline/update_data.sh && npm run daily-rounds",
     "og-image": "node pipeline/og-image.mjs",
     "e2e": "playwright test",
-    "icons": "node pipeline/icons.mjs"
+    "icons": "node pipeline/icons.mjs",
+    "daily-rounds": "tsx --no-warnings pipeline/daily.ts"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
@@ -26,6 +27,7 @@
     "@tabler/icons": "^3.48.0",
     "@types/node": "^26.6.3",
     "svgo": "^4.1.0",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "vitest": "^5.0.3"

@@ -164,6 +164,23 @@ change, regenerate the pictures locally with `npm run og-image`; it uses macOS
 system fonts, so the PNGs are committed instead of built in CI. The address
 they are served from is `VITE_SITE_URL` in [`.env`](.env).
 
+## Daily rounds
+
+The daily rounds (Guess the Player's answer, Beat the Model's ten, Price
+Tag's five, the Market quiz's five pairs) are written into
+`public/data/daily.json` by [`pipeline/daily.ts`](pipeline/daily.ts), today
+and two days ahead, with the values they are asked with. A day once written
+never changes, so a data update in the middle of a day cannot change its
+round (it used to: the browser recomputed the round from the new data, and
+Guess the Player even dropped the progress of anyone who had started). The
+script runs the games' own TypeScript (with `tsx`) after every export, so a
+written round is exactly what the browser would compute; the browser computes
+a round itself only for a day the file lacks. The guess answer is never
+repeated within a year, or until the pool runs out.
+
+A page left open overnight (common on phones and with the installed app)
+reloads itself when the day changes, so it never plays yesterday's round.
+
 ## Value history
 
 Each export also updates `public/data/history.json`

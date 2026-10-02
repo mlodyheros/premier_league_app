@@ -4,13 +4,13 @@
  * (hashed scripts and styles, crests, fonts, icons) is served from the cache
  * and refreshed in the background.
  */
-const CACHE = 'pl-games-v1';
+const CACHE = 'pl-games-v2';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll(['./', './manifest.webmanifest', './data/players.json', './data/meta.json']))
+      .then((cache) => cache.addAll(['./', './manifest.webmanifest', './data/players.json', './data/meta.json', './data/daily.json']))
       .then(() => self.skipWaiting()),
   );
 });
@@ -37,12 +37,19 @@ async function networkFirst(request) {
   }
 }
 
+/** Every build ships new hashed files: drop the older ones beyond MAX_ASSETS, oldest first. */
+const MAX_ASSETS = 80;
+async function trim(cache) {
+  const assets = (await cache.keys()).filter((r) => new URL(r.url).pathname.includes('/assets/'));
+  await Promise.all(assets.slice(0, Math.max(0, assets.length - MAX_ASSETS)).map((r) => cache.delete(r)));
+}
+
 async function staleWhileRevalidate(request) {
   const cache = await caches.open(CACHE);
   const cached = await cache.match(request);
   const fresh = fetch(request)
     .then((response) => {
-      if (response.ok) cache.put(request, response.clone());
+      if (response.ok) cache.put(request, response.clone()).then(() => trim(cache));
       return response;
     })
     .catch(() => cached);

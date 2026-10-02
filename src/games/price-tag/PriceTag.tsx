@@ -1,4 +1,5 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
+import { useRevealWhen } from '../../hooks/useRevealWhen';
 import { Icon } from '../../components/Icon';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { DailyDone, ModeTabs } from '../../components/ModeTabs';
@@ -12,15 +13,16 @@ import { t, tj } from '../../i18n';
 import { useCountUp } from '../../hooks/useCountUp';
 import { trackEvent } from '../../lib/analytics';
 import { buzz, celebrate } from '../../lib/motion';
-import { dailyRand, dailyStreak, recordDaily, type Mode } from '../../lib/daily';
+import { dailyStreak, recordDaily, type Mode } from '../../lib/daily';
+import { priceRound } from '../../lib/dailyRounds';
 import { formatEur, formatPct } from '../../lib/format';
 import { getBest, submitBest } from '../../lib/records';
 import { dayNumber, shuffled, todayKey } from '../../lib/rng';
 import { shareText, shareUrl } from '../../lib/share';
 import { notifyShare } from '../../components/Toast';
 import { readJson, writeJson } from '../../lib/storage';
-import { emoji, verdictIcon, eurToSlider, legacyPool, MAX_POINTS, ROUNDS, score, SLIDER_MID, sliderToEur, stepPrice } from './logic';
-import { dailyPoolFor, poolLevel, poolOf } from '../../lib/pools';
+import { emoji, verdictIcon, eurToSlider, MAX_POINTS, ROUNDS, score, SLIDER_MID, sliderToEur, stepPrice } from './logic';
+import { poolLevel, poolOf } from '../../lib/pools';
 
 const GAME = 'price';
 const START = eurToSlider(SLIDER_MID);
@@ -37,13 +39,10 @@ interface Progress {
 }
 
 export function PriceTag() {
-  const { players } = useDataset();
+  const { players, schedule } = useDataset();
   const [day] = useState(todayKey);
   const [mode, setMode] = useState<Mode>(() => readJson<Mode>(MODE_KEY) ?? 'daily');
-  const dailyRound = useMemo(
-    () => shuffled(dailyPoolFor(players, day, legacyPool), dailyRand(GAME, day)).slice(0, ROUNDS),
-    [players, day],
-  );
+  const dailyRound = useMemo(() => priceRound(players, schedule, day), [players, schedule, day]);
   const practicePool = () => poolOf(players, poolLevel.value);
   const [daily, setDaily] = useState<Progress>(
     () => readJson<Progress>(dailyKey(day)) ?? { source: valueSource.value, guesses: [] },
@@ -110,6 +109,7 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
   const [best, setBest] = useState(() => getBest(bestKey));
   const [newBest, setNewBest] = useState(false);
   const finished = guesses.length === ROUNDS;
+  const endRef = useRevealWhen(finished);
   const countdown = useCountdown(mode === 'daily' && finished);
 
   useEffect(() => setBest(getBest(bestKey)), [bestKey]);
@@ -266,7 +266,7 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
       />
 
       {finished && (
-        <div class={`end ${total >= 300 ? 'end--win' : 'end--lose'}`}>
+        <div class={`end ${total >= 300 ? 'end--win' : 'end--lose'}`} ref={endRef}>
           <p class="end__title">
             {total}/{ROUNDS * MAX_POINTS}
             {newBest ? t('common.newBestSuffix') : ''}

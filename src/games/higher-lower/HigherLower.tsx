@@ -1,4 +1,5 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
+import { useRevealWhen } from '../../hooks/useRevealWhen';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { PlayerCard } from '../../components/PlayerCard';
 import { useDataset } from '../../data/store';
@@ -20,8 +21,8 @@ import { readJson, writeJson } from '../../lib/storage';
 import { isCorrect, nextChallenger, pool, THEMES, type Call, type Theme } from './logic';
 
 /** Long enough for the value to count up and the verdict to land. */
-const REVEAL_MS = 1700;
-const COUNT_MS = 850;
+const REVEAL_MS = 1300;
+const COUNT_MS = 650;
 const RECENT = 40;
 
 type Phase = 'ask' | 'reveal' | 'over';
@@ -115,6 +116,7 @@ export function HigherLower() {
   }
 
   const revealed = phase !== 'ask';
+  const endRef = useRevealWhen(phase === 'over');
 
   return (
     <section class="game hl">
@@ -182,7 +184,7 @@ export function HigherLower() {
       </div>
 
       {phase === 'over' && (
-        <div class="end end--lose">
+        <div class="end end--lose" ref={endRef}>
           <p class="end__title">{newBest ? t('common.newBest') : t('common.gameOver')}</p>
           <p class="end__note">
             {tj('hl.over', {

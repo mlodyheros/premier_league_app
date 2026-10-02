@@ -1,4 +1,5 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
+import { useRevealWhen } from '../../hooks/useRevealWhen';
 import { Icon } from '../../components/Icon';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { Avatar } from '../../components/Avatar';
@@ -76,6 +77,7 @@ export function BudgetXI() {
   const over = used > budget;
   const strength = teamStrength(formation, lineup, source);
   const complete = isComplete(formation, lineup) && !over;
+  const endRef = useRevealWhen(complete);
   const bestKey = `budget:${budget}:${source}`;
   const [best, setBest] = useState(() => getBest(bestKey));
   const [newBest, setNewBest] = useState(false);
@@ -333,7 +335,7 @@ export function BudgetXI() {
       </div>
 
       {complete && outlook && (
-        <div class="end end--win">
+        <div class="end end--win" ref={endRef}>
           <p class="end__title">
             {t('budget.result', { ovr: formatDecimal(strength), grade: grade(strength) })}
             {newBest ? t('common.newBestSuffix') : ''}

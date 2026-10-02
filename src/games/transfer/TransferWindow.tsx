@@ -76,7 +76,19 @@ export function TransferWindow() {
     () => (w ? outlook(leagueAfter(players, meta, source, { club: w.club, sold: [], bought: [] })) : null),
     [w?.club, source, players],
   );
-  const now = useMemo(() => (w ? outlook(leagueAfter(players, meta, source, w)) : null), [w, source, players]);
+  // The forecast simulates 200 seasons: on a phone that takes a moment, so a
+  // deal shows at once and the forecast follows (marked as updating meanwhile).
+  const [now, setNow] = useState<Outlook | null>(null);
+  const [updating, setUpdating] = useState(false);
+  useEffect(() => {
+    if (!w) return setNow(null);
+    setUpdating(true);
+    const timer = setTimeout(() => {
+      setNow(outlook(leagueAfter(players, meta, source, w)));
+      setUpdating(false);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [w, source, players]);
 
   function chooseClub(club: string) {
     buzz('tap');
@@ -92,7 +104,7 @@ export function TransferWindow() {
   }
 
   function play() {
-    if (!w || !before) return;
+    if (!w || !before || moneyLeft(players, w, source) < 0) return;
     const league = leagueAfter(players, meta, source, w);
     const s = simulateSeason(league, USER_TEAM_ID, Math.random, REALISTIC, SEASON_FORM_SD);
     const squad = squadOf(players, w);
@@ -201,6 +213,7 @@ export function TransferWindow() {
             onChange={update}
             onReset={() => setState({ window: null, season: null, before: null })}
             onPlay={play}
+            updating={updating}
           />
         )
       )}
@@ -251,7 +264,9 @@ function WindowView({
   onChange,
   onReset,
   onPlay,
+  updating,
 }: {
+  updating: boolean;
   w: Window;
   before: Outlook;
   now: Outlook;
@@ -289,7 +304,7 @@ function WindowView({
         </button>
       </div>
 
-      <dl class="tw-outlook" aria-live="polite">
+      <dl class={`tw-outlook ${updating ? 'tw-outlook--updating' : ''}`} aria-live="polite" aria-busy={updating}>
         <Stat label={t('tw.forecast')} before={before.position} now={now.position} format={(v) => formatDecimal(v, 1)} lowerIsBetter />
         <Stat label={t('tw.points')} before={before.points} now={now.points} format={(v) => String(Math.round(v))} />
         <Stat label={t('tw.top4')} before={before.top4} now={now.top4} format={pct} />
@@ -391,8 +406,10 @@ function WindowView({
         </>
       )}
 
+      {/* Switching TM ↔ model reprices every deal, and can leave the window over budget. */}
+      {left < 0 && <p class="notice-inline">{t('tw.overBudget', { v: formatEur(-left) })}</p>}
       <div class="tw-play action-bar">
-        <button class="btn btn--primary btn--big" onClick={onPlay}>
+        <button class="btn btn--primary btn--big" onClick={onPlay} disabled={left < 0}>
           <Icon name="ball-football" /> {t('tw.play')}
         </button>
       </div>

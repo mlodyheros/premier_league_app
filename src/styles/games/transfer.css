@@ -84,3 +84,7 @@
 .trow .btn--sm { min-width: 72px; }
 
 .tw-play { display: grid; margin-top: var(--space-4); }
+
+.tw-outlook { transition: opacity var(--dur-fast) ease; }
+
+.tw-outlook--updating { opacity: 0.55; }

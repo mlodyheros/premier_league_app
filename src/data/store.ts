@@ -5,12 +5,15 @@
  */
 import { signal } from '@preact/signals';
 import { setRatingPool } from '../lib/strength';
+import type { Schedule } from '../lib/dailyRounds';
 import type { Meta, Player } from './types';
 
 export interface Dataset {
   players: Player[];
   meta: Meta;
   byId: Map<number, Player>;
+  /** The frozen daily rounds (empty if the file is missing: the games then compute them). */
+  schedule: Schedule;
 }
 
 export const dataset = signal<Dataset | null>(null);
@@ -25,12 +28,13 @@ async function fetchJson<T>(file: string): Promise<T> {
 export async function loadDataset(): Promise<void> {
   loadError.value = null;
   try {
-    const [players, meta] = await Promise.all([
+    const [players, meta, schedule] = await Promise.all([
       fetchJson<Player[]>('players.json'),
       fetchJson<Meta>('meta.json'),
+      fetchJson<Schedule>('daily.json').catch(() => ({}) as Schedule),
     ]);
     setRatingPool(players);
-    dataset.value = { players, meta, byId: new Map(players.map((p) => [p.id, p])) };
+    dataset.value = { players, meta, schedule, byId: new Map(players.map((p) => [p.id, p])) };
   } catch (err) {
     loadError.value = err instanceof Error ? err.message : String(err);
   }

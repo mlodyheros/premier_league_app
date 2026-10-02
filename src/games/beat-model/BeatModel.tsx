@@ -1,4 +1,5 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
+import { useRevealWhen } from '../../hooks/useRevealWhen';
 import { useMemo, useState } from 'preact/hooks';
 import { DailyDone, ModeTabs } from '../../components/ModeTabs';
 import { PoolNote } from '../../components/PoolNote';
@@ -9,8 +10,9 @@ import type { Player } from '../../data/types';
 import { t, tj } from '../../i18n';
 import { trackEvent } from '../../lib/analytics';
 import { buzz, celebrate } from '../../lib/motion';
-import { dailyRand, dailyStreak, recordDaily, type Mode } from '../../lib/daily';
-import { dailyPoolFor, poolLevel, poolOf } from '../../lib/pools';
+import { dailyStreak, recordDaily, type Mode } from '../../lib/daily';
+import { poolLevel, poolOf } from '../../lib/pools';
+import { beatRound } from '../../lib/dailyRounds';
 import { formatEur, formatPct } from '../../lib/format';
 import { useCountUp } from '../../hooks/useCountUp';
 import { modelGap } from '../../data/valueSource';
@@ -27,18 +29,11 @@ const MODE_KEY = 'beat:mode';
 const dailyKey = (day: string) => `beat:daily:${day}`;
 
 export function BeatModel() {
-  const { players } = useDataset();
+  const { players, schedule } = useDataset();
   const [day] = useState(todayKey);
   const [mode, setMode] = useState<Mode>(() => readJson<Mode>(MODE_KEY) ?? 'daily');
 
-  const dailyQuestions = useMemo(
-    () =>
-      drawRound(
-        dailyPoolFor(players, day, () => true),
-        dailyRand(GAME, day),
-      ),
-    [players, day],
-  );
+  const dailyQuestions = useMemo(() => beatRound(players, schedule, day), [players, schedule, day]);
   const [practice, setPractice] = useState(() => drawRound(poolOf(players, poolLevel.value)));
   const [practiceAnswers, setPracticeAnswers] = useState<Side[]>([]);
   const [dailyAnswers, setDailyAnswers] = useState<Side[]>(() => readJson<Side[]>(dailyKey(day)) ?? []);
@@ -111,6 +106,7 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
   const [best, setBest] = useState(() => getBest(BEST_KEY));
   const [newBest, setNewBest] = useState(false);
   const finished = answers.length === ROUNDS;
+  const endRef = useRevealWhen(finished);
   const countdown = useCountdown(mode === 'daily' && finished);
 
   const index = revealed ? answers.length - 1 : answers.length;
@@ -250,7 +246,7 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
       )}
 
       {finished && (
-        <div class={`end ${score >= 7 ? 'end--win' : 'end--lose'}`}>
+        <div class={`end ${score >= 7 ? 'end--win' : 'end--lose'}`} ref={endRef}>
           <p class="end__title">
             {score}/{ROUNDS}
             {newBest ? t('common.newBestSuffix') : ''}

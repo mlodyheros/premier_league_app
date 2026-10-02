@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'preact/hooks';
+import { useRevealWhen } from '../hooks/useRevealWhen';
 import { Icon } from '../components/Icon';
 import { Avatar } from '../components/Avatar';
 import { notifyShare } from '../components/Toast';
@@ -7,14 +8,13 @@ import { useDataset } from '../data/store';
 import { valueSource, type ValueSource } from '../data/valueSource';
 import { t, tj } from '../i18n';
 import { posLabel } from '../i18n/labels';
-import { dailyRand } from '../lib/daily';
 import { formatDate, formatEur, formatPct } from '../lib/format';
-import { quizPairs, QUIZ_ROUNDS, weeklyMoves, type Move } from '../lib/market';
+import { marketRound } from '../lib/dailyRounds';
+import { QUIZ_ROUNDS, weeklyMoves, type Move } from '../lib/market';
 import { buzz, celebrate } from '../lib/motion';
 import { dayNumber, todayKey } from '../lib/rng';
 import { shareText, shareUrl } from '../lib/share';
 import { readJson, writeJson } from '../lib/storage';
-import { inPool } from '../lib/pools';
 import { href } from '../router';
 
 const quizKey = (day: string) => `market:quiz:${day}`;
@@ -44,8 +44,6 @@ export function Market() {
 
   const tm = useMemo(() => (h ? weeklyMoves(h, players, 'tm') : null), [h, players]);
   const model = useMemo(() => (h ? weeklyMoves(h, players, 'model') : null), [h, players]);
-  // The quiz asks about players a fan knows: the daily pool.
-  const quizMoves = useMemo(() => (model ? model.all.filter((m) => inPool(m.player, 'normal')) : []), [model]);
 
   if (historyError.value) {
     return (
@@ -113,7 +111,7 @@ export function Market() {
               </ol>
             </section>
           </div>
-          {quizMoves.length >= QUIZ_ROUNDS * 2 && <Quiz moves={quizMoves} day={day} />}
+          <Quiz day={day} />
         </>
       )}
 
@@ -125,9 +123,13 @@ export function Market() {
 }
 
 /** "Who gained more this week?": five pairs, the same for everyone today. */
-function Quiz({ moves, day }: { moves: Move[]; day: string }) {
-  const pairs = useMemo(() => quizPairs(moves, dailyRand('market', day)), [moves, day]);
+function Quiz({ day }: { day: string }) {
+  const { players, schedule } = useDataset();
+  const h = useHistory();
+  const pairs = useMemo(() => marketRound(players, schedule, h, day) ?? [], [players, schedule, h, day]);
   const [answers, setAnswers] = useState<number[]>(() => readJson<number[]>(quizKey(day)) ?? []);
+  const endRef = useRevealWhen(pairs.length > 0 && answers.length >= pairs.length);
+  if (pairs.length < QUIZ_ROUNDS) return null;
   const index = Math.min(answers.length, pairs.length - 1);
   const done = answers.length >= pairs.length;
   const right = (i: number) => {
@@ -186,7 +188,7 @@ function Quiz({ moves, day }: { moves: Move[]; day: string }) {
           ))}
         </div>
       ) : (
-        <div class={`end ${score >= 4 ? 'end--win' : 'end--lose'}`}>
+        <div class={`end ${score >= 4 ? 'end--win' : 'end--lose'}`} ref={endRef}>
           <p class="end__title">
             {score}/{pairs.length}
           </p>

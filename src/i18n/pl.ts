@@ -620,4 +620,5 @@ export const pl: Dictionary = {
   'theme.night': 'Nocny',
   'theme.pl': 'Premier League',
   'theme.light': 'Jasny',
+  'tw.overBudget': 'Przy tych cenach okno przekracza budżet o {v}: cofnij zakup albo najpierw kogoś sprzedaj.',
 };
