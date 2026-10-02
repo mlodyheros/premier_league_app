@@ -1,8 +1,8 @@
 {
   "season": "2026/27",
-  "dataDate": "2026-10-01",
+  "dataDate": "2026-10-02",
   "gameweek": 5,
-  "exportedAt": "2026-10-01T14:48:54+00:00",
+  "exportedAt": "2026-10-02T12:00:07+00:00",
   "source": {
     "name": "pl-value-predictor",
     "url": "https://github.com/mlodyheros/pl-value"
@@ -48,7 +48,7 @@
       "ratioOver20m": 0.95,
       "typicalMissNoRecord": 0.526,
       "typicalMissWithRecord": 0.273,
-      "totalModelEur": 13155880000,
+      "totalModelEur": 13155890000,
       "totalTmEur": 13158125000
     }
   },
