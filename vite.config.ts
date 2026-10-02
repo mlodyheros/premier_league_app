@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import preact from '@preact/preset-vite';
@@ -59,13 +60,46 @@ function sharePages(site: string): Plugin {
   };
 }
 
+/**
+ * A Content-Security-Policy for the built page: only this site's own scripts
+ * (plus the one inline theme script, allowed by its hash, and GoatCounter when
+ * it is on), no plugins, no frames, no forms. If an injection bug ever slipped
+ * in, a foreign script still would not run.
+ */
+function contentSecurityPolicy(): Plugin {
+  return {
+    name: 'csp',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(html) {
+        const hashes = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(
+          (m) => `'sha256-${createHash('sha256').update(m[1]).digest('base64')}'`,
+        );
+        const policy = [
+          "default-src 'self'",
+          `script-src 'self' ${hashes.join(' ')} https://gc.zgo.at`,
+          "style-src 'self' 'unsafe-inline'",
+          "img-src 'self' data: blob:",
+          "font-src 'self' data:",
+          "connect-src 'self' https://*.goatcounter.com",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'none'",
+        ].join('; ');
+        return html.replace('<head>', `<head>\n    <meta http-equiv="Content-Security-Policy" content="${policy}" />`);
+      },
+    },
+  };
+}
+
 // Relative base so the same build works at a domain root (Vercel) and under a
 // repository path (GitHub Pages).
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
   return {
     base: './',
-    plugins: [preact(), sharePages(env.VITE_SITE_URL ?? '')],
+    plugins: [preact(), sharePages(env.VITE_SITE_URL ?? ''), contentSecurityPolicy()],
     // Unit tests only; e2e/ is Playwright's.
     test: { environment: 'node', include: ['tests/**/*.test.ts'] },
   };

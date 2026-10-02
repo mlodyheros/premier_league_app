@@ -1,4 +1,5 @@
 import type { ComponentChildren } from 'preact';
+import { Flag } from './Flag';
 import type { Player, PlayerStats } from '../data/types';
 import { t, type Key } from '../i18n';
 import { countryName } from '../i18n/countries';
@@ -68,7 +69,7 @@ export function PlayerCard({
           <h3 class="pcard__name">{player.name}</h3>
           <p class="pcard__meta">
             <ClubChip code={player.club} /> · <abbr title={posFull(player.pos)}>{posLabel(player.pos)}</abbr> ·{' '}
-            <span title={countryName(player.nat)}>{player.flag}</span> · {player.age}
+            <Flag flag={player.flag} title={countryName(player.nat)} /> · {player.age}
           </p>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
+import { Flag } from '../../components/Flag';
 import { cardFooter } from '../../lib/shareSpecs';
 import { openShare } from '../../components/ShareSheet';
 import { Icon } from '../../components/Icon';
@@ -270,8 +271,8 @@ function GuessRow({ player, f }: { player: Player; f: Feedback }) {
           <abbr title={posFull(player.pos)}>{posLabel(player.pos)}</abbr>
         </Tile>
         <Tile mark={f.nat}>
-          <span class="flag" title={`${countryName(player.nat)} · ${continentName(player.continent)}`}>
-            {/^[A-Z]{3}$/.test(player.flag) ? <span class="flag--code">{player.flag}</span> : player.flag}
+          <span title={`${countryName(player.nat)} · ${continentName(player.continent)}`}>
+            <Flag flag={player.flag} />
           </span>
         </Tile>
         <Tile mark={f.age.mark} dir={f.age.dir}>{player.age}</Tile>
@@ -327,7 +328,7 @@ function EndPanel({ won, gaveUp, target, feedback, mode, day, stats, hinted, onN
         <div>
           <p class="reveal__name">{target.name}</p>
           <p class="reveal__meta">
-            <ClubChip code={target.club} /> · {posLabel(target.pos)} · {target.flag} {countryName(target.nat)} · {target.age}
+            <ClubChip code={target.club} /> · {posLabel(target.pos)} · <Flag flag={target.flag} /> {countryName(target.nat)} · {target.age}
           </p>
         </div>
       </div>
