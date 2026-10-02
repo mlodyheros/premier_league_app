@@ -11,8 +11,9 @@ import type { PlayedSeason } from '../lib/playSeason';
 import { DIFFICULTY, type TableRow } from '../lib/season';
 import { rating, type Formation, type Lineup } from '../lib/strength';
 import { Avatar, Crest } from './Avatar';
-import { shareImage, type Cell } from '../lib/shareImage';
-import { notifyShare } from './Toast';
+import { cardFooter, crestUrl, resultCells, xiOnPitch } from '../lib/shareSpecs';
+import { useDataset } from '../data/store';
+import { openShare } from './ShareSheet';
 
 export function userRow(table: readonly TableRow[]): TableRow {
   return table.find((r) => r.id === USER_TEAM_ID)!;
@@ -51,7 +52,7 @@ export function SeasonResult({
   animate,
   chips = [],
   actions,
-  imageTitle,
+  share,
   note,
   user,
   success,
@@ -62,8 +63,8 @@ export function SeasonResult({
   user?: { code: string; name: string };
   /** Overrides the default verdict (100 points reached). */
   success?: boolean;
-  /** The game's name: offers the result as a picture too. */
-  imageTitle?: string;
+  /** The game's name and the result as text: adds a Share button with a card of the season. */
+  share?: { title: string; text: string; file: string };
   season: PlayedSeason;
   formation: Formation;
   lineup: Lineup;
@@ -90,16 +91,24 @@ export function SeasonResult({
     return () => clearTimeout(timer);
   }, [animate]);
 
-  async function shareAsImage() {
-    const cells: Cell[] = season.results.map((r) => (r.outcome === 'W' ? 'good' : r.outcome === 'D' ? 'mid' : 'bad'));
-    const result = await shareImage({
-      kicker: [imageTitle, ...chips].join(' · '),
-      big: `${row.points} ${t('pt.pointsWord')}`,
-      sub: t('season.line', { record: `${row.won}-${row.drawn}-${row.lost}`, pos: ordinal(season.position) }),
-      rows: [cells.slice(0, 19), cells.slice(19)],
-      file: 'pl-games-season',
-    });
-    notifyShare(result);
+  const { meta } = useDataset();
+  function shareCard() {
+    if (!share) return;
+    openShare(
+      {
+        game: share.title,
+        kicker: chips.join(' · '),
+        headline: `${row.points} ${t('pt.pointsWord').toUpperCase()}`,
+        sub: t('season.line', { record: `${row.won}-${row.drawn}-${row.lost}`, pos: ordinal(season.position) }),
+        badges: earned.map((b) => t(b.label)),
+        crest: user ? crestUrl(user.code) : undefined,
+        pitch: xiOnPitch(formation, lineup, meta, season.source, season.scorers),
+        strip: resultCells(season.results),
+        ...cardFooter(),
+      },
+      share.text,
+      share.file,
+    );
   }
 
   const boost = season.difficulty === 'arcade' ? t('road.boost', { n: DIFFICULTY.arcade.bonus }) : '';
@@ -179,12 +188,12 @@ export function SeasonResult({
             t('road.tapMatch')
           )}
         </p>
-        {(actions || imageTitle) && (
+        {(actions || share) && (
           <div class="end__actions">
             {actions}
-            {imageTitle && (
-              <button class="btn" onClick={shareAsImage}>
-                <Icon name="camera" size={18} /> {t('common.shareImage')}
+            {share && (
+              <button class="btn" onClick={shareCard}>
+                <Icon name="share" size={18} /> {t('common.share')}
               </button>
             )}
           </div>

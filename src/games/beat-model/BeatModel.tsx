@@ -1,4 +1,6 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
+import { cardFooter } from '../../lib/shareSpecs';
+import { openShare } from '../../components/ShareSheet';
 import { useRevealWhen } from '../../hooks/useRevealWhen';
 import { useMemo, useState } from 'preact/hooks';
 import { DailyDone, ModeTabs } from '../../components/ModeTabs';
@@ -18,8 +20,7 @@ import { useCountUp } from '../../hooks/useCountUp';
 import { modelGap } from '../../data/valueSource';
 import { getBest, submitBest } from '../../lib/records';
 import { dayNumber, todayKey } from '../../lib/rng';
-import { shareText, shareUrl } from '../../lib/share';
-import { notifyShare } from '../../components/Toast';
+import { shareUrl } from '../../lib/share';
 import { readJson, writeJson } from '../../lib/storage';
 import { drawRound, modelNotes, ROUNDS, sideOf, type Side } from './logic';
 
@@ -131,10 +132,21 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
     }
   }
 
-  async function share() {
+  function share() {
     const grid = marks.map((m) => (m ? '🟩' : '🟥')).join('');
     const title = mode === 'daily' ? `${t('game.beat.title')} #${dayNumber(day)}` : t('game.beat.title');
-    notifyShare(await shareText(`${title} ${score}/${ROUNDS}\n${grid}\n${shareUrl('beat-model')}`));
+    openShare(
+      {
+        game: t('game.beat.title'),
+        kicker: mode === 'daily' ? t('mode.daily', { n: dayNumber(day) }) : t('mode.practice'),
+        headline: `${score}/${ROUNDS}`,
+        sub: score >= 8 ? t('bm.great') : score >= 6 ? t('bm.good') : t('bm.poor'),
+        strip: marks.map((m) => (m ? 'good' : 'bad')),
+        ...cardFooter(),
+      },
+      `${title} ${score}/${ROUNDS}\n${grid}\n${shareUrl('beat-model')}`,
+      'pl-games-beat-the-model',
+    );
   }
 
   const right = revealed ? marks[index] : null;

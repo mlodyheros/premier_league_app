@@ -1,4 +1,6 @@
 import { useState } from 'preact/hooks';
+import { cardFooter } from '../lib/shareSpecs';
+import { openShare } from '../components/ShareSheet';
 import { Icon } from '../components/Icon';
 import { Crest } from '../components/Avatar';
 import { useDataset } from '../data/store';
@@ -9,11 +11,10 @@ import { formatDecimal, formatEur, formatPct } from '../lib/format';
 import { getBest } from '../lib/records';
 import { dailyResult, dayNumber } from '../lib/daily';
 import { todayKey } from '../lib/rng';
-import { shareText, siteUrl } from '../lib/share';
+import { siteUrl } from '../lib/share';
 import { useCountdown } from '../hooks/useCountdown';
-import { notifyShare } from '../components/Toast';
 import { useHistory } from '../data/history';
-import { leagueLink, myCard, myName } from '../lib/friends';
+import { dayScore, leagueLink, myCard, myName } from '../lib/friends';
 import { weeklyMoves } from '../lib/market';
 import { loadStats } from '../lib/stats';
 import { href } from '../router';
@@ -58,11 +59,29 @@ export function Home() {
   const countdown = useCountdown(allDone);
 
   /** One message with all three of today's results. */
-  async function shareAll() {
+  function shareAll() {
     const lines = dailies.map((g) => `${g.emoji} ${t(`game.${g.id}.title`)}: ${dailyResult(g.id, day) ?? '✓'}`);
     // With a nickname set, the link also adds you to the reader's friends league.
     const link = myName() ? leagueLink(myCard(day)) : siteUrl();
-    notifyShare(await shareText(`${t('home.shareAll', { n: dayNumber(day) })}\n${lines.join('\n')}\n${link}`));
+    const score = dayScore(myCard(day), day);
+    openShare(
+      {
+        game: t('home.cardTitle'),
+        kicker: t('mode.daily', { n: dayNumber(day) }),
+        headline: score === null ? '✓' : `${score}/100`,
+        sub: myName() || undefined,
+        tiles: dailies.map((g) => {
+          const result = dailyResult(g.id, day) ?? '✓';
+          const [n, max] = result.split('/');
+          const share = n === 'X' ? 0 : Number(n) / Number(max);
+          const ratio = g.id === 'guess' && n !== 'X' ? (Number(max) + 1 - Number(n)) / Number(max) : share;
+          return { label: t(`game.${g.id}.title`), value: result, cell: ratio >= 0.7 ? 'good' : ratio >= 0.4 ? 'mid' : 'bad' } as const;
+        }),
+        ...cardFooter(),
+      },
+      `${t('home.shareAll', { n: dayNumber(day) })}\n${lines.join('\n')}\n${link}`,
+      'pl-games-daily',
+    );
   }
 
   return (

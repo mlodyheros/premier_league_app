@@ -4,7 +4,10 @@
 
 .legend .tile { min-height: 0; padding: 1px 7px; font-size: 0.75rem; }
 
-.guess__input { display: flex; gap: 8px; align-items: center; }
+.guess__input { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+/* The search box takes the row; the counter and hint wrap below it. */
+.guess__input .search { flex: 1 1 220px; min-width: 0; }
 
 .guess__board { margin-top: 18px; display: grid; gap: 10px; }
 

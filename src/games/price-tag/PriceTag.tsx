@@ -1,4 +1,6 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
+import { cardFooter } from '../../lib/shareSpecs';
+import { openShare } from '../../components/ShareSheet';
 import { useRevealWhen } from '../../hooks/useRevealWhen';
 import { Icon } from '../../components/Icon';
 import { useEffect, useMemo, useState } from 'preact/hooks';
@@ -18,8 +20,7 @@ import { priceRound } from '../../lib/dailyRounds';
 import { formatEur, formatPct } from '../../lib/format';
 import { getBest, submitBest } from '../../lib/records';
 import { dayNumber, shuffled, todayKey } from '../../lib/rng';
-import { shareText, shareUrl } from '../../lib/share';
-import { notifyShare } from '../../components/Toast';
+import { shareUrl } from '../../lib/share';
 import { readJson, writeJson } from '../../lib/storage';
 import { emoji, verdictIcon, eurToSlider, MAX_POINTS, ROUNDS, score, SLIDER_MID, sliderToEur, stepPrice } from './logic';
 import { poolLevel, poolOf } from '../../lib/pools';
@@ -142,10 +143,26 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
     setSlider(START);
   }
 
-  async function share() {
+  function share() {
     const title = mode === 'daily' ? `${t('game.price.title')} #${dayNumber(day)}` : t('game.price.title');
     const head = `${title} ${total}/${ROUNDS * MAX_POINTS} · ${shareValues(source)}`;
-    notifyShare(await shareText(`${head}\n${points.map(emoji).join('')}\n${shareUrl('price-tag')}`));
+    openShare(
+      {
+        game: t('game.price.title'),
+        kicker: mode === 'daily' ? t('mode.daily', { n: dayNumber(day) }) : t('mode.practice'),
+        headline: `${total}/${ROUNDS * MAX_POINTS}`,
+        sub: shareValues(source),
+        // Names would give a daily round away: the five scores only.
+        tiles: points.map((pts, i) => ({
+          label: t('pt.cardRound', { n: i + 1 }),
+          value: `+${pts}`,
+          cell: pts >= 60 ? 'good' : pts >= 30 ? 'mid' : pts > 0 ? 'bad' : 'none',
+        })),
+        ...cardFooter(),
+      },
+      `${head}\n${points.map(emoji).join('')}\n${shareUrl('price-tag')}`,
+      'pl-games-price-tag',
+    );
   }
 
   const actual = valueOf(player, source);

@@ -1,4 +1,6 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
+import { cardFooter } from '../../lib/shareSpecs';
+import { openShare } from '../../components/ShareSheet';
 import { useRevealWhen } from '../../hooks/useRevealWhen';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { PlayerCard } from '../../components/PlayerCard';
@@ -12,8 +14,7 @@ import { trackEvent } from '../../lib/analytics';
 import { buzz, celebrate } from '../../lib/motion';
 import { getBest, submitBest } from '../../lib/records';
 import { pick } from '../../lib/rng';
-import { shareText, shareUrl } from '../../lib/share';
-import { notifyShare } from '../../components/Toast';
+import { shareUrl } from '../../lib/share';
 import { Chips } from '../../components/Chips';
 import { PoolNote } from '../../components/PoolNote';
 import { poolLevel } from '../../lib/pools';
@@ -109,10 +110,20 @@ export function HigherLower() {
     setPhase('ask');
   }
 
-  async function share() {
+  function share() {
     const themeName = theme === 'all' ? '' : ` (${t(`hl.theme.${theme}`)})`;
     const head = t('hl.share', { n: streak, icon: streak >= 10 ? '🔥' : '⚽', values: shareValues(source) }) + themeName;
-    notifyShare(await shareText(`${head}\n${shareUrl('higher-lower')}`));
+    openShare(
+      {
+        game: t('game.hl.title'),
+        kicker: t(`hl.theme.${theme}`),
+        headline: String(streak),
+        sub: t('hl.cardSub', { best }),
+        ...cardFooter(),
+      },
+      `${head}\n${shareUrl('higher-lower')}`,
+      'pl-games-higher-or-lower',
+    );
   }
 
   const revealed = phase !== 'ask';

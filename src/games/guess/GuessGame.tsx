@@ -1,4 +1,6 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
+import { cardFooter } from '../../lib/shareSpecs';
+import { openShare } from '../../components/ShareSheet';
 import { Icon } from '../../components/Icon';
 import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
@@ -20,9 +22,8 @@ import { PoolNote } from '../../components/PoolNote';
 import { buzz, celebrate } from '../../lib/motion';
 import { saveDailyResult } from '../../lib/daily';
 import { dayNumber, pick, previousDayKey, todayKey } from '../../lib/rng';
-import { shareText, shareUrl } from '../../lib/share';
-import { notifyShare } from '../../components/Toast';
-import { shareImage, type Cell } from '../../lib/shareImage';
+import { shareUrl } from '../../lib/share';
+import type { Cell } from '../../lib/shareCard';
 import { loadStats, recordResult, saveStats } from '../../lib/stats';
 import { readJson, writeJson } from '../../lib/storage';
 import { guessTarget } from '../../lib/dailyRounds';
@@ -299,23 +300,22 @@ function EndPanel({ won, gaveUp, target, feedback, mode, day, stats, hinted, onN
   const countdown = useCountdown(mode === 'daily');
   const tries = won ? feedback.length : 'X';
 
-  async function share() {
-    const title = mode === 'daily' ? t('guess.shareDaily', { n: dayNumber(day) }) : t('guess.shareUnlimited');
-    const text = `${title} ${tries}/${MAX_GUESSES}${hinted ? ' 💡' : ''} · ${shareValues()}\n${shareGrid(feedback)}\n${shareUrl('guess')}`;
-    notifyShare(await shareText(text));
-  }
-
-  async function shareAsImage() {
+  /** A card of the guesses' colours: no names, so it gives nothing away. */
+  function share() {
     const cell: Record<Mark, Cell> = { hit: 'good', near: 'mid', miss: 'none' };
     const title = mode === 'daily' ? t('guess.shareDaily', { n: dayNumber(day) }) : t('guess.shareUnlimited');
-    notifyShare(
-      await shareImage({
-        kicker: title,
-        big: `${tries}/${MAX_GUESSES}${hinted ? ' 💡' : ''}`,
-        sub: won ? t('guess.won', { n: feedback.length }) : t('guess.lost'),
-        rows: feedback.map((f) => [f.club, f.pos, f.nat, f.age.mark, f.value.mark].map((m) => cell[m])),
-        file: 'pl-games-guess',
-      }),
+    const text = `${title} ${tries}/${MAX_GUESSES}${hinted ? ' 💡' : ''} · ${shareValues()}\n${shareGrid(feedback)}\n${shareUrl('guess')}`;
+    openShare(
+      {
+        game: t('game.guess.title'),
+        kicker: mode === 'daily' ? t('mode.daily', { n: dayNumber(day) }) : t('guess.unlimited'),
+        headline: `${tries}/${MAX_GUESSES}`,
+        sub: (won ? t('guess.won', { n: feedback.length }) : t('guess.lost')) + (hinted ? ` · ${t('guess.hintUsed')}` : ''),
+        grid: feedback.map((f) => [f.club, f.pos, f.nat, f.age.mark, f.value.mark].map((m) => cell[m])),
+        ...cardFooter(t('share.ctaGuess')),
+      },
+      text,
+      'pl-games-guess',
     );
   }
 
@@ -337,10 +337,7 @@ function EndPanel({ won, gaveUp, target, feedback, mode, day, stats, hinted, onN
       </p>
       <div class="end__actions">
         <button class="btn" onClick={share}>
-          {t('common.shareResult')}
-        </button>
-        <button class="btn" onClick={shareAsImage}>
-          <Icon name="camera" size={18} /> {t('common.shareImage')}
+          <Icon name="share" size={18} /> {t('common.share')}
         </button>
         <button class="btn btn--primary" onClick={onNext}>
           {mode === 'daily' ? t('guess.keepPlaying') : t('common.nextPlayer')}

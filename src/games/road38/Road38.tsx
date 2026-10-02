@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { Avatar, Crest } from '../../components/Avatar';
 import { Pitch } from '../../components/Pitch';
 import { resultsGrid, SeasonResult, seasonBadges, userRow } from '../../components/SeasonResult';
-import { notifyShare } from '../../components/Toast';
 import { useDataset } from '../../data/store';
 import { shareValues, valueOf, valueSource, valuesPhrase, type ValueSource } from '../../data/valueSource';
 import { t, tj } from '../../i18n';
@@ -16,7 +15,7 @@ import { playSeason, previewSeason, type PlayedSeason } from '../../lib/playSeas
 import { getBest, submitBest } from '../../lib/records';
 import { pick } from '../../lib/rng';
 import { DIFFICULTY, type Difficulty } from '../../lib/season';
-import { shareText, shareUrl } from '../../lib/share';
+import { shareUrl } from '../../lib/share';
 import { readJson, writeJson } from '../../lib/storage';
 import { formationByKey, FORMATIONS, teamStrength, type Lineup, type Slot } from '../../lib/strength';
 import {
@@ -43,7 +42,10 @@ interface State {
   formation: string;
   /** slot id -> player name */
   picks: Record<string, string>;
+  /** Club re-draws left. */
   respins: number;
+  /** Position re-draws left (position modes); missing in saves from before they were separate. */
+  respinsSlot?: number;
   spin: Spin | null;
   season: SavedSeason | null;
   difficulty?: Difficulty;
@@ -64,7 +66,7 @@ const TOTALS_KEY = 'road:totals';
 const REEL = [55, 55, 60, 65, 70, 80, 90, 105, 125, 150, 185, 230, 290];
 
 function fresh(formation = '433', difficulty: Difficulty = 'realistic', draft: DraftMode = 'standard'): State {
-  return { formation, picks: {}, respins: RESPINS, spin: null, season: null, difficulty, draft };
+  return { formation, picks: {}, respins: RESPINS, respinsSlot: RESPINS, spin: null, season: null, difficulty, draft };
 }
 
 function load(): State {
@@ -137,7 +139,9 @@ export function Road38() {
   // a position the drawn club can fill.
   const clubPool = clubOptions(players, clubCodes, formation, lineup, spun?.slot ?? null, spun?.club);
   const slotPool = positional ? slotOptions(players, clubCodes, formation, lineup, spun?.club ?? null, spun?.slot) : [];
-  const canRespin = state.respins > 0 && !spinning;
+  const slotLeft = state.respinsSlot ?? RESPINS;
+  const canRespinClub = state.respins > 0 && !spinning;
+  const canRespinSlot = slotLeft > 0 && !spinning;
   /** Nothing drawn yet in a position mode: one button draws both, the reels' own buttons step back. */
   const offerBoth = positional && !spinning && !spun?.club && !spun?.slot;
 
@@ -160,14 +164,15 @@ export function Road38() {
   }
 
   /**
-   * Draw the club, the position, or both at once. A re-draw (of anything
-   * already drawn) costs one re-spin; the first draw of both is free.
+   * Draw the club, the position, or both at once. Clubs and positions have
+   * their own re-draws: re-drawing the club costs a club re-draw, the position
+   * a position re-draw, both at once one of each. A first draw is free.
    */
   function draw(which: 'club' | 'slot' | 'both') {
     if (spinning) return;
-    const respin =
-      which === 'both' ? !!(spun?.club || spun?.slot) : which === 'club' ? !!spun?.club : !!spun?.slot;
-    if (respin && state.respins === 0) return;
+    const reClub = which !== 'slot' && !!spun?.club;
+    const reSlot = which !== 'club' && !!spun?.slot;
+    if ((reClub && state.respins === 0) || (reSlot && slotLeft === 0)) return;
     const club =
       which === 'slot'
         ? (spun?.club ?? null)
@@ -183,7 +188,12 @@ export function Road38() {
     setLanded({ club: false, slot: false });
     buzz('tap');
     const commit = () =>
-      setState((st) => ({ ...st, spin: { club, slot }, respins: respin ? st.respins - 1 : st.respins }));
+      setState((st) => ({
+        ...st,
+        spin: { club, slot },
+        respins: reClub ? st.respins - 1 : st.respins,
+        respinsSlot: (st.respinsSlot ?? RESPINS) - (reSlot ? 1 : 0),
+      }));
     if (reducedMotion()) {
       setLanded({ club: which !== 'slot', slot: which !== 'club' });
       return commit();
@@ -286,7 +296,7 @@ export function Road38() {
     kickOff();
   }
 
-  async function share(season: SavedSeason) {
+  function shareTextFor(season: SavedSeason): string {
     const row = userRow(season.table);
     const icons = seasonBadges(row, season.position).map((b) => b.icon).join('');
     const modes = [
@@ -301,7 +311,7 @@ export function Road38() {
       pos: ordinal(season.position),
       icons: [icons, ...modes].filter(Boolean).join(' · '),
     });
-    notifyShare(await shareText(`${head}\n${resultsGrid(season)}\n${shareValues(season.source)} · ${shareUrl('road100')}`));
+    return `${head}\n${resultsGrid(season)}\n${shareValues(season.source)} · ${shareUrl('road100')}`;
   }
 
   
@@ -389,7 +399,9 @@ export function Road38() {
                 <Icon name="refresh" size={16} /> {t('road.restart')}
               </button>
             )}
-            {t('road.progress', { picked: 11 - open.length, count: state.respins })}
+            {positional
+              ? t('road.progressPos', { picked: 11 - open.length, club: state.respins, slot: slotLeft })
+              : t('road.progress', { picked: 11 - open.length, count: state.respins })}
             {chem.bonus > 0 && (
               <span class="chem" title={t('road.chemHelp', { step: CHEMISTRY_STEP })}>
                 <Icon name="link" size={14} /> {t('road.chem', { n: formatDecimal(chem.bonus) })}
@@ -442,7 +454,7 @@ export function Road38() {
                         {t('road.drawClub')}
                       </button>
                     ) : (
-                      <button class="btn btn--ghost" onClick={() => draw('club')} disabled={!canRespin || !clubPool.length}>
+                      <button class="btn btn--ghost" onClick={() => draw('club')} disabled={!canRespinClub || !clubPool.length}>
                         {t('road.redrawClub', { n: state.respins })}
                       </button>
                     )}
@@ -467,15 +479,15 @@ export function Road38() {
                           {t('road.drawSlot')}
                         </button>
                       ) : (
-                        <button class="btn btn--ghost" onClick={() => draw('slot')} disabled={!canRespin || !slotPool.length}>
-                          {t('road.redrawSlot', { n: state.respins })}
+                        <button class="btn btn--ghost" onClick={() => draw('slot')} disabled={!canRespinSlot || !slotPool.length}>
+                          {t('road.redrawSlot', { n: slotLeft })}
                         </button>
                       )}
                     </ReelBox>
                   )}
                   {positional && spun?.club && spun?.slot && (
-                    <button class="btn btn--ghost draws__both" onClick={() => draw('both')} disabled={!canRespin}>
-                      {t('road.redrawBoth', { n: state.respins })}
+                    <button class="btn btn--ghost draws__both" onClick={() => draw('both')} disabled={!canRespinClub || !canRespinSlot}>
+                      {t('road.redrawBoth')}
                     </button>
                   )}
                 </div>
@@ -548,7 +560,7 @@ export function Road38() {
           formation={formation}
           lineup={lineup}
           animate={justPlayed}
-          imageTitle={t('game.road.title')}
+          share={{ title: t('game.road.title'), text: shareTextFor(state.season), file: 'pl-games-road-to-100' }}
           chips={[
             state.season.draft && state.season.draft !== 'standard' ? t(`road.draft.${state.season.draft as DraftMode}`) : '',
             state.season.difficulty === 'arcade' ? t('road.mode.arcade') : '',
@@ -560,9 +572,6 @@ export function Road38() {
               </button>
               <button class="btn" onClick={replay}>
                 {t('road.replay')}
-              </button>
-              <button class="btn" onClick={() => share(state.season!)}>
-                {t('common.share')}
               </button>
             </>
           }

@@ -33,8 +33,14 @@ age, and open any player's full card.
 The daily rounds (Guess the Player, Beat the Model, Price Tag) are the same for
 everyone on a given date, can be played once, and keep a daily streak.
 
-Every game has a shareable result (text, and for Guess the Player and the
-seasons a picture too) and keeps personal bests in the browser. The home page
+Every game has a **Share** button that opens a share sheet with a card of the
+result, drawn on a canvas ([`src/lib/shareCard.ts`](src/lib/shareCard.ts)):
+an Instagram story (1080×1920) or a post (1080×1080), with the score, the XI
+on a pitch with ratings, goals and assists, the 38 results, badges and a
+challenge. On a phone it goes straight to the share sheet (Instagram, chats);
+it can also be saved, or copied as text. The daily cards give nothing away:
+Guess the Player shows only the colours, Price Tag only the scores. Personal
+bests are kept in the browser. The home page
 shows today's three daily results and, once all three are done, shares them in
 one message.
 
@@ -367,8 +373,9 @@ prices, an alphabetical list; the ratings are revealed after the season). In
 the position modes the club and the position have a reel and a button each, in
 either order: the club is drawn from those that can fill the drawn position,
 the position from those the drawn club can fill. "Draw club and position"
-spins both reels at once (free, as the first draw); a re-draw (club, position
-or both) costs one of the three re-spins, and a tap on a spinning reel stops it
+spins both reels at once (free, as the first draw). Clubs and positions have
+three re-draws each: a new club costs a club re-draw, a new position a position
+re-draw, both at once one of each. A tap on a spinning reel stops it
 at once. "Start over" throws the XI away mid-draft. Bests are kept per draft
 mode and season mode.
 

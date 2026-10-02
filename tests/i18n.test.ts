@@ -24,8 +24,9 @@ describe('translations', () => {
     expect(t('note.fewMinutes', { count: 3 }, 'pl')).toContain('3 minuty');
     expect(t('note.fewMinutes', { count: 7 }, 'pl')).toContain('7 minut ');
     expect(t('note.fewMinutes', { count: 22 }, 'pl')).toContain('22 minuty');
-    expect(t('road.respins', { count: 1 }, 'en')).toBe('You have 1 re-spin.');
-    expect(t('road.respins', { count: 3 }, 'en')).toBe('You have 3 re-spins.');
+    expect(t('road.respins', { count: 1 }, 'en')).toMatch(/^You have 1 re-spin for/);
+    expect(t('road.respins', { count: 3 }, 'en')).toMatch(/^You have 3 re-spins for/);
+    expect(t('road.respins', { count: 3 }, 'pl')).toMatch(/^Masz 3 ponowne losowania/);
   });
 
   it('name every nationality in Polish', () => {

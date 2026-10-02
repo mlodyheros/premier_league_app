@@ -4,7 +4,6 @@ import { Avatar, Crest } from '../../components/Avatar';
 import { Chips } from '../../components/Chips';
 import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { resultsGrid, SeasonResult } from '../../components/SeasonResult';
-import { notifyShare } from '../../components/Toast';
 import { useDataset } from '../../data/store';
 import type { Player, PosGroup } from '../../data/types';
 import { shareValues, valueOf, valueSource, valuesPhrase } from '../../data/valueSource';
@@ -18,7 +17,7 @@ import { getBest, submitBest } from '../../lib/records';
 import { pick } from '../../lib/rng';
 import { attributeGoals } from '../../lib/scorers';
 import { REALISTIC, SEASON_FORM_SD, simulateSeason } from '../../lib/season';
-import { shareText, shareUrl } from '../../lib/share';
+import { shareUrl } from '../../lib/share';
 import { readJson, writeJson } from '../../lib/storage';
 import { formationByKey, rating } from '../../lib/strength';
 import { autoFill } from '../budget/logic';
@@ -129,8 +128,8 @@ export function TransferWindow() {
     setState((st) => ({ ...st, season, before }));
   }
 
-  async function share() {
-    if (!w || !state.season || !state.before) return;
+  function shareTextNow(): string {
+    if (!w || !state.season || !state.before) return '';
     const club = meta.clubs[w.club].name;
     const byName = new Map(players.map((p) => [p.name, p]));
     const short = (n: string) => byName.get(n)?.short ?? n;
@@ -144,7 +143,7 @@ export function TransferWindow() {
       w.sold.length ? `${t('tw.out')}: ${w.sold.map(short).join(', ')}` : '',
       w.bought.length ? `${t('tw.in')}: ${w.bought.map(short).join(', ')}` : '',
     ].filter(Boolean);
-    notifyShare(await shareText(`${head}\n${deals.join(' · ')}\n${resultsGrid(state.season)}\n${shareValues(source)} · ${shareUrl('transfer')}`));
+    return `${head}\n${deals.join(' · ')}\n${resultsGrid(state.season)}\n${shareValues(source)} · ${shareUrl('transfer')}`;
   }
 
   return (
@@ -172,7 +171,7 @@ export function TransferWindow() {
           formation={FORMATION}
           lineup={autoFill(squadOf(players, w), FORMATION, {}, Infinity, source)}
           animate={justPlayed}
-          imageTitle={t('game.transfer.title')}
+          share={{ title: t('game.transfer.title'), text: shareTextNow(), file: 'pl-games-transfer-window' }}
           chips={[meta.clubs[w.club].name]}
           user={{ code: w.club, name: meta.clubs[w.club].short }}
           success={state.season.position <= Math.round(state.before.position)}
@@ -194,9 +193,6 @@ export function TransferWindow() {
               </button>
               <button class="btn" onClick={() => setState({ window: null, season: null, before: null })}>
                 {t('tw.otherClub')}
-              </button>
-              <button class="btn" onClick={share}>
-                {t('common.share')}
               </button>
             </>
           }

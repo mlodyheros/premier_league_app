@@ -29,3 +29,4 @@
 @keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
 
 @keyframes grow { from { transform: scaleX(0); } to { transform: none; } }
+@keyframes spin { to { transform: rotate(360deg); } }

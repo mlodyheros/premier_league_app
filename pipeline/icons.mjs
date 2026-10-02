@@ -21,6 +21,8 @@ const NAMES = [
   'arrow-big-up-lines', 'scale', 'stars', 'crown', 'diamond', 'target-arrow', 'star', 'shield-check', 'flame',
   // Price Tag verdicts, Road chemistry, errors
   'thumb-up', 'mood-smile', 'mood-neutral', 'mood-sad', 'link', 'alert-triangle',
+  // Share sheet
+  'share', 'download', 'copy', 'x',
 ];
 
 const icons = {};

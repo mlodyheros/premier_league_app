@@ -83,6 +83,9 @@ test.describe('on a phone', () => {
 test('Guess the Player suggests names, also for a typo', async ({ page }) => {
   await open(page, 'guess');
   const input = page.getByRole('combobox');
+  // Wide enough to type in (a counter beside it once squeezed it to 34px).
+  const box = await input.boundingBox();
+  expect(box!.width).toBeGreaterThan(200);
   await input.fill('Saka');
   await expect(page.getByRole('option', { name: /Bukayo Saka/ })).toBeVisible();
   await input.fill('Halland');
@@ -136,8 +139,15 @@ test('Road to 100: draw club and position at once, then start over', async ({ pa
   await open(page, 'road100');
   await page.getByRole('button', { name: 'Draw club and position' }).click();
   await page.getByRole('button', { name: 'Stop' }).first().click();
-  // The first draw of both is free: all three re-spins are left.
-  await expect(page.locator('.controls__info')).toContainText('3');
+  // The first draw of both is free.
+  await expect(page.locator('.controls__info')).toContainText('club 3, position 3');
+  // Clubs and positions have their own re-draws; both at once costs one of each.
+  await page.getByRole('button', { name: /New club/ }).click();
+  await page.getByRole('button', { name: 'Stop' }).first().click();
+  await expect(page.locator('.controls__info')).toContainText('club 2, position 3');
+  await page.getByRole('button', { name: /Redraw both/ }).click();
+  await page.getByRole('button', { name: 'Stop' }).first().click();
+  await expect(page.locator('.controls__info')).toContainText('club 1, position 2');
   await page.locator('.picker__list .prow').first().click();
   await expect(page.locator('.controls__info')).toContainText('1/11');
   page.once('dialog', (d) => d.accept());
@@ -168,4 +178,18 @@ test("a crest on the home page opens that club's players", async ({ page }) => {
   await page.locator('.crest-row a').first().click();
   await expect(page).toHaveURL(/#\/stats\?club=ARS$/);
   await expect(page.locator('.players__list .prow').first()).toContainText('Arsenal');
+});
+
+test('the share sheet shows a card for a story and for a post', async ({ page }) => {
+  await open(page, 'budget');
+  await page.getByRole('button', { name: /Fill the rest/ }).click();
+  await page.locator('.end').getByRole('button', { name: 'Share' }).click();
+  const sheet = page.locator('dialog.share-sheet');
+  await expect(sheet).toBeVisible();
+  const img = sheet.locator('.share-sheet__preview img');
+  await expect(img).toBeVisible();
+  expect(await img.evaluate((i: HTMLImageElement) => [i.naturalWidth, i.naturalHeight])).toEqual([1080, 1920]);
+  await sheet.getByRole('radio', { name: 'Post 1:1' }).click();
+  await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.naturalHeight)).toBe(1080);
+  await expect(sheet.getByRole('button', { name: /Save image/ })).toBeEnabled();
 });

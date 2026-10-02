@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'preact/hooks';
+import { cardFooter } from '../lib/shareSpecs';
+import { openShare } from '../components/ShareSheet';
 import { useRevealWhen } from '../hooks/useRevealWhen';
 import { Icon } from '../components/Icon';
 import { Avatar } from '../components/Avatar';
-import { notifyShare } from '../components/Toast';
 import { useHistory, historyError } from '../data/history';
 import { useDataset } from '../data/store';
 import { valueSource, type ValueSource } from '../data/valueSource';
@@ -13,7 +14,7 @@ import { marketRound } from '../lib/dailyRounds';
 import { QUIZ_ROUNDS, weeklyMoves, type Move } from '../lib/market';
 import { buzz, celebrate } from '../lib/motion';
 import { dayNumber, todayKey } from '../lib/rng';
-import { shareText, shareUrl } from '../lib/share';
+import { shareUrl } from '../lib/share';
 import { readJson, writeJson } from '../lib/storage';
 import { href } from '../router';
 
@@ -150,9 +151,20 @@ function Quiz({ day }: { day: string }) {
     }
   }
 
-  async function share() {
+  function share() {
     const grid = pairs.map((_, i) => (right(i) ? '🟩' : '🟥')).join('');
-    notifyShare(await shareText(`${t('market.quizShare', { n: dayNumber(day) })} ${score}/${pairs.length}\n${grid}\n${shareUrl('market')}`));
+    openShare(
+      {
+        game: t('market.quiz'),
+        kicker: t('mode.daily', { n: dayNumber(day) }),
+        headline: `${score}/${pairs.length}`,
+        sub: t('market.title'),
+        strip: pairs.map((_, i) => (right(i) ? 'good' : 'bad')),
+        ...cardFooter(),
+      },
+      `${t('market.quizShare', { n: dayNumber(day) })} ${score}/${pairs.length}\n${grid}\n${shareUrl('market')}`,
+      'pl-games-market-quiz',
+    );
   }
 
   const last = answers.length - 1;

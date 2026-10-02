@@ -16,8 +16,9 @@ import { getBest, submitBest } from '../../lib/records';
 import { expectedPoints } from '../../lib/season';
 import { rovingKeys } from '../../lib/a11y';
 import { trackEvent } from '../../lib/analytics';
-import { shareText, shareUrl } from '../../lib/share';
-import { notifyShare } from '../../components/Toast';
+import { shareUrl } from '../../lib/share';
+import { openShare } from '../../components/ShareSheet';
+import { cardFooter, xiOnPitch } from '../../lib/shareSpecs';
 import { readJson, writeJson } from '../../lib/storage';
 import { formationByKey, FORMATIONS, teamStrength, type Lineup, type Slot } from '../../lib/strength';
 import { autoFill, defaultSort, grade, isComplete, options, spent, themeFor, THEMES, type SortKey } from './logic';
@@ -178,7 +179,7 @@ export function BudgetXI() {
     };
   }, [complete, strength, clubs]);
 
-  async function share() {
+  function shareTextNow(): string {
     const lines = [...formation.slots].reverse().map((s) => lineup[s.id]?.short ?? '?');
     const head = t('budget.share', {
       budget: `${theme.icon} ${t(`budget.theme.${theme.key}`)}`,
@@ -186,7 +187,23 @@ export function BudgetXI() {
       grade: grade(strength),
       values: shareValues(source),
     });
-    notifyShare(await shareText(`${head}\n${formation.label}: ${lines.join(', ')}\n${shareUrl('budget')}`));
+    return `${head}\n${formation.label}: ${lines.join(', ')}\n${shareUrl('budget')}`;
+  }
+
+  /** The XI as a card, before (or without) playing a season with it. */
+  function shareCard() {
+    openShare(
+      {
+        game: t('game.budget.title'),
+        kicker: `${t(`budget.theme.${theme.key}`)} · ${formatEur(budget)}`,
+        headline: `${formatDecimal(strength)} ${t('common.ovr')}`,
+        sub: t('budget.cardSub', { grade: grade(strength), spent: formatEur(used) }),
+        pitch: xiOnPitch(formation, lineup, meta, source),
+        ...cardFooter(),
+      },
+      shareTextNow(),
+      'pl-games-budget-xi',
+    );
   }
 
   return (
@@ -356,7 +373,7 @@ export function BudgetXI() {
             >
               <Icon name="ball-football" /> {season ? t('budget.playAgain') : t('budget.playSeason')}
             </button>
-            <button class="btn" onClick={share}>
+            <button class="btn" onClick={shareCard}>
               {t('common.share')}
             </button>
             <a class="btn btn--ghost" href="#/road100">
@@ -374,7 +391,7 @@ export function BudgetXI() {
           lineup={lineup}
           animate
           chips={[t(`budget.theme.${theme.key}`)]}
-          imageTitle={t('game.budget.title')}
+          share={{ title: t('game.budget.title'), text: shareTextNow(), file: 'pl-games-budget-xi-season' }}
         />
       )}
       <OtherGames current="budget" />
