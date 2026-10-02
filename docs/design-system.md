@@ -51,6 +51,16 @@ Inter for text, Barlow Condensed for display numbers and titles; three weights
 only (`--weight-regular`, `--weight-semibold`, `--weight-bold`). Body and rules
 text is at least 16px; smaller sizes are for labels and captions.
 
+## Icons
+
+Line icons from [Tabler Icons](https://tabler.io/icons) (MIT), one stroke
+weight (2px on a 24px grid), drawn in the current text colour through
+`<Icon name="…" />` ([`src/components/Icon.tsx`](../src/components/Icon.tsx)).
+Games, navigation, badges and buttons use them instead of emoji, which look
+different on every phone. Emoji stay only in share texts, where a picture
+cannot go. To add one, put its Tabler name in `pipeline/icons.mjs` and run
+`npm run icons`.
+
 ## Space and touch
 
 An 8px grid (`--space-1` 4px … `--space-7` 48px). Nothing tappable is smaller

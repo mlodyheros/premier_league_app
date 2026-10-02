@@ -1,4 +1,5 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
+import { Icon } from '../../components/Icon';
 import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { Avatar, ClubChip, Crest } from '../../components/Avatar';
@@ -185,13 +186,13 @@ export function GuessGame() {
             </span>
             {canHint && (
               <button class="link-btn" onClick={() => setRound((r) => ({ ...r, hint: true }))}>
-                💡 {t('guess.hintButton')}
+                <Icon name="bulb" size={18} /> {t('guess.hintButton')}
               </button>
             )}
           </p>
           {round.hint && !clubKnown && (
             <p class="guess__hint">
-              💡 {tj('guess.hintClub', { club: <ClubChip code={target.club} /> })}
+              <Icon name="bulb" size={18} /> {tj('guess.hintClub', { club: <ClubChip code={target.club} /> })}
             </p>
           )}
           {mode === 'unlimited' && guesses.length > 0 && (
@@ -338,7 +339,7 @@ function EndPanel({ won, gaveUp, target, feedback, mode, day, stats, hinted, onN
           {t('common.shareResult')}
         </button>
         <button class="btn" onClick={shareAsImage}>
-          📷 {t('common.shareImage')}
+          <Icon name="camera" size={18} /> {t('common.shareImage')}
         </button>
         <button class="btn btn--primary" onClick={onNext}>
           {mode === 'daily' ? t('guess.keepPlaying') : t('common.nextPlayer')}

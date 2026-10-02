@@ -17,6 +17,14 @@ time, and scores, streaks and settings live in the browser's local storage.
 | **Budget XI** | Build the strongest XI on a themed budget, from a promoted side (€80M) to a sheikh's takeover (€1.5B), then play a season with it. "Fill the rest" completes an XI within the money left. |
 | **Beat the Model** | Does the model rate the player over or under his Transfermarkt value? Ten a round; daily and practice. |
 | **Price Tag** | Slide (or step through round amounts) to the value you think a player has. Five a round, up to 100 points each; daily and practice. |
+| **Transfer Window** | Take over a club with the board's budget, sell up to three and buy up to three from the other clubs, watch the season forecast (200 simulated seasons) move with every deal, then play the season and try to finish above the forecast made before the window. |
+
+Beyond the games: **Market of the week** (`#/market`), the week's biggest
+value risers and fallers with a daily "who gained more?" quiz, and a **Friends
+league** (`#/league`) that compares today's results and personal bests with
+friends. The league needs no accounts or server: everyone's results travel as a
+code inside a link (`src/lib/friends.ts`), and opening a friend's link adds them
+to your table.
 
 A **Players** page (`#/stats`) lists all of them: search, filter by club and
 position, sort by rating, value, model-vs-TM gap, goals, assists, minutes or
@@ -62,6 +70,8 @@ npm run dev        # http://localhost:5173
 npm test           # unit tests for the game logic
 npm run build      # type-check and build to dist/
 npm run preview    # serve the production build
+npm run e2e        # Playwright: every page on a phone and a desktop (after a build)
+npm run icons      # regenerate src/components/icons.generated.ts
 ```
 
 ## Update the data
@@ -141,10 +151,36 @@ read them.
 
 ## Share previews
 
-Links to the site show `public/og.png` (1200×630: title, games, crests). After
-the clubs change, regenerate it locally with `npm run og-image`; it uses macOS
-system fonts, so the PNG is committed instead of built in CI. The address it is
-served from is `VITE_SITE_URL` in [`.env`](.env).
+Links to the site show `public/og.png` (1200×630: title, games, crests). Every
+game also has its own share page, `g/<game>/`, with its own title, text and
+picture (`public/og/<game>.png`), which forwards to the game; the games' share
+buttons link there, because link previews never see the part of an address
+after `#`. The pages are listed in
+[`pipeline/share-pages.json`](pipeline/share-pages.json) and written by a small
+plugin in [`vite.config.ts`](vite.config.ts). After the clubs or the games
+change, regenerate the pictures locally with `npm run og-image`; it uses macOS
+system fonts, so the PNGs are committed instead of built in CI. The address
+they are served from is `VITE_SITE_URL` in [`.env`](.env).
+
+## Value history
+
+Each export also updates `public/data/history.json`
+([`pipeline/history.py`](pipeline/history.py)): one snapshot of both values per
+ISO week (the last 26 weeks), which the Market page compares, and each player's
+Transfermarkt valuation history, joined from the Kaggle "player-scores" files
+already in pl-value, for the career chart on the Players page. It is loaded
+only by the pages that use it. `python3 pipeline/history.py --from-git`
+rebuilds the snapshots from this repository's history of `players.json`.
+
+## Tests
+
+`npm test` runs the unit tests (Vitest, `tests/`). `npm run e2e` runs
+[Playwright](playwright.config.ts) against the production build on a phone
+(Pixel 7) and a desktop: every page loads without errors or sideways scrolling,
+the answer buttons stay in thumb reach, Budget XI's sheet opens on screen, the
+share pages forward, and the main flows of Guess the Player, Road to 100,
+Transfer Window and the league work. Locally it uses the installed Chrome; CI
+runs both suites before every deploy.
 
 ## Visit statistics (optional)
 
@@ -311,9 +347,11 @@ position to fill) and *blind* (a drawn position, names only: no ratings, no
 prices, an alphabetical list; the ratings are revealed after the season). In
 the position modes the club and the position have a reel and a button each, in
 either order: the club is drawn from those that can fill the drawn position,
-the position from those the drawn club can fill. A re-draw (club, position or
-both at once) costs one of the three re-spins; a tap on a spinning reel stops
-it at once. Bests are kept per draft mode and season mode.
+the position from those the drawn club can fill. "Draw club and position"
+spins both reels at once (free, as the first draw); a re-draw (club, position
+or both) costs one of the three re-spins, and a tap on a spinning reel stops it
+at once. "Start over" throws the XI away mid-draft. Bests are kept per draft
+mode and season mode.
 
 **Chemistry**: every extra player from a club already in your XI adds 0.3 to
 its rating, up to +1.5 (five from one club, or several smaller groups). It is a
@@ -332,5 +370,9 @@ shown only to identify them; no player photos are used. This is an unofficial
 fan project, not affiliated with the Premier League, its clubs or Transfermarkt.
 If a rights holder objects, delete `public/crests/`: every crest falls back to
 a swatch in the club's colours.
+
+Icons: [Tabler Icons](https://tabler.io/icons) (MIT, © Paweł Kuna), copied at
+build time into [`src/components/icons.generated.ts`](src/components/icons.generated.ts)
+by [`pipeline/icons.mjs`](pipeline/icons.mjs), only the few dozen the site uses.
 
 Code: [MIT](LICENSE).

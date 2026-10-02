@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'preact/hooks';
+import { Icon } from '../components/Icon';
 import { Avatar } from '../components/Avatar';
 import { notifyShare } from '../components/Toast';
 import { useHistory, historyError } from '../data/history';
@@ -92,7 +93,9 @@ export function Market() {
         <>
           <div class="market__cols">
             <section>
-              <h2 class="section-title">📈 {t('market.risers')}</h2>
+              <h2 class="section-title">
+                <Icon name="trending-up" /> {t('market.risers')}
+              </h2>
               <ol class="moves">
                 {moves.risers.map((m) => (
                   <MoveRow m={m} />
@@ -100,7 +103,9 @@ export function Market() {
               </ol>
             </section>
             <section>
-              <h2 class="section-title">📉 {t('market.fallers')}</h2>
+              <h2 class="section-title">
+                <Icon name="trending-down" /> {t('market.fallers')}
+              </h2>
               <ol class="moves">
                 {moves.fallers.map((m) => (
                   <MoveRow m={m} />

@@ -1,17 +1,18 @@
 /** Budget XI: rules for spending, eligibility and grading. */
 import type { Player } from '../../data/types';
+import type { IconName } from '../../components/Icon';
 import { valueOf, type ValueSource } from '../../data/valueSource';
 import { fit, slotRating, type Formation, type Lineup, type Slot } from '../../lib/strength';
 
 export type ThemeKey = 'promoted' | 'midtable' | 'europe' | 'bigsix' | 'sheikh';
 
 /** Budgets with a story: from a newly promoted side to a sheikh's takeover. */
-export const THEMES: { key: ThemeKey; budget: number; icon: string }[] = [
-  { key: 'promoted', budget: 80_000_000, icon: '🆙' },
-  { key: 'midtable', budget: 200_000_000, icon: '⚖️' },
-  { key: 'europe', budget: 400_000_000, icon: '🌍' },
-  { key: 'bigsix', budget: 700_000_000, icon: '🏆' },
-  { key: 'sheikh', budget: 1_500_000_000, icon: '🛢️' },
+export const THEMES: { key: ThemeKey; budget: number; icon: string; glyph: IconName }[] = [
+  { key: 'promoted', budget: 80_000_000, icon: '🆙', glyph: 'arrow-big-up-lines' },
+  { key: 'midtable', budget: 200_000_000, icon: '⚖️', glyph: 'scale' },
+  { key: 'europe', budget: 400_000_000, icon: '🌍', glyph: 'stars' },
+  { key: 'bigsix', budget: 700_000_000, icon: '🏆', glyph: 'crown' },
+  { key: 'sheikh', budget: 1_500_000_000, icon: '🛢️', glyph: 'diamond' },
 ];
 export const DEFAULT_THEME: ThemeKey = 'midtable';
 

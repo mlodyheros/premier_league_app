@@ -20,7 +20,15 @@
 
 .pt__reveal { display: grid; gap: 10px; justify-items: start; }
 
-.pt__emoji { font-size: 1.5rem; letter-spacing: 0.1em; }
+.pt__dots { display: flex; gap: 6px; margin: var(--space-2) 0; }
+
+.pt__dot { display: grid; place-items: center; width: 34px; height: 34px; border-radius: var(--radius-sm); color: var(--color-bg); }
+
+.pt__dot.good { background: var(--color-primary); }
+
+.pt__dot.mid { background: var(--color-warning); }
+
+.pt__dot.bad { background: var(--color-accent-strong); color: var(--color-white); }
 
 .pt__score { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--radius); background: var(--color-bg-sunken); animation: land var(--dur-slow) var(--ease-spring) both; }
 
@@ -34,7 +42,7 @@
 
 .pt__score.bad .pt__points { color: var(--color-accent); }
 
-.pt__emoji-big { font-size: 2.2rem; margin-left: auto; }
+.pt__emoji-big { margin-left: auto; display: grid; place-items: center; }
 
 .pt__compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 0; width: 100%; }
 
@@ -51,3 +59,9 @@
 .pt__reveal { width: 100%; }
 
 .pt__reveal > * { justify-self: stretch; }
+
+.pt__score.good .pt__emoji-big { color: var(--color-primary); }
+
+.pt__score.mid .pt__emoji-big { color: var(--color-warning); }
+
+.pt__score.bad .pt__emoji-big { color: var(--color-accent); }

@@ -1,4 +1,5 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
+import { Icon } from '../../components/Icon';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { Avatar, Crest } from '../../components/Avatar';
 import { Pitch } from '../../components/Pitch';
@@ -137,6 +138,8 @@ export function Road38() {
   const clubPool = clubOptions(players, clubCodes, formation, lineup, spun?.slot ?? null, spun?.club);
   const slotPool = positional ? slotOptions(players, clubCodes, formation, lineup, spun?.club ?? null, spun?.slot) : [];
   const canRespin = state.respins > 0 && !spinning;
+  /** Nothing drawn yet in a position mode: one button draws both, the reels' own buttons step back. */
+  const offerBoth = positional && !spinning && !spun?.club && !spun?.slot;
 
   /** Spin one reel through random faces, slowing down, and stop on `landing`; returns when it stops. */
   function runReel(set: (v: string | null) => void, faces: string[], landing: string, delay: number, stopped: () => void) {
@@ -156,10 +159,14 @@ export function Road38() {
     return at;
   }
 
-  /** Draw the club, the position, or both; a re-draw costs one re-spin. */
+  /**
+   * Draw the club, the position, or both at once. A re-draw (of anything
+   * already drawn) costs one re-spin; the first draw of both is free.
+   */
   function draw(which: 'club' | 'slot' | 'both') {
     if (spinning) return;
-    const respin = which === 'both' || (which === 'club' ? !!spun?.club : !!spun?.slot);
+    const respin =
+      which === 'both' ? !!(spun?.club || spun?.slot) : which === 'club' ? !!spun?.club : !!spun?.slot;
     if (respin && state.respins === 0) return;
     const club =
       which === 'slot'
@@ -253,6 +260,18 @@ export function Road38() {
     setJustPlayed(true);
     window.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });
     setState((s) => ({ ...s, season }));
+  }
+
+  /** Throw the draft away mid-way (after a confirmation): an empty XI and all re-spins back. */
+  function restart() {
+    if (Object.keys(state.picks).length > 0 && !window.confirm(t('road.restartConfirm'))) return;
+    timers.current.forEach(clearTimeout);
+    finish.current = null;
+    setClubReel(null);
+    setSlotReel(null);
+    setLanded({ club: false, slot: false });
+    trackEvent('road/restart');
+    newDraft();
   }
 
   function newDraft() {
@@ -365,10 +384,15 @@ export function Road38() {
           {started && <p class="mode-help">{t('road.setupLocked')}</p>}
           </details>
           <p class="controls__info">
+            {started && (
+              <button class="link-btn road-restart" onClick={restart} disabled={spinning}>
+                <Icon name="refresh" size={16} /> {t('road.restart')}
+              </button>
+            )}
             {t('road.progress', { picked: 11 - open.length, count: state.respins })}
             {chem.bonus > 0 && (
               <span class="chem" title={t('road.chemHelp', { step: CHEMISTRY_STEP })}>
-                🔗 {t('road.chem', { n: formatDecimal(chem.bonus) })}
+                <Icon name="link" size={14} /> {t('road.chem', { n: formatDecimal(chem.bonus) })}
               </span>
             )}
           </p>
@@ -387,6 +411,15 @@ export function Road38() {
             <div class="picker">
               {!complete && (
                 <div class="draws" aria-live="polite">
+                  {offerBoth && (
+                    <button
+                      class="btn btn--primary btn--spin draws__both draws__both--first"
+                      onClick={() => draw('both')}
+                      disabled={!clubPool.length || !slotPool.length}
+                    >
+                      {t('road.drawBoth')}
+                    </button>
+                  )}
                   <ReelBox
                     label={t('road.reel.club')}
                     spinning={clubReel !== null}
@@ -405,7 +438,7 @@ export function Road38() {
                         {t('road.stop')}
                       </button>
                     ) : !spun?.club ? (
-                      <button class="btn btn--primary btn--spin" onClick={() => draw('club')} disabled={spinning || !clubPool.length}>
+                      <button class={`btn btn--spin ${offerBoth ? 'btn--sm' : 'btn--primary'}`} onClick={() => draw('club')} disabled={spinning || !clubPool.length}>
                         {t('road.drawClub')}
                       </button>
                     ) : (
@@ -430,7 +463,7 @@ export function Road38() {
                           {t('road.stop')}
                         </button>
                       ) : !spun?.slot ? (
-                        <button class="btn btn--primary btn--spin" onClick={() => draw('slot')} disabled={spinning || !slotPool.length}>
+                        <button class={`btn btn--spin ${offerBoth ? 'btn--sm' : 'btn--primary'}`} onClick={() => draw('slot')} disabled={spinning || !slotPool.length}>
                           {t('road.drawSlot')}
                         </button>
                       ) : (
@@ -451,7 +484,7 @@ export function Road38() {
               {ready && !spinning && (
                 <>
                   {Object.values(lineup).some((p) => p?.club === spun!.club) ? (
-                    <p class="chem-hint">🔗 {t('road.chemNext', { club: meta.clubs[spun!.club!].short, step: CHEMISTRY_STEP })}</p>
+                    <p class="chem-hint"><Icon name="link" size={16} /> {t('road.chemNext', { club: meta.clubs[spun!.club!].short, step: CHEMISTRY_STEP })}</p>
                   ) : null}
                   <p class="picker__hint">
                     {drawnSlot
@@ -499,7 +532,7 @@ export function Road38() {
                     </dl>
                   )}
                   <button class="btn btn--primary btn--big btn--pulse" onClick={kickOff}>
-                    {t('road.kickoff')}
+                    <Icon name="ball-football" /> {t('road.kickoff')}
                   </button>
                 </div>
               )}

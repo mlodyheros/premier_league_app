@@ -1,12 +1,13 @@
 import { useRef } from 'preact/hooks';
+import { Icon, type IconName } from './Icon';
 import { gameMeta, type GameId } from '../games/meta';
 import { t, type Key } from '../i18n';
 import { href, route } from '../router';
 import { settingsOpen } from './Settings';
 
 /** The four destinations on the bar itself; everything else lives under "More". */
-const TABS: { path: string; icon: string; label: Key; match: string[] }[] = [
-  { path: '', icon: '🏠', label: 'nav.home2', match: [''] },
+const TABS: { path: string; icon: IconName; label: Key; match: string[] }[] = [
+  { path: '', icon: 'ball-football', label: 'nav.home2', match: [''] },
   { path: 'guess', icon: gameMeta('guess').icon, label: 'short.guess', match: ['guess'] },
   { path: 'road100', icon: gameMeta('road').icon, label: 'short.road', match: ['road100', 'road38'] },
   { path: 'budget', icon: gameMeta('budget').icon, label: 'short.budget', match: ['budget'] },
@@ -32,7 +33,7 @@ export function BottomNav() {
           return (
             <a class={`bottom-nav__item ${active ? 'on' : ''}`} href={href(tab.path)} aria-current={active ? 'page' : undefined}>
               <span class="bottom-nav__icon" aria-hidden="true">
-                {tab.icon}
+                <Icon name={tab.icon} size={22} />
               </span>
               <span class="bottom-nav__label">{t(tab.label)}</span>
             </a>
@@ -45,7 +46,7 @@ export function BottomNav() {
           onClick={() => sheet.current?.showModal()}
         >
           <span class="bottom-nav__icon" aria-hidden="true">
-            ⋯
+            <Icon name="dots" size={22} />
           </span>
           <span class="bottom-nav__label">{t('nav.more')}</span>
         </button>
@@ -67,7 +68,9 @@ export function BottomNav() {
               return (
                 <li>
                   <a href={href(g.path)} onClick={close} aria-current={here === g.path ? 'page' : undefined}>
-                    <span aria-hidden="true">{g.icon}</span>
+                    <span class="sheet__icon">
+                      <Icon name={g.icon} />
+                    </span>
                     <span>
                       <b>{t(`game.${id}.title`)}</b>
                       <small>{t(`game.${id}.blurb`)}</small>
@@ -78,7 +81,9 @@ export function BottomNav() {
             })}
             <li>
               <a href={href('league')} onClick={close} aria-current={here === 'league' ? 'page' : undefined}>
-                <span aria-hidden="true">🏆</span>
+                <span class="sheet__icon">
+                  <Icon name="trophy" />
+                </span>
                 <span>
                   <b>{t('nav.league')}</b>
                   <small>{t('league.blurb')}</small>
@@ -87,7 +92,9 @@ export function BottomNav() {
             </li>
             <li>
               <a href={href('market')} onClick={close} aria-current={here === 'market' ? 'page' : undefined}>
-                <span aria-hidden="true">📈</span>
+                <span class="sheet__icon">
+                  <Icon name="chart-line" />
+                </span>
                 <span>
                   <b>{t('nav.market')}</b>
                   <small>{t('market.blurb')}</small>
@@ -96,7 +103,9 @@ export function BottomNav() {
             </li>
             <li>
               <a href={href('stats')} onClick={close} aria-current={here === 'stats' ? 'page' : undefined}>
-                <span aria-hidden="true">📊</span>
+                <span class="sheet__icon">
+                  <Icon name="users" />
+                </span>
                 <span>
                   <b>{t('nav.players')}</b>
                   <small>{t('players.blurb')}</small>
@@ -105,7 +114,9 @@ export function BottomNav() {
             </li>
             <li>
               <a href={href('how')} onClick={close} aria-current={here === 'how' ? 'page' : undefined}>
-                <span aria-hidden="true">📘</span>
+                <span class="sheet__icon">
+                  <Icon name="book-2" />
+                </span>
                 <span>
                   <b>{t('nav.how')}</b>
                 </span>
@@ -119,7 +130,9 @@ export function BottomNav() {
                   settingsOpen.value = true;
                 }}
               >
-                <span aria-hidden="true">⚙️</span>
+                <span class="sheet__icon">
+                  <Icon name="settings" />
+                </span>
                 <span>
                   <b>{t('settings.title')}</b>
                 </span>

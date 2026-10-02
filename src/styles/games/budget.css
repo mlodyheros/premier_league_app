@@ -48,7 +48,9 @@
 
 .theme--on { border-color: var(--color-primary); background: linear-gradient(160deg, rgb(var(--primary-rgb) / 0.16), var(--color-surface)); box-shadow: inset 0 0 0 1px var(--color-primary); }
 
-.theme__icon { font-size: 1.6rem; line-height: 1.1; }
+.theme__icon { display: grid; place-items: center; color: var(--color-text-muted); }
+
+.theme--on .theme__icon { color: var(--color-primary); }
 
 .theme__name { font-weight: var(--weight-bold); font-size: 0.82rem; text-align: center; line-height: 1.15; }
 

@@ -125,3 +125,22 @@ test('every share page forwards to its game and has its own preview', async ({ p
   await expect(page).toHaveURL(/#\/transfer$/);
   await expect(page.locator('main h1').first()).toBeVisible();
 });
+
+test('Road to 100: draw club and position at once, then start over', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'plg:road:state',
+      JSON.stringify({ formation: '433', picks: {}, respins: 3, spin: null, season: null, difficulty: 'realistic', draft: 'position' }),
+    );
+  });
+  await open(page, 'road100');
+  await page.getByRole('button', { name: 'Draw club and position' }).click();
+  await page.getByRole('button', { name: 'Stop' }).first().click();
+  // The first draw of both is free: all three re-spins are left.
+  await expect(page.locator('.controls__info')).toContainText('3');
+  await page.locator('.picker__list .prow').first().click();
+  await expect(page.locator('.controls__info')).toContainText('1/11');
+  page.once('dialog', (d) => d.accept());
+  await page.getByRole('button', { name: 'Start over' }).click();
+  await expect(page.locator('.controls__info')).toContainText('0/11');
+});

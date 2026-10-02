@@ -1,4 +1,5 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
+import { Icon } from '../../components/Icon';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { DailyDone, ModeTabs } from '../../components/ModeTabs';
 import { PoolNote } from '../../components/PoolNote';
@@ -18,7 +19,7 @@ import { dayNumber, shuffled, todayKey } from '../../lib/rng';
 import { shareText, shareUrl } from '../../lib/share';
 import { notifyShare } from '../../components/Toast';
 import { readJson, writeJson } from '../../lib/storage';
-import { emoji, eurToSlider, legacyPool, MAX_POINTS, ROUNDS, score, SLIDER_MID, sliderToEur, stepPrice } from './logic';
+import { emoji, verdictIcon, eurToSlider, legacyPool, MAX_POINTS, ROUNDS, score, SLIDER_MID, sliderToEur, stepPrice } from './logic';
 import { dailyPoolFor, poolLevel, poolOf } from '../../lib/pools';
 
 const GAME = 'price';
@@ -235,8 +236,8 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
                     +{Math.round(pointsShown)}
                     <small>{t('pt.pointsWord')}</small>
                   </span>
-                  <span class="pt__emoji-big" aria-hidden="true">
-                    {emoji(lastPoints!)}
+                  <span class="pt__emoji-big">
+                    <Icon name={verdictIcon(lastPoints!)} size={44} />
                   </span>
                 </div>
                 <dl class="pt__compare">
@@ -270,7 +271,13 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
             {total}/{ROUNDS * MAX_POINTS}
             {newBest ? t('common.newBestSuffix') : ''}
           </p>
-          <p class="end__note pt__emoji">{points.map(emoji).join(' ')}</p>
+          <p class="pt__dots" aria-hidden="true">
+            {points.map((pts) => (
+              <span class={`pt__dot ${pts >= 60 ? 'good' : pts >= 30 ? 'mid' : 'bad'}`}>
+                <Icon name={verdictIcon(pts)} size={18} />
+              </span>
+            ))}
+          </p>
           {mode === 'daily' && <DailyDone countdown={countdown} streak={dailyStreak(GAME)} />}
           <div class="end__actions">
             <button class="btn btn--primary" onClick={onRestart}>

@@ -179,7 +179,7 @@
 
 .onboard h2 { margin: 0; font-size: 1.8rem; }
 
-.onboard__icon { font-size: 2.6rem; line-height: 1; }
+.onboard__icon { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 22px; color: var(--color-primary); background: rgb(var(--primary-rgb) / 0.12); }
 
 .onboard__body { margin: 0; color: var(--color-text-muted); line-height: 1.55; }
 

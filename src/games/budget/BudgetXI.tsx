@@ -1,4 +1,5 @@
 import { GameHeader, OtherGames } from '../../components/GameHeader';
+import { Icon } from '../../components/Icon';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { Avatar } from '../../components/Avatar';
 import { Pitch } from '../../components/Pitch';
@@ -222,7 +223,7 @@ export function BudgetXI() {
             }}
           >
             <span class="theme__icon" aria-hidden="true">
-              {th.icon}
+              <Icon name={th.glyph} size={26} />
             </span>
             <span class="theme__name">{t(`budget.theme.${th.key}`)}</span>
             <span class="theme__amount">{formatEur(th.budget)}</span>
@@ -241,7 +242,7 @@ export function BudgetXI() {
           </select>
         </label>
         <button class="btn" onClick={fillRest} disabled={isComplete(formation, lineup)}>
-          ✨ {t('budget.autofill')}
+          <Icon name="sparkles" size={18} /> {t('budget.autofill')}
         </button>
         <button class="btn btn--ghost" onClick={reset} disabled={!Object.keys(picks).length}>
           {t('budget.clear')}
@@ -351,7 +352,7 @@ export function BudgetXI() {
                 trackEvent(`budget/${theme.key}/season`);
               }}
             >
-              {season ? t('budget.playAgain') : t('budget.playSeason')}
+              <Icon name="ball-football" /> {season ? t('budget.playAgain') : t('budget.playSeason')}
             </button>
             <button class="btn" onClick={share}>
               {t('common.share')}
@@ -370,7 +371,7 @@ export function BudgetXI() {
           formation={formation}
           lineup={lineup}
           animate
-          chips={[`${theme.icon} ${t(`budget.theme.${theme.key}`)}`]}
+          chips={[t(`budget.theme.${theme.key}`)]}
           imageTitle={t('game.budget.title')}
         />
       )}

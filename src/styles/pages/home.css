@@ -115,7 +115,9 @@ a.card:hover { transform: translateY(-2px); border-color: var(--color-primary); 
 
 .daily:active { transform: scale(0.985); }
 
-.daily__icon { font-size: 1.6rem; }
+.daily__icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; color: var(--color-primary); background: rgb(var(--primary-rgb) / 0.1); flex-shrink: 0; }
+
+.daily--done .daily__icon { color: var(--color-text-muted); background: var(--color-bg-sunken); }
 
 .daily__text { display: grid; flex: 1; min-width: 0; }
 
@@ -133,7 +135,7 @@ a.card:hover { transform: translateY(-2px); border-color: var(--color-primary); 
   position: absolute;
   top: 14px;
   right: 16px;
-  font-size: 2rem;
+  color: var(--color-primary);
   opacity: 0.9;
   transition: transform var(--dur-base) var(--ease-spring);
 }

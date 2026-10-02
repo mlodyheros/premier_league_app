@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { Icon, type IconName } from './Icon';
 import { t, tj, type Key } from '../i18n';
 import { readJson, writeJson } from '../lib/storage';
 import { ValueToggle } from './ValueToggle';
 
-const STEPS: { icon: string; title: Key; body: Key }[] = [
-  { icon: '⚽', title: 'onboard.1.title', body: 'onboard.1.body' },
-  { icon: '💶', title: 'onboard.2.title', body: 'onboard.2.body' },
+const STEPS: { icon: IconName; title: Key; body: Key }[] = [
+  { icon: 'ball-football', title: 'onboard.1.title', body: 'onboard.1.body' },
+  { icon: 'coins', title: 'onboard.2.title', body: 'onboard.2.body' },
 ];
 
 /** Two short screens on the first visit: what the games are, and the two prices. */
@@ -31,7 +32,7 @@ export function Onboarding() {
     <dialog ref={dialog} class="settings onboard" aria-labelledby="onboard-title" onClose={() => writeJson('onboarded', true)}>
       <div class="settings__inner">
         <span class="onboard__icon" aria-hidden="true">
-          {s.icon}
+          <Icon name={s.icon} size={40} />
         </span>
         <h2 id="onboard-title">{t(s.title)}</h2>
         <p class="onboard__body">{tj(s.body, { b: <b>{t('onboard.daily')}</b> })}</p>

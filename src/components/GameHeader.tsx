@@ -1,4 +1,5 @@
 import type { ComponentChildren } from 'preact';
+import { Icon } from './Icon';
 import { useState } from 'preact/hooks';
 import { GAME_LIST, gameMeta, type GameId } from '../games/meta';
 import { t } from '../i18n';
@@ -41,10 +42,10 @@ export function GameHeader({
       <header class="game-head game-head--compact">
         <div class="game-head__row">
           <a class="game-head__home" href={href('')} aria-label={t('nav.games')}>
-            ←
+            <Icon name="arrow-left" />
           </a>
-          <span class="game-head__icon" aria-hidden="true">
-            {meta.icon}
+          <span class="game-head__icon">
+            <Icon name={meta.icon} size={20} />
           </span>
           <h1 class="game-head__title">{t(`game.${game}.title`)}</h1>
           {children && (
@@ -55,7 +56,7 @@ export function GameHeader({
               aria-controls={`rules-${game}`}
               onClick={() => setRulesOpen(!rulesOpen)}
             >
-              <span aria-hidden="true">ⓘ</span>
+              <Icon name="info-circle" size={22} />
               <span class="sr-only">{t('game.howToPlay')}</span>
             </button>
           )}
@@ -77,8 +78,8 @@ export function GameHeader({
         ← {t('nav.games')}
       </a>
       <div class="game-head__row">
-        <span class="game-head__icon" aria-hidden="true">
-          {meta.icon}
+        <span class="game-head__icon">
+          <Icon name={meta.icon} size={28} />
         </span>
         <div class="game-head__title">
           <h1>{t(`game.${game}.title`)}</h1>
@@ -89,7 +90,9 @@ export function GameHeader({
       {tabs && <div class="game-head__tabs">{tabs}</div>}
       {children && (
         <details class="rules">
-          <summary>{t('game.howToPlay')}</summary>
+          <summary>
+            <Icon name="info-circle" size={18} /> {t('game.howToPlay')}
+          </summary>
           <div class="rules__body">{children}</div>
         </details>
       )}
@@ -106,7 +109,7 @@ export function OtherGames({ current }: { current: GameId }) {
         {GAME_LIST.filter((g) => g.id !== current).map((g) => (
           <li>
             <a href={href(g.path)}>
-              <span aria-hidden="true">{g.icon}</span> {t(`game.${g.id}.title`)}
+              <Icon name={g.icon} size={18} /> {t(`game.${g.id}.title`)}
             </a>
           </li>
         ))}

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
+import { Icon } from '../../components/Icon';
 import { Avatar, Crest } from '../../components/Avatar';
 import { Chips } from '../../components/Chips';
 import { GameHeader, OtherGames } from '../../components/GameHeader';
@@ -223,7 +224,7 @@ function ClubPicker({ onPick }: { onPick: (club: string) => void }) {
       <div class="tw-pick__head">
         <h2>{t('tw.pickClub')}</h2>
         <button class="btn btn--primary btn--sm" onClick={() => onPick(pick(clubs)[0])}>
-          🎲 {t('tw.randomClub')}
+          <Icon name="dice-5" size={18} /> {t('tw.randomClub')}
         </button>
       </div>
       <ul class="tw-clubs">
@@ -392,7 +393,7 @@ function WindowView({
 
       <div class="tw-play action-bar">
         <button class="btn btn--primary btn--big" onClick={onPlay}>
-          {t('tw.play')}
+          <Icon name="ball-football" /> {t('tw.play')}
         </button>
       </div>
     </div>

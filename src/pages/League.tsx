@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
+import { Icon } from '../components/Icon';
 import { notifyShare, toast } from '../components/Toast';
 import { t, tj } from '../i18n';
 import { formatDate } from '../lib/format';
@@ -76,12 +77,12 @@ export function League() {
             <tr>
               <th class="l">{t('league.col.who')}</th>
               <th title={t('league.col.score')}>{t('league.col.scoreShort')}</th>
-              <th title={t('game.guess.title')}>🔍</th>
-              <th title={t('game.beat.title')}>🤖</th>
-              <th title={t('game.price.title')}>🏷️</th>
-              <th title={t('game.road.title')}>💯</th>
-              <th title={t('game.hl.title')}>↕️</th>
-              <th title={t('game.transfer.title')}>🔁</th>
+              <th><Icon name="user-search" size={18} label={t('game.guess.title')} /></th>
+              <th><Icon name="robot" size={18} label={t('game.beat.title')} /></th>
+              <th><Icon name="tag" size={18} label={t('game.price.title')} /></th>
+              <th><Icon name="soccer-field" size={18} label={t('game.road.title')} /></th>
+              <th><Icon name="arrows-up-down" size={18} label={t('game.hl.title')} /></th>
+              <th><Icon name="arrows-exchange" size={18} label={t('game.transfer.title')} /></th>
               <th aria-label={t('league.col.actions')} />
             </tr>
           </thead>

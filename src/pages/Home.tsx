@@ -1,4 +1,5 @@
 import { useState } from 'preact/hooks';
+import { Icon } from '../components/Icon';
 import { Crest } from '../components/Avatar';
 import { useDataset } from '../data/store';
 import { valuesPhrase, valueSource } from '../data/valueSource';
@@ -58,7 +59,7 @@ export function Home() {
 
   /** One message with all three of today's results. */
   async function shareAll() {
-    const lines = dailies.map((g) => `${g.icon} ${t(`game.${g.id}.title`)}: ${dailyResult(g.id, day) ?? '✓'}`);
+    const lines = dailies.map((g) => `${g.emoji} ${t(`game.${g.id}.title`)}: ${dailyResult(g.id, day) ?? '✓'}`);
     // With a nickname set, the link also adds you to the reader's friends league.
     const link = myName() ? leagueLink(myCard(day)) : siteUrl();
     notifyShare(await shareText(`${t('home.shareAll', { n: dayNumber(day) })}\n${lines.join('\n')}\n${link}`));
@@ -113,7 +114,7 @@ export function Home() {
             <li>
               <a class={`daily ${done ? 'daily--done' : ''}`} href={href(g.path)}>
                 <span class="daily__icon" aria-hidden="true">
-                  {g.icon}
+                  <Icon name={g.icon} size={26} />
                 </span>
                 <span class="daily__text">
                   <b>{t(`game.${g.id}.title`)}</b>
@@ -130,7 +131,9 @@ export function Home() {
 
       {moves && moves.risers[0] && moves.fallers[0] && (
         <a class="market-tile" href={href('market')}>
-          <b>📈 {t('home.market')} →</b>
+          <b>
+            <Icon name="chart-line" /> {t('home.market')} →
+          </b>
           <span>
             {tj('home.marketUp', { name: moves.risers[0].player.name, pct: <em class="up">{formatPct(moves.risers[0].change)}</em> })}
           </span>
@@ -148,7 +151,7 @@ export function Home() {
             <li>
               <a class={`card card--${g.id}`} href={href(g.path)}>
                 <span class="card__icon" aria-hidden="true">
-                  {g.icon}
+                  <Icon name={g.icon} size={26} />
                 </span>
                 <span class="card__tag">{t(`game.${g.id}.tag`)}</span>
                 <h2>{t(`game.${g.id}.title`)}</h2>

@@ -85,7 +85,7 @@
 .sheet__list a:hover, .sheet__list button:hover { background: var(--color-surface-raised); }
 .sheet__list a:active, .sheet__list button:active { transform: scale(0.98); }
 .sheet__list a[aria-current='page'] { box-shadow: inset 0 0 0 1px var(--color-primary); }
-.sheet__list > li > * > span:first-child { font-size: 1.5rem; }
+.sheet__icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: var(--color-primary); background: rgb(var(--primary-rgb) / 0.1); flex-shrink: 0; }
 .sheet__list b { display: block; }
 .sheet__list small { display: block; color: var(--color-text-muted); font-size: 0.85rem; }
 
@@ -102,6 +102,6 @@
   border: 1px solid var(--color-border);
   text-align: center;
 }
-.error-card__icon { font-size: 2.2rem; }
+.error-card__icon { color: var(--color-warning); }
 .error-card h2 { font-size: 1.5rem; }
 .error-card p { margin: 0; color: var(--color-text-muted); }

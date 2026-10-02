@@ -35,9 +35,9 @@ function metric(p: Player, key: SortKey, source: 'tm' | 'model'): { value: numbe
       return { value: p.tm >= GAP_MIN_VALUE ? gap : -Infinity, label: formatPct(gap) };
     }
     case 'goals':
-      return { value: p.stats.goals, label: `${p.stats.goals} ⚽` };
+      return { value: p.stats.goals, label: `${p.stats.goals} ${t('players.goalsShort')}` };
     case 'assists':
-      return { value: p.stats.assists, label: `${p.stats.assists} 🅰️` };
+      return { value: p.stats.assists, label: `${p.stats.assists} ${t('players.assistsShort')}` };
     case 'minutes':
       return { value: p.stats.minutes, label: `${formatInt(p.stats.minutes)}′` };
     case 'age':

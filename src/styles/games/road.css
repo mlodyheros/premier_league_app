@@ -115,3 +115,9 @@
 .kickoff__preview dd { margin: 0; font-family: var(--display); font-size: 1.8rem; font-weight: var(--weight-bold); color: var(--color-primary); line-height: 1.1; }
 
 .reel--on .reel__window { cursor: pointer; }
+
+.road .controls__info { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); }
+
+.road-restart { order: 2; margin-left: auto; color: var(--color-accent); }
+
+.draws__both--first { min-height: 52px; }

@@ -62,6 +62,15 @@ export function score(guess: number, actual: number): number {
   return Math.max(0, Math.round(MAX_POINTS * (1 - miss)));
 }
 
+/** The verdict on the page, as an icon (emoji() is for share texts). */
+export function verdictIcon(points: number): 'target-arrow' | 'thumb-up' | 'mood-smile' | 'mood-neutral' | 'mood-sad' {
+  if (points >= 90) return 'target-arrow';
+  if (points >= 60) return 'thumb-up';
+  if (points >= 30) return 'mood-smile';
+  if (points > 0) return 'mood-neutral';
+  return 'mood-sad';
+}
+
 export function emoji(points: number): string {
   if (points >= 90) return '🎯';
   if (points >= 60) return '🟩';

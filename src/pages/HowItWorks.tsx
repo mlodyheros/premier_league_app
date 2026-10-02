@@ -53,6 +53,7 @@ const GAME_NOTES: [Key, Key][] = [
   ['game.hl.title', 'how.games.hl'],
   ['game.road.title', 'how.games.road'],
   ['game.budget.title', 'how.games.budget'],
+  ['game.transfer.title', 'how.games.transfer'],
   ['game.beat.title', 'how.games.beat'],
   ['game.price.title', 'how.games.price'],
 ];

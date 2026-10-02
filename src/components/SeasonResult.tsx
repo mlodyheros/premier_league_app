@@ -1,4 +1,5 @@
 import type { ComponentChildren } from 'preact';
+import { Icon, type IconName } from './Icon';
 import { useEffect, useState } from 'preact/hooks';
 import { useCountUp } from '../hooks/useCountUp';
 import { t, tj } from '../i18n';
@@ -18,16 +19,19 @@ export function userRow(table: readonly TableRow[]): TableRow {
 }
 
 export interface Badge {
+  /** For share texts. */
   icon: string;
+  /** On the page. */
+  glyph: IconName;
   label: 'road.badge.perfect' | 'road.badge.champions' | 'road.badge.invincible' | 'road.badge.centurion';
 }
 
 export function seasonBadges(row: TableRow, position: number): Badge[] {
   const out: Badge[] = [];
-  if (row.points >= 100) out.push({ icon: '💯', label: 'road.badge.centurion' });
-  if (position === 1) out.push({ icon: '🏆', label: 'road.badge.champions' });
-  if (row.won === 38) out.push({ icon: '⭐', label: 'road.badge.perfect' });
-  else if (row.lost === 0) out.push({ icon: '🛡️', label: 'road.badge.invincible' });
+  if (row.points >= 100) out.push({ icon: '💯', glyph: 'target-arrow', label: 'road.badge.centurion' });
+  if (position === 1) out.push({ icon: '🏆', glyph: 'trophy', label: 'road.badge.champions' });
+  if (row.won === 38) out.push({ icon: '⭐', glyph: 'star', label: 'road.badge.perfect' });
+  else if (row.lost === 0) out.push({ icon: '🛡️', glyph: 'shield-check', label: 'road.badge.invincible' });
   return out;
 }
 
@@ -129,7 +133,7 @@ export function SeasonResult({
           <ul class="badges">
             {earned.map((b) => (
               <li>
-                <span aria-hidden="true">{b.icon}</span> {t(b.label)}
+                <Icon name={b.glyph} size={18} /> {t(b.label)}
               </li>
             ))}
           </ul>
@@ -180,7 +184,7 @@ export function SeasonResult({
             {actions}
             {imageTitle && (
               <button class="btn" onClick={shareAsImage}>
-                📷 {t('common.shareImage')}
+                <Icon name="camera" size={18} /> {t('common.shareImage')}
               </button>
             )}
           </div>
@@ -191,7 +195,9 @@ export function SeasonResult({
         <h2>{t('road.yourXi')}</h2>
         {season.scorers && (
           <p class="xi-reveal__legend" aria-hidden="true">
-            <span>⚽ {t('stat.goals')}</span>
+            <span>
+              <Icon name="ball-football" size={14} /> {t('stat.goals')}
+            </span>
             <span>🅰️ {t('stat.assists')}</span>
             <span>{t('common.ovr')}</span>
           </p>

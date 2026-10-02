@@ -40,3 +40,6 @@ h2 { font-size: 1.5rem; text-transform: uppercase; }
 }
 
 abbr[title] { text-decoration: none; cursor: help; }
+
+/* Line icons (components/Icon.tsx): sit on the text baseline, never shrink. */
+.icon { display: inline-block; flex-shrink: 0; vertical-align: -0.15em; }

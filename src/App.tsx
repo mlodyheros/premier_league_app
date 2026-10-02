@@ -1,4 +1,5 @@
 import type { FunctionComponent } from 'preact';
+import { Icon } from './components/Icon';
 import { useEffect } from 'preact/hooks';
 import { BottomNav } from './components/BottomNav';
 import { Header } from './components/Header';
@@ -55,8 +56,8 @@ export function App() {
       <main class="main">
         {loadError.value ? (
           <div class="error-card" role="alert">
-            <span class="error-card__icon" aria-hidden="true">
-              ⚠️
+            <span class="error-card__icon">
+              <Icon name="alert-triangle" size={40} />
             </span>
             <h2>{t('app.errorTitle')}</h2>
             <p>{t('app.loadError', { error: loadError.value })}</p>
