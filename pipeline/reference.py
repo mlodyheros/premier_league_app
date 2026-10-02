@@ -100,7 +100,8 @@ COUNTRIES = {
     "Netherlands": ("Netherlands", "NL", EUROPE),
     "New Zealand": ("New Zealand", "NZ", OCEANIA),
     "Nigeria": ("Nigeria", "NG", AFRICA),
-    "Northern Ireland": ("Northern Ireland", "GB", EUROPE),
+    # No flag emoji exists for Northern Ireland (and the Union Jack is not its flag): its FIFA code instead.
+    "Northern Ireland": ("Northern Ireland", "NIR", EUROPE),
     "Norway": ("Norway", "NO", EUROPE),
     "Paraguay": ("Paraguay", "PY", S_AMERICA),
     "Poland": ("Poland", "PL", EUROPE),

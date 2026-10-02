@@ -271,7 +271,7 @@ function GuessRow({ player, f }: { player: Player; f: Feedback }) {
         </Tile>
         <Tile mark={f.nat}>
           <span class="flag" title={`${countryName(player.nat)} · ${continentName(player.continent)}`}>
-            {player.flag}
+            {/^[A-Z]{3}$/.test(player.flag) ? <span class="flag--code">{player.flag}</span> : player.flag}
           </span>
         </Tile>
         <Tile mark={f.age.mark} dir={f.age.dir}>{player.age}</Tile>
