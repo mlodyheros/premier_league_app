@@ -22,11 +22,11 @@
 
 .pt__dots { display: flex; gap: 6px; margin: var(--space-2) 0; }
 
-.pt__dot { display: grid; place-items: center; width: 34px; height: 34px; border-radius: var(--radius-sm); color: var(--color-bg); }
+.pt__dot { display: grid; place-items: center; width: 34px; height: 34px; border-radius: var(--radius-sm); color: var(--color-on-primary); }
 
 .pt__dot.good { background: var(--color-primary); }
 
-.pt__dot.mid { background: var(--color-warning); }
+.pt__dot.mid { background: var(--color-warning); color: var(--color-on-warning); }
 
 .pt__dot.bad { background: var(--color-accent-strong); color: var(--color-white); }
 

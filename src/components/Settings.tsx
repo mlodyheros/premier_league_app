@@ -121,6 +121,7 @@ export function Settings() {
                     <i />
                     <i />
                     <i />
+                    <i />
                   </span>
                   <span>{t(`theme.${th}`)}</span>
                 </label>

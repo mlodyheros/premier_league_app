@@ -117,3 +117,39 @@
   --color-accent-strong: #c8004a;
   --color-neutral: #5e1d66;
 }
+
+/*
+ * "Light" colours: white and pale blue surfaces, navy text, green for the
+ * primary, blue for information, purple as the accent. The bright greens and
+ * cyans of the dark themes vanish on white, so every colour here is a deeper
+ * shade, checked as text on every surface: text 14:1+, muted 6:1+, green
+ * 4.6:1+, blue 5.2:1+, purple 6:1+, amber 4.6:1+; control borders 3.1:1+.
+ */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg-rgb: 244 247 251;
+  --backdrop-rgb: 18 26 58;
+  --primary-rgb: 0 120 74;
+  --accent-rgb: 109 40 217;
+  --info-rgb: 21 89 214;
+  --warning-rgb: 150 85 0;
+  --shadow-rgb: 18 26 58;
+
+  --color-bg-sunken: #e8eef6;
+  --color-surface: #ffffff;
+  --color-surface-raised: #f9fbfe;
+  --color-border: #d5deea;
+  --color-border-strong: #7a879e;
+  --color-text: #121a3a;
+  --color-text-soft: #2a3557;
+  --color-text-muted: #4b5873;
+  --color-on-primary: #ffffff;
+  --color-accent-strong: #6d28d9;
+  --color-on-accent: #ffffff;
+  --color-on-warning: #ffffff;
+  --color-neutral: #dbe3ee;
+
+  --shadow-md: 0 8px 24px rgb(var(--shadow-rgb) / 0.12);
+  --shadow-lg: 0 20px 50px rgb(var(--shadow-rgb) / 0.2);
+  --glow-primary: 0 0 18px rgb(var(--primary-rgb) / 0.25);
+}

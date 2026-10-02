@@ -71,7 +71,7 @@ export function Home() {
         <nav class="crest-row" aria-label={t('home.crests')}>
           {Object.keys(meta.clubs).map((code) => (
             <a
-              href={`${href('budget')}?club=${code}`}
+              href={`${href('stats')}?club=${code}`}
               title={t('home.crestLink', { club: meta.clubs[code].name })}
               aria-label={t('home.crestLink', { club: meta.clubs[code].name })}
             >

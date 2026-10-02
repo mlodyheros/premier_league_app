@@ -195,20 +195,25 @@
 
 /* Colour themes in Settings: a swatch of each palette. */
 
-.seg--themes label { display: flex; gap: var(--space-2); justify-content: center; }
+.seg--themes label { display: flex; flex-direction: column; gap: 6px; justify-content: center; padding: 10px 6px; line-height: 1.15; }
 
-.swatch { display: inline-flex; border-radius: 6px; overflow: hidden; border: 1px solid rgb(var(--white-rgb) / 0.3); }
+.swatch { display: inline-flex; border-radius: 6px; overflow: hidden; border: 1px solid var(--color-border-strong); }
 
 .swatch i { width: 10px; height: 18px; }
 
+.swatch i { width: 8px; }
+
 .swatch--night i:nth-child(1) { background: #16081d; }
-
 .swatch--night i:nth-child(2) { background: #00ff85; }
-
 .swatch--night i:nth-child(3) { background: #ff2882; }
+.swatch--night i:nth-child(4) { background: #04f5ff; }
 
 .swatch--pl i:nth-child(1) { background: #37003c; }
-
 .swatch--pl i:nth-child(2) { background: #00ff85; }
-
 .swatch--pl i:nth-child(3) { background: #04f5ff; }
+.swatch--pl i:nth-child(4) { background: #e90052; }
+
+.swatch--light i:nth-child(1) { background: #ffffff; }
+.swatch--light i:nth-child(2) { background: #1559d6; }
+.swatch--light i:nth-child(3) { background: #00784a; }
+.swatch--light i:nth-child(4) { background: #6d28d9; }

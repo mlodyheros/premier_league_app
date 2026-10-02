@@ -154,3 +154,18 @@ test('the Premier League colours can be chosen and are kept', async ({ page }) =
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'pl');
   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(55, 0, 60)');
 });
+
+test('the light colours can be chosen', async ({ page }) => {
+  await open(page, '');
+  await page.getByRole('button', { name: 'Settings' }).first().click();
+  await page.locator('.seg--themes label', { hasText: 'Light' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(244, 247, 251)');
+});
+
+test("a crest on the home page opens that club's players", async ({ page }) => {
+  await open(page, '');
+  await page.locator('.crest-row a').first().click();
+  await expect(page).toHaveURL(/#\/stats\?club=ARS$/);
+  await expect(page.locator('.players__list .prow').first()).toContainText('Arsenal');
+});

@@ -38,7 +38,7 @@ seasons a picture too) and keeps personal bests in the browser. The home page
 shows today's three daily results and, once all three are done, shares them in
 one message.
 
-**Colours** (in Settings): the default night palette or the Premier League's own (purple `#37003c`, green, raspberry, cyan).
+**Colours** (in Settings): the default night palette, the Premier League's own (purple `#37003c`, green, raspberry, cyan), or a light one (white, blue, green and purple). The club crests on the home page open the Players page filtered to that club.
 
 **Difficulty** (in Settings) decides which players the free-play rounds draw
 from ([`src/lib/pools.ts`](src/lib/pools.ts)):

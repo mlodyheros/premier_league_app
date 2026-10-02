@@ -475,8 +475,8 @@ export const en = {
   'home.shareAllButton': 'Share all three',
   'home.allDone': 'All three dailies done!',
   'home.allDoneNext': 'New ones in {time}.',
-  'home.crests': 'Build an XI from one club',
-  'home.crestLink': 'Budget XI: {club} players',
+  'home.crests': 'Players by club',
+  'home.crestLink': '{club}: all players',
   'home.tmNoteLink': 'How it works →',
   'onboard.1.title': 'Six Premier League games',
   'onboard.1.body': 'Real squads, real numbers. Three games have a {b}: the same round for everyone, new at midnight. The others you can play as long as you like.',
@@ -595,4 +595,5 @@ export const en = {
   'theme.label': 'Colours',
   'theme.night': 'Night',
   'theme.pl': 'Premier League',
+  'theme.light': 'Light',
 } satisfies Record<string, Entry>;

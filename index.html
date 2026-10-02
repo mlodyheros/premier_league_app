@@ -7,9 +7,11 @@
     <!-- Apply the saved colour theme before the first paint, so the page never flashes the default. -->
     <script>
       try {
-        if (JSON.parse(localStorage.getItem('plg:theme')) === 'pl') {
-          document.documentElement.dataset.theme = 'pl';
-          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#37003c');
+        var bar = { pl: '#37003c', light: '#f4f7fb' };
+        var saved = JSON.parse(localStorage.getItem('plg:theme'));
+        if (bar[saved]) {
+          document.documentElement.dataset.theme = saved;
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', bar[saved]);
         }
       } catch (e) {}
     </script>

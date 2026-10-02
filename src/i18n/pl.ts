@@ -500,8 +500,8 @@ export const pl: Dictionary = {
   'home.shareAllButton': 'Udostępnij wszystkie trzy',
   'home.allDone': 'Wszystkie trzy rundy dzienne zaliczone!',
   'home.allDoneNext': 'Nowe za {time}.',
-  'home.crests': 'Zbuduj skład z jednego klubu',
-  'home.crestLink': 'Budżet XI: piłkarze {club}',
+  'home.crests': 'Piłkarze według klubu',
+  'home.crestLink': '{club}: wszyscy piłkarze',
   'home.tmNoteLink': 'Jak to działa →',
   'onboard.1.title': 'Sześć gier o Premier League',
   'onboard.1.body': 'Prawdziwe kadry, prawdziwe liczby. Trzy gry mają {b}: tę samą rundę dla wszystkich, nową o północy. W pozostałe grasz, ile chcesz.',
@@ -619,4 +619,5 @@ export const pl: Dictionary = {
   'theme.label': 'Kolory',
   'theme.night': 'Nocny',
   'theme.pl': 'Premier League',
+  'theme.light': 'Jasny',
 };
