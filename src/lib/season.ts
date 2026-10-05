@@ -41,7 +41,7 @@ export type Difficulty = 'realistic' | 'arcade';
 
 /** A strong draft's strength, used to quote example odds. */
 export const STRONG_DRAFT = 84;
-/** The points Road to 100 is named after. */
+/** The points 100 PTS Challenge is named after. */
 export const POINTS_TARGET = 100;
 export const DIFFICULTY: Record<Difficulty, { model: MatchModel; bonus: number }> = {
   realistic: { model: REALISTIC, bonus: 0 },

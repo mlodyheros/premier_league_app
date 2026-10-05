@@ -312,6 +312,37 @@ describe('goal scorers', () => {
     // Assists are concentrated: never five double-figure assisters.
     expect(Object.values(tally).filter((t) => t.assists >= 10).length).toBeLessThan(5);
   });
+
+  it("leave about a fifth to the bench, so a 100-goal side's numbers look real", async () => {
+    const { attributeGoals, BENCH } = await import('../src/lib/scorers');
+    const f = FORMATIONS[0];
+    const lineup: Lineup = {};
+    const used = new Set<number>();
+    for (const s of f.slots) {
+      const p = players.filter((x) => x.pos === s.type && !used.has(x.id)).sort((a, b) => b.tm - a.tm)[0];
+      used.add(p.id);
+      lineup[s.id] = p;
+    }
+    // A record season: 38 wins, 106 goals (Manchester City, 2017/18).
+    const results = Array.from({ length: 38 }, (_, i) => ({ opponent: 'X', home: true, goalsFor: i < 30 ? 3 : 2, goalsAgainst: 0, outcome: 'W' as const }));
+    let top = 0;
+    let twenty = 0;
+    let bench = 0;
+    const runs = 50;
+    for (let i = 0; i < runs; i++) {
+      const tally = attributeGoals(f, lineup, results, mulberry32(i + 1));
+      const xi = Object.entries(tally).filter(([n]) => n !== BENCH).map(([, t]) => t);
+      top += Math.max(...xi.map((t) => t.goals));
+      twenty += xi.filter((t) => t.goals + t.assists >= 20).length;
+      bench += tally[BENCH].goals;
+    }
+    expect(bench / runs / 110).toBeGreaterThan(0.13);
+    expect(bench / runs / 110).toBeLessThan(0.23);
+    // City's top scorer had 21 that season; Haaland's record is 36.
+    expect(top / runs).toBeLessThan(32);
+    // City had four players with 20+ goals and assists; we stay at most there.
+    expect(twenty / runs).toBeLessThanOrEqual(4);
+  });
 });
 
 describe('EA FC 27', () => {

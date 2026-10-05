@@ -12,8 +12,8 @@ time, and scores, streaks and settings live in the browser's local storage.
 | Game | What you do |
 |---|---|
 | **Guess the Player** | Wordle-style: find the hidden player from club, position, nationality, age and value clues. Daily and unlimited. |
-| **Road to 100** | Spin a club, draft one of its players, fill an XI, then play a 38-game season against the real league: the goal is 100 points. Three draft modes (standard, random position, blind) and two season modes (realistic, arcade); club chemistry; the expected points and 100-point chance before kick-off; every player's goals and assists, every match result. |
-| **Higher or Lower** | Is the next player worth more or less? Pairs get closer as the streak grows. Themed runs: forwards, midfielders, defenders, goalkeepers, the Big Six. |
+| **100 PTS Challenge** | Spin a club, draft one of its players, fill an XI, then play a 38-game season against the real league: the goal is 100 points. Three draft modes (standard, random position, blind) and two season modes (realistic, arcade); club chemistry; the expected points and 100-point chance before kick-off; every player's goals and assists, every match result. |
+| **Higher or Lower** | Is the next player worth more or less? A face-off: the two side by side, their records row by row. Pairs get closer as the streak grows. Themed runs: forwards, midfielders, defenders, goalkeepers, the Big Six. |
 | **Budget XI** | Build the strongest XI on a themed budget, from a promoted side (€80M) to a sheikh's takeover (€1.5B), then play a season with it. "Fill the rest" completes an XI within the money left. |
 | **Beat the Model** | Does the model rate the player over or under his Transfermarkt value? Ten a round; daily and practice. |
 | **Price Tag** | Slide (or step through round amounts) to the value you think a player has. Five a round, up to 100 points each; daily and practice. |
@@ -25,6 +25,11 @@ league** (`#/league`) that compares today's results and personal bests with
 friends. The league needs no accounts or server: everyone's results travel as a
 code inside a link (`src/lib/friends.ts`), and opening a friend's link adds them
 to your table.
+
+The home page is a team sheet: every game and page a player on a 4-3-3
+pitch, today's three daily rounds up front (green until played, then today's
+result), the squad games in midfield, Higher or Lower, the Market, the League
+and Players at the back, and you in goal (your nickname and today's score).
 
 A **Players** page (`#/stats`) lists all of them: search, filter by club and
 position, sort by rating, value, model-vs-TM gap, goals, assists, minutes or
@@ -203,7 +208,7 @@ rebuilds the snapshots from this repository's history of `players.json`.
 [Playwright](playwright.config.ts) against the production build on a phone
 (Pixel 7) and a desktop: every page loads without errors or sideways scrolling,
 the answer buttons stay in thumb reach, Budget XI's sheet opens on screen, the
-share pages forward, and the main flows of Guess the Player, Road to 100,
+share pages forward, and the main flows of Guess the Player, 100 PTS Challenge,
 Transfer Window and the league work. Locally it uses the installed Chrome; CI
 runs both suites before every deploy.
 
@@ -222,7 +227,7 @@ no consent banner is needed. It is off until you give it a site code:
 Counting is skipped on localhost and for browsers that send Do Not Track, and
 players can switch it off in Settings. Besides page views it records a few
 anonymous game events, such as `road/arcade/standard/ovr-84/pos-1/pts-100` or
-`beat/daily/score-7`. The Road to 100 events are meant for tuning its
+`beat/daily/score-7`. The 100 PTS Challenge events are meant for tuning its
 difficulty on real drafts: if arcade titles come too easily or 100 points never
 happens, adjust `DIFFICULTY` in [`src/lib/season.ts`](src/lib/season.ts).
 
@@ -299,7 +304,7 @@ suggestions.
 
 ## Ratings and the season simulation
 
-Road to 100 and Budget XI rate players on a FIFA-like overall (OVR), built in
+100 PTS Challenge and Budget XI rate players on a FIFA-like overall (OVR), built in
 [`src/lib/strength.ts`](src/lib/strength.ts) in three steps:
 
 1. **Ability value.** The market value on the active source, corrected for age
@@ -352,7 +357,11 @@ goalkeeper only plays in goal.
   never) and his own goals-per-90 record against his position's norm. About
   three goals in five also get an assister, drawn the same way but more
   concentrated, so a 100-goal side has one or two double-figure assisters, not
-  five; 3% are own goals and go to nobody
+  five; 3% are own goals and go to nobody. Your XI plays every minute, but a
+  real side's substitutes and rotation score and set up about a fifth of its
+  goals, so 18% of goals and assists go to the bench: a 90-goal side's top
+  scorer gets about 21, and two or three players reach 20 goals and assists,
+  as in real title-winning seasons
   ([`src/lib/scorers.ts`](src/lib/scorers.ts)).
 - **Each match** draws goals from a Poisson distribution. The expected goals
   start at 1.45 a side, get ×1.12 at home (÷1.12 away), and move with the
@@ -368,7 +377,7 @@ fixtures. Random drafts land around 81–86. In realistic mode 100 points is for
 the very best drafts (about one in ten for ~86); only one real Premier League
 side has ever done it (Manchester City, 2017/18).
 
-**Arcade mode** (an option in Road to 100) gives your XI +2.5 and a steeper
+**Arcade mode** (an option in 100 PTS Challenge) gives your XI +2.5 and a steeper
 curve (+9% / −27% per point). There a typical draft (~82.5) reaches 100 points
 about one season in ten, a strong one (~84) about every other season, the best
 nearly always.

@@ -19,7 +19,7 @@ export interface Card {
   g: string | null;
   b: string | null;
   p: string | null;
-  /** Bests: Road to 100 points, Higher or Lower streak, Transfer Window places. */
+  /** Bests: 100 PTS Challenge points, Higher or Lower streak, Transfer Window places. */
   r: number | null;
   h: number | null;
   t: number | null;

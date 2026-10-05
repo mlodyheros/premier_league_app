@@ -14,7 +14,8 @@ import { todayKey } from '../lib/rng';
 import { siteUrl } from '../lib/share';
 import { useCountdown } from '../hooks/useCountdown';
 import { useHistory } from '../data/history';
-import { dayScore, leagueLink, myCard, myName } from '../lib/friends';
+import { dayScore, friends, leagueLink, myCard, myName } from '../lib/friends';
+import { GamesFormation, type Spot } from '../components/GamesFormation';
 import { weeklyMoves } from '../lib/market';
 import { loadStats } from '../lib/stats';
 import { href } from '../router';
@@ -57,6 +58,55 @@ export function Home() {
   const dailies = GAME_LIST.filter((g) => g.daily);
   const allDone = dailies.every((g) => g.daily!.done(day));
   const countdown = useCountdown(allDone);
+  const game = (id: GameMeta['id']) => GAME_LIST.find((g) => g.id === id)!;
+  const name = myName();
+  const today = dayScore(myCard(day), day);
+
+  /** A daily round's spot: still to play, or today's result. */
+  const daily = (id: GameMeta['id'], x: number, y: number): Spot => {
+    const g = game(id);
+    const done = g.daily!.done(day);
+    const streak = g.daily!.streak();
+    return {
+      x,
+      y,
+      w: 30,
+      path: g.path,
+      icon: g.icon,
+      title: t(`game.${id}.title`),
+      state: done ? 'done' : 'todo',
+      note: done ? `✓ ${dailyResult(id, day) ?? t('home.dailyDone')}` : streak > 0 ? t('home.dailyStreak', { count: streak }) : t('home.dailyPlay'),
+    };
+  };
+  const play = (id: GameMeta['id'], x: number, y: number, w = 23): Spot => {
+    const g = game(id);
+    return { x, y, w, path: g.path, icon: g.icon, title: t(`game.${id}.title`), note: record(g) ?? t(`game.${id}.tag`) };
+  };
+  const spots: Spot[] = [
+    // Attack: today's three daily rounds.
+    daily('guess', 17, 17),
+    daily('beat', 50, 14),
+    daily('price', 83, 17),
+    // Midfield: the squad games.
+    play('budget', 17, 41, 30),
+    play('road', 50, 44, 30),
+    play('transfer', 83, 41, 30),
+    // Defence: the rest.
+    play('hl', 12, 66),
+    { x: 37.5, y: 69, path: 'market', icon: 'chart-line', title: t('nav.market'), note: t('home.spot.market') },
+    { x: 62.5, y: 69, path: 'league', icon: 'trophy', title: t('nav.league'), note: t('home.spot.league', { count: friends().length }) },
+    { x: 88, y: 66, path: 'stats', icon: 'users', title: t('nav.players'), note: t('home.spot.players', { n: players.length }) },
+    // In goal: you.
+    {
+      x: 50,
+      y: 90,
+      path: 'league',
+      icon: 'user-circle',
+      title: name || t('home.spot.you'),
+      note: today === null ? t('home.spot.youNote') : t('home.spot.today', { n: today }),
+      keeper: true,
+    },
+  ];
 
   /** One message with all three of today's results. */
   function shareAll() {
@@ -87,17 +137,6 @@ export function Home() {
   return (
     <section class="home">
       <div class="hero">
-        <nav class="crest-row" aria-label={t('home.crests')}>
-          {Object.keys(meta.clubs).map((code) => (
-            <a
-              href={`${href('stats')}?club=${code}`}
-              title={t('home.crestLink', { club: meta.clubs[code].name })}
-              aria-label={t('home.crestLink', { club: meta.clubs[code].name })}
-            >
-              <Crest code={code} size={28} />
-            </a>
-          ))}
-        </nav>
         <p class="eyebrow">{t('home.eyebrow', { season: meta.season, players: meta.players, gw: meta.gameweek })}</p>
         <h1>
           {t('home.title')} <em>{t('home.titleEm')}</em>
@@ -113,32 +152,8 @@ export function Home() {
         </p>
       </div>
 
-      <h2 class="section-title">{t('home.allGames')}</h2>
-      <ul class="cards">
-        {GAME_LIST.map((g) => {
-          const rec = record(g);
-          return (
-            <li>
-              <a class={`card card--${g.id}`} href={href(g.path)}>
-                <span class="card__icon" aria-hidden="true">
-                  <Icon name={g.icon} size={26} />
-                </span>
-                <span class="card__tag">{t(`game.${g.id}.tag`)}</span>
-                <h2>{t(`game.${g.id}.title`)}</h2>
-                <p>{t(`game.${g.id}.blurb`)}</p>
-                <span class="card__foot">
-                  <span class="card__go" aria-hidden="true">
-                    {t('home.play')}
-                  </span>
-                  {rec && <span class="card__best">{rec}</span>}
-                </span>
-              </a>
-            </li>
-          );
-        })}
-      </ul>
+      <GamesFormation spots={spots} label={t('home.allGames')} />
 
-      <h2 class="section-title">{t('home.daily')}</h2>
       {allDone && (
         <div class="all-done" role="status">
           <p>
@@ -149,29 +164,6 @@ export function Home() {
           </button>
         </div>
       )}
-      <ul class="dailies">
-        {dailies.map((g) => {
-          const done = g.daily!.done(day);
-          const streak = g.daily!.streak();
-          const result = done ? dailyResult(g.id, day) : null;
-          return (
-            <li>
-              <a class={`daily ${done ? 'daily--done' : ''}`} href={href(g.path)}>
-                <span class="daily__icon" aria-hidden="true">
-                  <Icon name={g.icon} size={26} />
-                </span>
-                <span class="daily__text">
-                  <b>{t(`game.${g.id}.title`)}</b>
-                  <small>{streak > 0 ? t('home.dailyStreak', { count: streak }) : t(`game.${g.id}.tag`)}</small>
-                </span>
-                <span class="daily__state">
-                  {done ? (result ? <>✓ <b>{result}</b></> : `✓ ${t('home.dailyDone')}`) : `${t('home.dailyPlay')} →`}
-                </span>
-              </a>
-            </li>
-          );
-        })}
-      </ul>
 
       {moves && moves.risers[0] && moves.fallers[0] && (
         <a class="market-tile" href={href('market')}>
@@ -187,6 +179,18 @@ export function Home() {
         </a>
       )}
 
+      <h2 class="section-title">{t('home.crests')}</h2>
+      <nav class="crest-row" aria-label={t('home.crests')}>
+        {Object.keys(meta.clubs).map((code) => (
+          <a
+            href={`${href('stats')}?club=${code}`}
+            title={t('home.crestLink', { club: meta.clubs[code].name })}
+            aria-label={t('home.crestLink', { club: meta.clubs[code].name })}
+          >
+            <Crest code={code} size={28} />
+          </a>
+        ))}
+      </nav>
     </section>
   );
 }

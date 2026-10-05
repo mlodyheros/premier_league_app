@@ -101,3 +101,7 @@
 .season__line { margin: 6px 0 12px; font-family: var(--display); font-size: 1.5rem; font-weight: var(--weight-bold); text-transform: uppercase; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
 
 .badges li .icon { color: var(--color-warning); }
+
+.xi-reveal__bench { opacity: 0.75; border-top: 1px dashed var(--color-border); }
+
+.xi-reveal__bench .xi-reveal__name { font-style: italic; }

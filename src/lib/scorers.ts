@@ -8,6 +8,10 @@
  * the same way from assist records but more concentrated, since one or two
  * creators make most of a side's assists. A few goals are own goals and are
  * credited to nobody. Goalkeepers never score.
+ *
+ * Your XI plays every minute, but a real side's substitutes and rotation
+ * score and set up about a fifth of its goals: that share goes to BENCH, so
+ * no player ends a season with numbers no real one has had.
  */
 import type { Player, PosCode } from '../data/types';
 import type { MatchResult } from './season';
@@ -22,6 +26,10 @@ export interface Tally {
 export const ASSISTED_SHARE = 0.62;
 /** Share of a side's goals that are own goals: nobody in your XI scores them. */
 export const OWN_GOAL_SHARE = 0.03;
+/** Share of goals scored, and of assists made, by substitutes and rotation players. */
+export const BENCH_SHARE = 0.18;
+/** The tally key for substitutes and rotation players. */
+export const BENCH = '__bench';
 /**
  * Assists are concentrated: one or two creators lead, the rest share little.
  * Raising the weights to this power keeps a 100-goal side to a couple of
@@ -75,13 +83,18 @@ export function attributeGoals(
   const scoreW = squad.map(({ p, slot }) => SCORE_BY_SLOT[slot] * form(p, 'goals'));
   const assistW = squad.map(({ p, slot }) => (ASSIST_BY_SLOT[slot] * form(p, 'assists')) ** ASSIST_CONCENTRATION);
   const tally: Record<string, Tally> = Object.fromEntries(squad.map(({ p }) => [p.name, { goals: 0, assists: 0 }]));
+  tally[BENCH] = { goals: 0, assists: 0 };
 
   const goals = results.reduce((n, r) => n + r.goalsFor, 0);
   for (let g = 0; g < goals; g++) {
     if (rand() < OWN_GOAL_SHARE) continue;
-    const scorer = draw(squad, scoreW, rand);
-    tally[scorer.p.name].goals++;
+    const scorer = rand() < BENCH_SHARE ? null : draw(squad, scoreW, rand);
+    tally[scorer ? scorer.p.name : BENCH].goals++;
     if (rand() < ASSISTED_SHARE) {
+      if (rand() < BENCH_SHARE) {
+        tally[BENCH].assists++;
+        continue;
+      }
       const others = squad.filter((x) => x !== scorer);
       const weights = squad.flatMap((x, i) => (x === scorer ? [] : [assistW[i]]));
       tally[draw(others, weights, rand).p.name].assists++;

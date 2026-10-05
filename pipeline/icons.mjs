@@ -23,6 +23,8 @@ const NAMES = [
   'thumb-up', 'mood-smile', 'mood-neutral', 'mood-sad', 'link', 'alert-triangle',
   // Share sheet
   'share', 'download', 'copy', 'x',
+  // Home: the profile in goal
+  'user-circle',
 ];
 
 const icons = {};

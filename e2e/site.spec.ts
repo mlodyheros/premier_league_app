@@ -129,7 +129,7 @@ test('every share page forwards to its game and has its own preview', async ({ p
   await expect(page.locator('main h1').first()).toBeVisible();
 });
 
-test('Road to 100: draw club and position at once, then start over', async ({ page }) => {
+test('100 PTS Challenge: draw club and position at once, then start over', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem(
       'plg:road:state',

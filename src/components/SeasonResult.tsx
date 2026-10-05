@@ -8,6 +8,7 @@ import { formatDecimal, formatOdds, ordinal } from '../lib/format';
 import { USER_TEAM_ID } from '../lib/league';
 import { buzz, celebrate } from '../lib/motion';
 import type { PlayedSeason } from '../lib/playSeason';
+import { BENCH } from '../lib/scorers';
 import { DIFFICULTY, type TableRow } from '../lib/season';
 import { rating, type Formation, type Lineup } from '../lib/strength';
 import { Avatar, Crest } from './Avatar';
@@ -226,6 +227,17 @@ export function SeasonResult({
               <span class="xi-reveal__ovr">{rating(p, season.source)}</span>
             </li>
           ))}
+          {scorers[BENCH] && (
+            <li class="xi-reveal__bench">
+              <span class="xi-reveal__pos" />
+              <span class="xi-reveal__name">{t('road.bench')}</span>
+              <span class="xi-reveal__ga">
+                <b>{scorers[BENCH].goals}</b>
+                <i>{scorers[BENCH].assists}</i>
+              </span>
+              <span class="xi-reveal__ovr" />
+            </li>
+          )}
         </ul>
       </div>
 

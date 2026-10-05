@@ -19,7 +19,7 @@ import type { Formation, Lineup } from './strength';
 export interface PlayedSeason {
   source: ValueSource;
   difficulty?: Difficulty;
-  /** Road to 100's draft mode, when the XI was drafted. */
+  /** 100 PTS Challenge's draft mode, when the XI was drafted. */
   draft?: string;
   strength: number;
   /** Chance of reaching `target` points, before the season was played. */
@@ -42,7 +42,7 @@ export function playSeason(opts: {
   strength: number;
   difficulty?: Difficulty;
   draft?: string;
-  /** Players who leave their clubs for your XI (Road to 100); none when bought (Budget XI). */
+  /** Players who leave their clubs for your XI (100 PTS Challenge); none when bought (Budget XI). */
   without?: ReadonlySet<number>;
   rand?: () => number;
 }): PlayedSeason {

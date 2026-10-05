@@ -1,6 +1,6 @@
 [
   { "path": "guess", "pl": ["Zgadnij piłkarza", "Wordle w wersji Premier League: klub, pozycja, narodowość, wiek i wartość. Nowy piłkarz codziennie."], "en": ["Guess the Player", "Premier League Wordle: club, position, nationality, age and value clues. A new player every day."] },
-  { "path": "road100", "pl": ["Droga do 100 pkt", "Wylosuj klub, weź piłkarza, skompletuj jedenastkę i rozegraj sezon. Cel: 100 punktów."], "en": ["Road to 100", "Spin a club, draft a player, fill an XI and play a season. The goal: 100 points."] },
+  { "path": "road100", "pl": ["100 PTS Challenge", "Wylosuj klub, weź piłkarza, skompletuj jedenastkę i rozegraj sezon. Cel: 100 punktów."], "en": ["100 PTS Challenge", "Spin a club, draft a player, fill an XI and play a season. The goal: 100 points."] },
   { "path": "higher-lower", "pl": ["Więcej czy mniej", "Który piłkarz jest wart więcej? Nie przerwij serii."], "en": ["Higher or Lower", "Which player is worth more? Keep the streak going."] },
   { "path": "budget", "pl": ["Jedenastka za budżet", "Od beniaminka po szejka: zbuduj najmocniejszą jedenastkę za swoje pieniądze."], "en": ["Budget XI", "From a promoted side to a sheikh: build the strongest XI your money buys."] },
   { "path": "transfer", "pl": ["Okno transferowe", "Przejmij klub, sprzedaj trzech, kup trzech i pobij prognozę na sezon."], "en": ["Transfer Window", "Take over a club, sell three, buy three, and beat the forecast for its season."] },

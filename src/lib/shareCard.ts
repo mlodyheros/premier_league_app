@@ -20,7 +20,7 @@ export interface CardPlayer {
 }
 
 export interface CardSpec {
-  /** "Road to 100" */
+  /** "100 PTS Challenge" */
   game: string;
   /** Small line top right: the day, the mode. */
   kicker?: string;

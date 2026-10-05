@@ -3,12 +3,15 @@ import { cardFooter } from '../../lib/shareSpecs';
 import { openShare } from '../../components/ShareSheet';
 import { useRevealWhen } from '../../hooks/useRevealWhen';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { PlayerCard } from '../../components/PlayerCard';
+import { Avatar, Crest } from '../../components/Avatar';
+import { Flag } from '../../components/Flag';
+import { countryName } from '../../i18n/countries';
+import { posLabel } from '../../i18n/labels';
 import { useDataset } from '../../data/store';
 import type { Player } from '../../data/types';
 import { shareValues, valueOf, valueSource, valuesPhrase } from '../../data/valueSource';
 import { t, tj } from '../../i18n';
-import { formatEur } from '../../lib/format';
+import { formatEur, formatInt } from '../../lib/format';
 import { useCountUp } from '../../hooks/useCountUp';
 import { trackEvent } from '../../lib/analytics';
 import { buzz, celebrate } from '../../lib/motion';
@@ -165,24 +168,32 @@ export function HigherLower() {
         </>
       )}
 
-      <div class="hl__pair" key={current.id}>
-        <PlayerCard player={current}>
+      <div class="hl__duel" key={current.id}>
+        <Side player={current}>
           <p class="hl__value">{formatEur(valueOf(current, source))}</p>
-        </PlayerCard>
-
-        <div class="hl__vs" aria-hidden="true">
+        </Side>
+        <span class="hl__vs" aria-hidden="true">
           {t('hl.vs')}
-        </div>
-
-        <PlayerCard player={challenger}>
+        </span>
+        <Side player={challenger}>
           {revealed ? (
             <RevealValue value={valueOf(challenger, source)} right={!!lastCall?.right} />
           ) : (
-            <p class="hl__question">{t('hl.question', { a: current.name })}</p>
+            <p class="hl__value hl__value--hidden" aria-label={t('hl.hidden')}>
+              ?
+            </p>
           )}
-        </PlayerCard>
+        </Side>
+      </div>
 
-        {!revealed && (
+      <p class="hl__question" aria-live="polite">
+        {tj('hl.question', { a: <b>{current.short || current.name}</b>, b: <b>{challenger.short || challenger.name}</b> })}
+      </p>
+
+      <Compare a={current} b={challenger} />
+
+      {!revealed && (
+        <>
           <div class="hl__buttons action-bar">
             <button class="btn btn--primary btn--big" onClick={() => call('higher')}>
               {t('hl.higher')}
@@ -191,8 +202,8 @@ export function HigherLower() {
               {t('hl.lower')}
             </button>
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       {phase === 'over' && (
         <div class="end end--lose" ref={endRef}>
@@ -218,6 +229,65 @@ export function HigherLower() {
       )}
       <OtherGames current="hl" />
     </section>
+  );
+}
+
+/** One player of the pair: who he is, at a glance, and his value (or "?"). */
+function Side({ player: p, children }: { player: Player; children: preact.ComponentChildren }) {
+  const { meta } = useDataset();
+  return (
+    <article class="hl__side">
+      <Avatar player={p} size={64} />
+      <h3 class="hl__name">{p.name}</h3>
+      <p class="hl__meta">
+        <Crest code={p.club} size={16} /> {meta.clubs[p.club].short}
+      </p>
+      <p class="hl__meta">
+        {posLabel(p.pos)} · <Flag flag={p.flag} title={countryName(p.nat)} /> · {t('hl.age', { n: p.age })}
+      </p>
+      {children}
+    </article>
+  );
+}
+
+/** Their records side by side, row by row: the clues for the call. */
+function Compare({ a, b }: { a: Player; b: Player }) {
+  const keeper = a.pos === 'GK' && b.pos === 'GK';
+  const rows: [string, (p: Player) => number][] = [
+    [t('hl.row.minutes'), (p) => p.stats.minutes],
+    ...(keeper
+      ? ([[t('stat.cleanSheets'), (p: Player) => p.stats.cleanSheets]] as [string, (p: Player) => number][])
+      : ([
+          [t('stat.goals'), (p: Player) => p.stats.goals],
+          [t('stat.assists'), (p: Player) => p.stats.assists],
+        ] as [string, (p: Player) => number][])),
+    [t('hl.row.plStarts'), (p) => p.stats.plStarts],
+    [t('hl.row.plGa'), (p) => p.stats.plGoals + p.stats.plAssists],
+  ];
+  return (
+    <table class="hl__compare">
+      <caption class="sr-only">{t('hl.compare')}</caption>
+      <thead>
+        <tr>
+          <th>{a.short || a.name}</th>
+          <th aria-hidden="true" />
+          <th>{b.short || b.name}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(([label, get]) => {
+          const x = get(a);
+          const y = get(b);
+          return (
+            <tr>
+              <td class={x > y ? 'more' : ''}>{formatInt(x)}</td>
+              <th scope="row">{label}</th>
+              <td class={y > x ? 'more' : ''}>{formatInt(y)}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
   );
 }
 
