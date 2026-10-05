@@ -25,6 +25,8 @@ const NAMES = [
   'share', 'download', 'copy', 'x',
   // Home: the profile in goal
   'user-circle',
+  // Goals and assists in a season's XI
+  'shoe',
 ];
 
 const icons = {};

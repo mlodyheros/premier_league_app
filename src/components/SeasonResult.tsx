@@ -208,7 +208,9 @@ export function SeasonResult({
             <span>
               <Icon name="ball-football" size={14} /> {t('stat.goals')}
             </span>
-            <span>🅰️ {t('stat.assists')}</span>
+            <span>
+              <Icon name="shoe" size={14} /> {t('stat.assists')}
+            </span>
             <span>{t('common.ovr')}</span>
           </p>
         )}
@@ -220,8 +222,14 @@ export function SeasonResult({
               <span class="xi-reveal__name">{p.name}</span>
               {tally && (
                 <span class="xi-reveal__ga" title={`${t('stat.goals')} / ${t('stat.assists')}`}>
-                  <b>{tally.goals}</b>
-                  <i>{tally.assists}</i>
+                  <b>
+                    <Icon name="ball-football" size={14} label={t('stat.goals')} />
+                    {tally.goals}
+                  </b>
+                  <i>
+                    <Icon name="shoe" size={14} label={t('stat.assists')} />
+                    {tally.assists}
+                  </i>
                 </span>
               )}
               <span class="xi-reveal__ovr">{rating(p, season.source)}</span>
@@ -232,8 +240,14 @@ export function SeasonResult({
               <span class="xi-reveal__pos" />
               <span class="xi-reveal__name">{t('road.bench')}</span>
               <span class="xi-reveal__ga">
-                <b>{scorers[BENCH].goals}</b>
-                <i>{scorers[BENCH].assists}</i>
+                <b>
+                  <Icon name="ball-football" size={14} label={t('stat.goals')} />
+                  {scorers[BENCH].goals}
+                </b>
+                <i>
+                  <Icon name="shoe" size={14} label={t('stat.assists')} />
+                  {scorers[BENCH].assists}
+                </i>
               </span>
               <span class="xi-reveal__ovr" />
             </li>
