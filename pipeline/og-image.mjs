@@ -110,7 +110,7 @@ for (const page of pages) {
   <circle cx="72" cy="86" r="9" fill="#ff2882"/>
   <text x="94" y="104" font-family="DIN Condensed" font-weight="700" font-size="56" fill="#f6eff8" letter-spacing="1">PL<tspan fill="#00ff85">GAMES</tspan></text>
   <text x="60" y="244" font-family="DIN Condensed" font-weight="700" font-size="124" fill="#f6eff8">${esc(titlePl.toUpperCase())}</text>
-  <text x="62" y="300" font-family="DIN Condensed" font-weight="700" font-size="44" fill="#00ff85">${esc(titleEn.toUpperCase())}</text>
+  ${titleEn === titlePl ? '' : `<text x="62" y="300" font-family="DIN Condensed" font-weight="700" font-size="44" fill="#00ff85">${esc(titleEn.toUpperCase())}</text>`}
   ${blurb}
   ${crestRow}
 </svg>`;
