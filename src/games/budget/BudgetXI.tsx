@@ -87,7 +87,7 @@ export function BudgetXI() {
     if (complete) {
       const isNew = submitBest(bestKey, strength);
       setNewBest(isNew);
-      if (isNew && strength >= 83) celebrate(strength >= 85);
+      if (isNew && strength >= 84.5) celebrate(strength >= 86.5);
     } else {
       setNewBest(false);
     }

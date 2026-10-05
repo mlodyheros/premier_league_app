@@ -35,11 +35,11 @@ describe('ratings', () => {
     }
   });
 
-  it('spread like FIFA ratings: one 91, about ten 88+, a median in the low 70s', () => {
+  it("spread like FC 27's Premier League: one 91, about ten 88+, a median in the high 70s", () => {
     const rs = players.map((p) => rating(p, 'tm')).sort((a, b) => a - b);
     expect(rs.filter((r) => r >= 88).length).toBeLessThanOrEqual(12);
-    expect(rs[Math.floor(rs.length / 2)]).toBeGreaterThanOrEqual(71);
-    expect(rs[Math.floor(rs.length / 2)]).toBeLessThanOrEqual(75);
+    expect(rs[Math.floor(rs.length / 2)]).toBeGreaterThanOrEqual(75);
+    expect(rs[Math.floor(rs.length / 2)]).toBeLessThanOrEqual(79);
     expect(rating(byName('Erling Haaland'), 'tm')).toBe(91);
   });
 
@@ -52,7 +52,7 @@ describe('ratings', () => {
   it('do not rate unproven prospects as stars because they are expensive', () => {
     const prospect = byName('Vitor Reis'); // €30m at 20, barely played
     expect(prospect.tm).toBeGreaterThanOrEqual(20_000_000);
-    expect(rating(prospect, 'tm')).toBeLessThan(72);
+    expect(rating(prospect, 'tm')).toBeLessThan(78);
   });
 
   it('keep the order of stars sensible', () => {
@@ -311,5 +311,15 @@ describe('goal scorers', () => {
     expect(assists).toBeLessThan(60);
     // Assists are concentrated: never five double-figure assisters.
     expect(Object.values(tally).filter((t) => t.assists >= 10).length).toBeLessThan(5);
+  });
+});
+
+describe('EA FC 27', () => {
+  it('every player with an FC 27 card is within two points of it, on both values', () => {
+    for (const source of ['tm', 'model'] as const) {
+      for (const p of players.filter((x) => x.ref)) {
+        expect(Math.abs(rating(p, source) - p.ref!), `${p.name} (${source})`).toBeLessThanOrEqual(2);
+      }
+    }
   });
 });

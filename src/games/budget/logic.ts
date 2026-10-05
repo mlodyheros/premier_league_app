@@ -84,13 +84,17 @@ export function isComplete(formation: Formation, lineup: Lineup): boolean {
   return formation.slots.every((s) => lineup[s.id]);
 }
 
-/** Grades against the real squads: A+ beats the best of them (~84.5). */
+/**
+ * Grades against the real squads' best XIs (on FC 27-based ratings): A+ beats
+ * the best of them (Arsenal, City ~85.8), A is a title contender's, B a top-six
+ * side's, C mid-table, D the bottom half.
+ */
 export function grade(strength: number): string {
-  if (strength >= 85) return 'A+';
-  if (strength >= 83) return 'A';
-  if (strength >= 80.5) return 'B';
-  if (strength >= 78) return 'C';
-  if (strength >= 75) return 'D';
+  if (strength >= 86.5) return 'A+';
+  if (strength >= 84.5) return 'A';
+  if (strength >= 82) return 'B';
+  if (strength >= 79.5) return 'C';
+  if (strength >= 76.5) return 'D';
   return 'E';
 }
 

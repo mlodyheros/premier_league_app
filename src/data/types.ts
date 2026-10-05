@@ -67,6 +67,8 @@ export interface Player {
   perf: number;
   /** Recognisable enough to be a daily puzzle answer. */
   known: boolean;
+  /** EA Sports FC 27 base-card rating, where the player has one: the reference ratings stay close to. */
+  ref?: number;
   contract: string | null;
   fee: number | null;
   stats: PlayerStats;

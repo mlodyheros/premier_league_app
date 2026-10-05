@@ -20,11 +20,15 @@
  * 4. **Reader corrections.** A short, explicit list (RATING_ADJUSTMENTS) for
  *    players a reader judged the formula still gets wrong; every reader rating
  *    is a test (tests/rating-labels.test.ts) the formula has to keep passing.
+ * 5. **EA Sports FC 27.** Where a player has an FC 27 base card (`ref`, from
+ *    pipeline/fc27-ratings.json), the rating is kept within REF_TOLERANCE of
+ *    it: the formula still moves it (form, the value source), but it never
+ *    strays from what players know from the game.
  */
 import type { Player, PosCode } from '../data/types';
 import { valueOf, type ValueSource } from '../data/valueSource';
 
-export const RATING_MIN = 52;
+export const RATING_MIN = 55;
 export const RATING_MAX = 91;
 const VALUE_WEIGHT = 0.6;
 
@@ -60,11 +64,13 @@ export const POSITION_FACTOR: Partial<Record<PosCode, number>> = { GK: 1.5 };
  * rates wrong (keyed by name, which survives data updates). Kept short: when
  * a pattern shows up here, the formula is what should change.
  */
+/** How far a rating may stray from the player's FC 27 rating. */
+export const REF_TOLERANCE = 2;
+
 export const RATING_ADJUSTMENTS: Record<string, number> = {
   'Bruno Fernandes': 3,
   'Carlos Baleba': 5,
   'Youri Tielemans': 3,
-  'Kobbie Mainoo': 3,
 };
 
 /** The 0-1 score a rating is ranked on. */
@@ -73,14 +79,18 @@ export function ratingScore(player: Player, source: ValueSource): number {
   return VALUE_WEIGHT * valueScore(ability) + (1 - VALUE_WEIGHT) * (player.perf / 100);
 }
 
-/** League percentile -> rating, piecewise linear: a FIFA-like spread. */
+/**
+ * League percentile -> rating, piecewise linear: the spread of FC 27's
+ * Premier League base cards (median 77, top 3% 86+, youngsters from the
+ * high 50s), so players without a card sit on the same scale as those with one.
+ */
 export const RATING_CURVE: [number, number][] = [
-  [0, 52],
-  [0.1, 63],
-  [0.25, 68],
-  [0.5, 73],
-  [0.75, 78],
-  [0.9, 82],
+  [0, 57],
+  [0.1, 70],
+  [0.25, 74],
+  [0.5, 77],
+  [0.75, 80],
+  [0.9, 83],
   [0.97, 86],
   [0.995, 89],
   [1, 91],
@@ -120,13 +130,15 @@ function rankOf(sorted: number[], score: number): number {
   return lo / Math.max(1, sorted.length - 1);
 }
 
-/** Overall rating (52-91) on the given value source. */
+/** Overall rating (55-91) on the given value source. */
 export function rating(player: Player, source: ValueSource): number {
   if (!pool) throw new Error('setRatingPool() must run before ratings are read');
   const hit = cache[source].get(player.id);
   if (hit !== undefined) return hit;
   const scaled = Math.round(curve(rankOf(pool[source], ratingScore(player, source))));
-  const r = Math.min(RATING_MAX, Math.max(RATING_MIN, scaled + (RATING_ADJUSTMENTS[player.name] ?? 0)));
+  let r = scaled + (RATING_ADJUSTMENTS[player.name] ?? 0);
+  if (player.ref) r = Math.min(player.ref + REF_TOLERANCE, Math.max(player.ref - REF_TOLERANCE, r));
+  r = Math.min(RATING_MAX, Math.max(RATING_MIN, r));
   cache[source].set(player.id, r);
   return r;
 }

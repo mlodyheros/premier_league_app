@@ -315,15 +315,21 @@ Road to 100 and Budget XI rate players on a FIFA-like overall (OVR), built in
    central midfielders not on goal involvement. This season's measures count
    in proportion to the season played (a quarter at gameweek 5, fully from
    gameweek 19), so a few games missed early don't sink a regular.
-3. **Scale.** Scores are ranked across the league and mapped onto a FIFA-like
-   curve (`RATING_CURVE`): the best player 91, about ten players 88+, the top 3%
-   86+, a median Premier League player 73, fringe youngsters in the 50s.
+3. **Scale.** Scores are ranked across the league and mapped onto the spread of
+   EA Sports FC 27's Premier League base cards (`RATING_CURVE`): the best player
+   91, about ten players 88+, the top 3% 86+, a median player 77, youngsters
+   from the high 50s.
 4. **Reader corrections.** A reader's ratings for 15 players are a test
    ([`tests/rating-labels.test.ts`](tests/rating-labels.test.ts)): every one must
-   stay within a point. The formula gets 11 of them on its own; four Man Utd
-   midfielders, whose recent numbers reflect a struggling side more than
-   themselves, get explicit `RATING_ADJUSTMENTS`. If that list grows, change
-   the formula instead.
+   stay within a point. Three Man Utd midfielders get explicit
+   `RATING_ADJUSTMENTS`.
+5. **EA Sports FC 27.** 502 of the 540 players have an FC 27 base card (from
+   FUTBIN, in [`pipeline/fc27-ratings.json`](pipeline/fc27-ratings.json), added
+   to each player as `ref` by the export). Their rating is kept within two
+   points of it (`REF_TOLERANCE`): the formula still moves it with form and the
+   value source, but never far from what players know from the game. A test
+   checks every one of them on both values. Players without a card (new
+   arrivals, youngsters) are rated by the formula alone, on the same scale.
 
 Neighbouring roles cost nothing: CM ↔ DM, CM ↔ AM, LW ↔ LM, RW ↔ RM. A little
 further out of position a player keeps nearly all of his rating (a 10 on the
@@ -334,7 +340,7 @@ goalkeeper only plays in goal.
 - **Your XI's strength** is the mean rating of its eleven, after those penalties.
 - **A real club's strength** is the mean rating of its best 16 players: clubs
   rotate, while your XI plays every minute. Players you draft leave their clubs.
-  Today that runs from about 69 (the promoted clubs) to 85 (Arsenal, Man City).
+  Today that runs from about 75 (the promoted clubs) to 85 (Arsenal, Man City).
 - **Your XI joins the league** in place of the weakest club, and every team plays
   every other home and away.
 - **Every real club gets a season's form**, a random swing of about ±2.5 rating
@@ -350,21 +356,22 @@ goalkeeper only plays in goal.
   ([`src/lib/scorers.ts`](src/lib/scorers.ts)).
 - **Each match** draws goals from a Poisson distribution. The expected goals
   start at 1.45 a side, get ×1.12 at home (÷1.12 away), and move with the
-  strength gap: a stronger side's goals rise by 5.5% per rating point, a weaker
-  side's fall by 16.5%. Favourites therefore win 2-0 and 3-0 far more often than
+  strength gap: a stronger side's goals rise by 7% per rating point, a weaker
+  side's fall by 21.5% (FC 27's ratings are closer together than the old
+  scale, so each point counts for more). Favourites therefore win 2-0 and 3-0 far more often than
   7-0.
 
 With these settings a simulated real league averages 2.7 goals a game, with a
-champion on about 96 points. The **100-point chance** shown for an XI is exact:
+champion in the 90s. The **100-point chance** shown for an XI is exact:
 dynamic programming over the win, draw and loss probabilities of all 38
-fixtures. Random drafts land around 79–85. In realistic mode a strong one (84)
-reaches 100 points about 2% of the time and the best (~85.5) about 12%; only
-one real Premier League side has ever done it (Manchester City, 2017/18).
+fixtures. Random drafts land around 81–86. In realistic mode 100 points is for
+the very best drafts (about one in ten for ~86); only one real Premier League
+side has ever done it (Manchester City, 2017/18).
 
 **Arcade mode** (an option in Road to 100) gives your XI +2.5 and a steeper
-curve (+7% / −21% per point). There a typical draft (~81.5) reaches 100 points
-about one season in ten, a strong one more often than not, the best about 85%
-of the time.
+curve (+9% / −27% per point). There a typical draft (~82.5) reaches 100 points
+about one season in ten, a strong one (~84) about every other season, the best
+nearly always.
 
 **Draft modes**, from easiest to hardest: *standard* (spin a club, take any
 player for any open position), *random position* (the spin also draws the

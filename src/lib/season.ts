@@ -20,8 +20,13 @@ export interface MatchModel {
   down: number;
 }
 
-/** Tuned so a simulated real league looks like the Premier League (~2.7 goals a game, champion ~95 pts). */
-export const REALISTIC: MatchModel = { base: 1.45, home: 1.12, up: 0.055, down: 0.165 };
+/**
+ * Tuned so a simulated real league looks like the Premier League (~2.7 goals a
+ * game, a champion in the 90s). Since ratings follow EA FC 27 (a narrower
+ * spread than before: the weakest club ~75, not ~69), each rating point counts
+ * for more: +7% / -21.5%.
+ */
+export const REALISTIC: MatchModel = { base: 1.45, home: 1.12, up: 0.07, down: 0.215 };
 
 export type Difficulty = 'realistic' | 'arcade';
 
@@ -29,9 +34,9 @@ export type Difficulty = 'realistic' | 'arcade';
  * How a draft is simulated. Realistic: the league's own model, no help.
  * Arcade: a steeper curve, and your XI plays every match at its peak (+2.5).
  * Tuned on the real squads and simulated drafts for the 100-point goal: in
- * arcade a typical draft (~81.5) reaches 100 points about one season in ten,
- * a strong one (~84) more often than not, the best (~85.5) about 85% of the
- * time. Realistic keeps 100 points for the very best drafts (~2-12%).
+ * arcade a typical draft (~82.5) reaches 100 points about one season in ten,
+ * a strong one (~84) about every other season, the best (~86) nearly always.
+ * Realistic keeps 100 points for the very best drafts (about one in ten).
  */
 
 /** A strong draft's strength, used to quote example odds. */
@@ -40,7 +45,7 @@ export const STRONG_DRAFT = 84;
 export const POINTS_TARGET = 100;
 export const DIFFICULTY: Record<Difficulty, { model: MatchModel; bonus: number }> = {
   realistic: { model: REALISTIC, bonus: 0 },
-  arcade: { model: { base: 1.45, home: 1.12, up: 0.07, down: 0.21 }, bonus: 2.5 },
+  arcade: { model: { base: 1.45, home: 1.12, up: 0.09, down: 0.27 }, bonus: 2.5 },
 };
 
 export const BASE_GOALS = REALISTIC.base;

@@ -27,6 +27,9 @@ from reference import CLUBS, COUNTRIES, POSITIONS, flag  # noqa: E402
 import history  # noqa: E402
 
 OUT_DIR = HERE.parent / "public" / "data"
+# EA Sports FC 27 base-card ratings (FUTBIN, 2026-10-04), by our player name: the
+# reference the site's ratings are kept within REF_TOLERANCE of (src/lib/strength.ts).
+FC27: dict[str, int] = json.loads((HERE / "fc27-ratings.json").read_text())
 REPO_URL = "https://github.com/mlodyheros/pl-value"
 RANGE_LEVEL = 0.8
 TIER_CODES = {"pl_history": 0, "non_pl_history": 1, "no_history": 2}
@@ -237,6 +240,7 @@ def build(root: Path) -> tuple[list[dict], dict]:
                 "tier": TIER_CODES[row.tier],
                 "perf": int(row.perf),
                 "known": _is_known(row),
+                **({"ref": FC27[row["name"]]} if row["name"] in FC27 else {}),
                 "contract": None if pd.isna(row.contract_expiry) else str(row.contract_expiry)[:4],
                 "fee": fee,
                 "stats": {
