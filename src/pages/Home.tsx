@@ -137,19 +137,21 @@ export function Home() {
   return (
     <section class="home">
       <div class="hero">
+        <nav class="crest-row" aria-label={t('home.crests')}>
+          {Object.keys(meta.clubs).map((code) => (
+            <a
+              href={`${href('stats')}?club=${code}`}
+              title={t('home.crestLink', { club: meta.clubs[code].name })}
+              aria-label={t('home.crestLink', { club: meta.clubs[code].name })}
+            >
+              <Crest code={code} size={28} />
+            </a>
+          ))}
+        </nav>
         <p class="eyebrow">{t('home.eyebrow', { season: meta.season, players: meta.players, gw: meta.gameweek })}</p>
         <h1>
           {t('home.title')} <em>{t('home.titleEm')}</em>
         </h1>
-        <p class="lede">
-          {tj('home.lede', {
-            toggle: <b>{`${t('toggle.tm')} / ${t('toggle.model')}`}</b>,
-            values: <b>{valuesPhrase()}</b>,
-          })}
-        </p>
-        <p class="hero__note">
-          <a href={href('how')}>{t('home.tmNoteLink')}</a>
-        </p>
       </div>
 
       <GamesFormation spots={spots} label={t('home.allGames')} />
@@ -165,6 +167,18 @@ export function Home() {
         </div>
       )}
 
+      <div class="home__about">
+        <p class="lede">
+          {tj('home.lede', {
+            toggle: <b>{`${t('toggle.tm')} / ${t('toggle.model')}`}</b>,
+            values: <b>{valuesPhrase()}</b>,
+          })}
+        </p>
+        <p class="hero__note">
+          <a href={href('how')}>{t('home.tmNoteLink')}</a>
+        </p>
+      </div>
+
       {moves && moves.risers[0] && moves.fallers[0] && (
         <a class="market-tile" href={href('market')}>
           <b>
@@ -179,18 +193,6 @@ export function Home() {
         </a>
       )}
 
-      <h2 class="section-title">{t('home.crests')}</h2>
-      <nav class="crest-row" aria-label={t('home.crests')}>
-        {Object.keys(meta.clubs).map((code) => (
-          <a
-            href={`${href('stats')}?club=${code}`}
-            title={t('home.crestLink', { club: meta.clubs[code].name })}
-            aria-label={t('home.crestLink', { club: meta.clubs[code].name })}
-          >
-            <Crest code={code} size={28} />
-          </a>
-        ))}
-      </nav>
     </section>
   );
 }

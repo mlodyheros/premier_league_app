@@ -27,6 +27,7 @@ export function GamesFormation({ spots, label }: { spots: Spot[]; label: string 
   return (
     <nav class="formation" aria-label={label}>
       <div class="formation__pitch" aria-hidden="true">
+        <span class="formation__touch" />
         <span class="formation__half" />
         <span class="formation__circle" />
         <span class="formation__box formation__box--top" />
@@ -34,8 +35,8 @@ export function GamesFormation({ spots, label }: { spots: Spot[]; label: string 
       </div>
       <span class="formation__line formation__line--attack">{t('home.line.attack')}</span>
       <ul>
-        {spots.map((s) => (
-          <li style={{ left: `${s.x}%`, top: `${s.y}%`, width: `${s.w ?? 23}%` }}>
+        {spots.map((s, i) => (
+          <li style={{ left: `${s.x}%`, top: `${s.y}%`, width: `${s.w ?? 23}%`, '--i': spots.length - 1 - i }}>
             <a
               class={`spot ${s.keeper ? 'spot--keeper' : ''} ${s.state ? `spot--${s.state}` : ''}`}
               href={href(s.path)}

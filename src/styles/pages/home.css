@@ -172,33 +172,35 @@ a.card:hover .card__icon { transform: scale(1.15) rotate(-6deg); }
 
 .daily__state b { font-family: var(--display); font-size: 1.1rem; }
 
-/* The team sheet: every game a player on a 4-3-3, today's dailies up front, you in goal. */
+/* The team sheet: every game a player on a 4-3-3, today's dailies up front, you in goal.
+   No pitch box, just its lines, so it sits on the page like everything else. */
 
-.formation { position: relative; aspect-ratio: 0.6; max-width: 720px; margin: var(--space-5) auto var(--space-5); }
+.formation { position: relative; width: 100%; aspect-ratio: 0.6; margin: var(--space-6) 0 var(--space-5); }
 
-@media (min-width: 760px) { .formation { aspect-ratio: 1.05; } }
+@media (min-width: 760px) { .formation { aspect-ratio: 1.3; margin-top: var(--space-7); } }
 
-.formation__pitch {
+.formation__pitch { position: absolute; inset: 0; pointer-events: none; }
+
+.formation__pitch::before {
+  content: '';
   position: absolute;
   inset: 0;
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: repeating-linear-gradient(180deg, var(--color-pitch-1) 0 10%, var(--color-pitch-2) 10% 20%);
-  border: 1px solid rgb(var(--primary-rgb) / 0.35);
-  box-shadow: inset 0 0 60px rgb(var(--shadow-rgb) / 0.35);
+  background: radial-gradient(ellipse at 50% 50%, rgb(var(--primary-rgb) / 0.07), transparent 65%);
 }
 
-.formation__pitch span { position: absolute; border: 2px solid rgb(var(--white-rgb) / 0.22); }
+.formation__pitch span { position: absolute; border: 2px solid var(--color-border); }
+
+.formation__touch { inset: 0; border-radius: var(--radius); }
 
 .formation__half { left: 0; right: 0; top: 50%; height: 0; border-width: 2px 0 0 !important; }
 
-.formation__circle { left: 50%; top: 50%; width: 30%; aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); }
+.formation__circle { left: 50%; top: 50%; width: min(30%, 220px); aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); }
 
-.formation__box { left: 25%; width: 50%; height: 13%; }
+.formation__box { left: 22%; width: 56%; height: 14%; }
 
-.formation__box--top { top: -2px; border-top: 0 !important; }
+.formation__box--top { top: 0; border-top: 0 !important; }
 
-.formation__box--bottom { bottom: -2px; border-bottom: 0 !important; }
+.formation__box--bottom { bottom: 0; border-bottom: 0 !important; }
 
 .formation__line--attack {
   position: absolute;
@@ -206,11 +208,12 @@ a.card:hover .card__icon { transform: scale(1.15) rotate(-6deg); }
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1;
-  padding: 2px 10px;
+  padding: 3px 12px;
   border-radius: 999px;
-  background: rgb(var(--bg-rgb) / 0.75);
+  background: var(--color-bg);
+  border: 1px solid rgb(var(--warning-rgb) / 0.5);
   color: var(--color-warning);
-  font-size: 0.66rem;
+  font-size: 0.7rem;
   font-weight: var(--weight-bold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -219,38 +222,57 @@ a.card:hover .card__icon { transform: scale(1.15) rotate(-6deg); }
 
 .formation ul { list-style: none; margin: 0; padding: 0; }
 
-.formation li { position: absolute; max-width: 170px; transform: translate(-50%, -50%); }
+.formation li { position: absolute; max-width: 220px; transform: translate(-50%, -50%); z-index: 1; }
+
+.formation li:hover, .formation li:focus-within { z-index: 2; }
 
 /* A player card: badge, name, one line of state. */
 .spot {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 8px 4px 7px;
-  border-radius: 14px;
+  gap: 4px;
+  padding: 10px 6px 9px;
+  border-radius: 16px;
   background: linear-gradient(170deg, var(--color-surface-raised), var(--color-surface));
   border: 1px solid var(--color-border-strong);
-  box-shadow: 0 6px 18px rgb(var(--shadow-rgb) / 0.35);
+  box-shadow: 0 6px 18px rgb(var(--shadow-rgb) / 0.3);
   color: var(--color-text);
   text-decoration: none;
   text-align: center;
-  transition: transform var(--dur-fast) ease, border-color var(--dur-fast) ease;
-  animation: rise var(--dur-slow) ease both;
+  transition: transform var(--dur-slow) var(--ease-spring), box-shadow var(--dur-slow) ease, border-color var(--dur-base) ease;
+  animation: spot-in 420ms var(--ease-spring) backwards;
+  animation-delay: calc(var(--i, 0) * 45ms + 80ms);
 }
 
-.spot:hover { border-color: var(--color-primary); transform: translateY(-2px); }
+.spot:hover, .spot:focus-visible {
+  transform: translateY(-6px) scale(1.08);
+  border-color: var(--color-primary);
+  box-shadow: 0 14px 34px rgb(var(--shadow-rgb) / 0.4), 0 0 0 1px var(--color-primary), 0 0 28px rgb(var(--primary-rgb) / 0.3);
+}
 
-.spot:active { transform: scale(0.97); }
+.spot:active { transform: translateY(-2px) scale(1.02); transition-duration: var(--dur-fast); }
 
-.spot__badge { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; color: var(--color-primary); background: rgb(var(--primary-rgb) / 0.12); border: 1px solid rgb(var(--primary-rgb) / 0.4); }
+.spot__badge {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--color-primary);
+  background: rgb(var(--primary-rgb) / 0.12);
+  border: 1px solid rgb(var(--primary-rgb) / 0.4);
+  transition: transform var(--dur-slow) var(--ease-spring), background-color var(--dur-base) ease;
+}
 
-.spot__title { font-family: var(--display); font-size: 0.9rem; font-weight: var(--weight-bold); line-height: 1.05; text-transform: uppercase; hyphens: auto; }
+.spot:hover .spot__badge, .spot:focus-visible .spot__badge { transform: scale(1.12) rotate(-8deg); background: rgb(var(--primary-rgb) / 0.22); }
 
-.spot__note { color: var(--color-text-muted); font-size: 0.66rem; font-weight: var(--weight-semibold); line-height: 1.15; }
+.spot__title { font-family: var(--display); font-size: 1rem; font-weight: var(--weight-bold); line-height: 1.05; text-transform: uppercase; hyphens: auto; }
 
-/* Today's dailies: green to play, quiet once done. */
-.spot--todo { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgb(var(--primary-rgb) / 0.25), 0 6px 18px rgb(var(--shadow-rgb) / 0.35); }
+.spot__note { color: var(--color-text-muted); font-size: 0.7rem; font-weight: var(--weight-semibold); line-height: 1.15; }
+
+/* Today's dailies: lit and breathing until played, quiet once done. */
+.spot--todo { border-color: var(--color-primary); animation: spot-in 420ms var(--ease-spring) backwards, spot-glow 2.4s ease-in-out 1s infinite; animation-delay: calc(var(--i, 0) * 45ms + 80ms), 1s; }
 
 .spot--todo .spot__note { color: var(--color-primary); }
 
@@ -263,14 +285,23 @@ a.card:hover .card__icon { transform: scale(1.15) rotate(-6deg); }
 
 .spot--keeper .spot__badge { color: var(--color-warning); background: rgb(var(--warning-rgb) / 0.12); border-color: rgb(var(--warning-rgb) / 0.5); }
 
+.spot--keeper:hover { border-color: var(--color-warning); box-shadow: 0 14px 34px rgb(var(--shadow-rgb) / 0.4), 0 0 0 1px var(--color-warning), 0 0 28px rgb(var(--warning-rgb) / 0.3); }
+
 @media (min-width: 760px) {
-  .spot { padding: 12px 8px 10px; }
-  .spot__badge { width: 48px; height: 48px; }
-  .spot__title { font-size: 1.05rem; }
-  .spot__note { font-size: 0.75rem; }
+  .spot { padding: 16px 10px 14px; gap: 6px; border-radius: 18px; }
+  .spot__badge { width: 58px; height: 58px; }
+  .spot__badge .icon { width: 28px; height: 28px; }
+  .spot__title { font-size: 1.3rem; }
+  .spot__note { font-size: 0.82rem; }
+  .formation__line--attack { font-size: 0.8rem; padding: 4px 16px; }
 }
 
-.formation li:nth-child(1) .spot { animation-delay: 0ms; }
-.formation li:nth-child(n + 4) .spot { animation-delay: 60ms; }
-.formation li:nth-child(n + 7) .spot { animation-delay: 120ms; }
-.formation li:nth-child(11) .spot { animation-delay: 180ms; }
+@keyframes spot-in { from { opacity: 0; transform: translateY(14px) scale(0.85); } to { opacity: 1; transform: none; } }
+
+@keyframes spot-glow { 50% { box-shadow: 0 6px 18px rgb(var(--shadow-rgb) / 0.3), 0 0 0 4px rgb(var(--primary-rgb) / 0.18), 0 0 26px rgb(var(--primary-rgb) / 0.25); } }
+
+.home__about { margin-bottom: var(--space-4); }
+
+.home__about .lede { margin: 0; color: var(--color-text-muted); font-size: 0.95rem; }
+
+.hero { padding-bottom: 0; }
