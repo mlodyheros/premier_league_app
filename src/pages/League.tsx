@@ -3,7 +3,7 @@ import { Icon } from '../components/Icon';
 import { notifyShare, toast } from '../components/Toast';
 import { t, tj } from '../i18n';
 import { formatDate } from '../lib/format';
-import { addFriend, dayScore, decodeCard, friends, leagueLink, myCard, myName, NAME_MAX, removeFriend, setMyName, type Card } from '../lib/friends';
+import { addFriend, dayScore, decodeCard, friends, isMine, leagueLink, myCard, myName, NAME_MAX, removeFriend, setMyName, type Card } from '../lib/friends';
 import { todayKey } from '../lib/rng';
 import { shareText } from '../lib/share';
 import { routeParam } from '../router';
@@ -19,7 +19,7 @@ export function League() {
     const code = routeParam('add');
     if (!code) return;
     const card = decodeCard(code);
-    if (card && card.n !== myName()) {
+    if (card && !isMine(card)) {
       setList(addFriend(card));
       toast(t('league.added', { name: card.n }));
     } else if (!card) {
@@ -110,7 +110,7 @@ export function League() {
                         class="league-table__remove"
                         aria-label={t('league.remove', { name: card.n })}
                         title={t('league.remove', { name: card.n })}
-                        onClick={() => setList(removeFriend(card.n))}
+                        onClick={() => setList(removeFriend(card))}
                       >
                         ✕
                       </button>

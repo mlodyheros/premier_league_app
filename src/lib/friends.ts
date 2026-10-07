@@ -13,6 +13,12 @@ export interface Card {
   v: 1;
   /** Nickname. */
   n: string;
+  /**
+   * A random id made once per browser: two friends with the same nickname are
+   * two rows, and your own link never adds you as your friend. Missing in
+   * links from before it existed (then the nickname stands in).
+   */
+  i?: string;
   /** The day the daily results are for. */
   d: string;
   /** Daily results as shown on the home page ("3/8", "7/10", "312/500"), or null. */
@@ -26,6 +32,18 @@ export interface Card {
 }
 
 const NAME_KEY = 'league:name';
+const ID_KEY = 'league:id';
+const ID = /^[a-z0-9]{8,16}$/;
+
+/** This browser's player id, made on first use. */
+export function myId(): string {
+  const saved = readJson<string>(ID_KEY);
+  if (saved && ID.test(saved)) return saved;
+  const bytes = crypto.getRandomValues(new Uint8Array(8));
+  const id = Array.from(bytes, (b) => (b % 36).toString(36)).join('').padEnd(8, '0');
+  writeJson(ID_KEY, id);
+  return id;
+}
 const FRIENDS_KEY = 'league:friends';
 export const NAME_MAX = 20;
 
@@ -46,6 +64,7 @@ export function myCard(day: string, name = myName()): Card {
   return {
     v: 1,
     n: name || '?',
+    i: myId(),
     d: day,
     g: dailyResult('guess', day),
     b: dailyResult('beat', day),
@@ -85,7 +104,8 @@ export function decodeCard(code: string): Card | null {
     }
     const name = raw.n.trim().slice(0, NAME_MAX);
     if (!name) return null;
-    return { v: 1, n: name, d: raw.d, g: res(raw.g), b: res(raw.b), p: res(raw.p), r: num(raw.r), h: num(raw.h), t: num(raw.t) };
+    const id = typeof raw.i === 'string' && ID.test(raw.i) ? raw.i : undefined;
+    return { v: 1, n: name, i: id, d: raw.d, g: res(raw.g), b: res(raw.b), p: res(raw.p), r: num(raw.r), h: num(raw.h), t: num(raw.t) };
   } catch {
     return null;
   }
@@ -96,17 +116,28 @@ export function friends(): Card[] {
 }
 
 /** Add or update a friend (by nickname); an older card never replaces a newer one. */
+/** The same person: by id when both cards have one, else by nickname (old links). */
+export function samePlayer(a: Card, b: Card): boolean {
+  if (a.i && b.i) return a.i === b.i;
+  return a.n.toLowerCase() === b.n.toLowerCase();
+}
+
+/** A card that is this browser's own (your link opened on your own phone). */
+export function isMine(card: Card): boolean {
+  return card.i ? card.i === myId() : card.n === myName();
+}
+
 export function addFriend(card: Card): Card[] {
   const list = friends();
-  const at = list.findIndex((c) => c.n.toLowerCase() === card.n.toLowerCase());
+  const at = list.findIndex((c) => samePlayer(c, card));
   if (at >= 0 && list[at].d > card.d) return list;
   const next = at >= 0 ? list.map((c, i) => (i === at ? card : c)) : [...list, card];
   writeJson(FRIENDS_KEY, next);
   return next;
 }
 
-export function removeFriend(name: string): Card[] {
-  const next = friends().filter((c) => c.n !== name);
+export function removeFriend(card: Card): Card[] {
+  const next = friends().filter((c) => !samePlayer(c, card));
   writeJson(FRIENDS_KEY, next);
   return next;
 }

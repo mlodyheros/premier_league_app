@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const PAGES = ['', 'guess', 'road100', 'higher-lower', 'budget', 'transfer', 'beat-model', 'price-tag', 'market', 'league', 'stats', 'how'];
+const PAGES = ['', 'guess', 'road100', 'higher-lower', 'budget', 'transfer', 'beat-model', 'price-tag', 'market', 'league', 'stats', 'how', 'about'];
 
 test.beforeEach(async ({ page }) => {
   // Skip the first-visit screens (they have their own test), in English.
@@ -192,4 +192,11 @@ test('the share sheet shows a card for a story and for a post', async ({ page })
   await sheet.getByRole('radio', { name: 'Post 1:1' }).click();
   await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.naturalHeight)).toBe(1080);
   await expect(sheet.getByRole('button', { name: /Save image/ })).toBeEnabled();
+});
+
+test('the about page links to a pre-filled bug report on GitHub', async ({ page }) => {
+  await open(page, 'about');
+  const report = page.locator('.about__contact a');
+  await expect(report).toHaveAttribute('href', /github\.com\/mlodyheros\/premier_league_app\/issues\/new\?title=/);
+  await expect(page.locator('.site-footer__links a').first()).toHaveAttribute('href', '#/about');
 });

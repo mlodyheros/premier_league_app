@@ -113,6 +113,17 @@ export function BottomNav() {
               </a>
             </li>
             <li>
+              <a href={href('about')} onClick={close} aria-current={here === 'about' ? 'page' : undefined}>
+                <span class="sheet__icon">
+                  <Icon name="info-circle" />
+                </span>
+                <span>
+                  <b>{t('nav.about')}</b>
+                  <small>{t('about.blurb')}</small>
+                </span>
+              </a>
+            </li>
+            <li>
               <a href={href('how')} onClick={close} aria-current={here === 'how' ? 'page' : undefined}>
                 <span class="sheet__icon">
                   <Icon name="book-2" />

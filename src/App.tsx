@@ -22,7 +22,8 @@ import { HowItWorks } from './pages/HowItWorks';
 import { Players } from './pages/Players';
 import { Market } from './pages/Market';
 import { League } from './pages/League';
-import { route } from './router';
+import { About, reportUrl } from './pages/About';
+import { href, route } from './router';
 
 const PAGES: Record<string, { page: FunctionComponent; title?: Key }> = {
   '': { page: Home },
@@ -39,6 +40,7 @@ const PAGES: Record<string, { page: FunctionComponent; title?: Key }> = {
   stats: { page: Players, title: 'players.title' },
   market: { page: Market, title: 'market.title' },
   league: { page: League, title: 'league.title' },
+  about: { page: About, title: 'about.title' },
 };
 
 export function App() {
@@ -92,6 +94,12 @@ export function App() {
       {dataset.value && (
         <footer class="site-footer">
           <p>{t('app.footer', { date: formatDate(dataset.value.meta.dataDate) })}</p>
+          <p class="site-footer__links">
+            <a href={href('about')}>{t('about.title')}</a>
+            <a href={reportUrl()} target="_blank" rel="noopener noreferrer">
+              {t('about.report')}
+            </a>
+          </p>
         </footer>
       )}
     </>

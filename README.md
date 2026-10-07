@@ -24,7 +24,7 @@ value risers and fallers with a daily "who gained more?" quiz, and a **Friends
 league** (`#/league`) that compares today's results and personal bests with
 friends. The league needs no accounts or server: everyone's results travel as a
 code inside a link (`src/lib/friends.ts`), and opening a friend's link adds them
-to your table.
+to your table. Each browser gets a random player id (kept through a progress reset), so two friends with the same nickname stay two rows and your own link never adds you. An **About & privacy** page (`#/about`) lists the data sources and what is stored, and links to a pre-filled GitHub issue for bug reports (also in the footer).
 
 The home page is a team sheet: every game and page a player on a 4-3-3
 pitch, today's three daily rounds up front (green until played, then today's
