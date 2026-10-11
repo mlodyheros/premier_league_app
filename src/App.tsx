@@ -24,6 +24,8 @@ import { Players } from './pages/Players';
 import { Market } from './pages/Market';
 import { League } from './pages/League';
 import { About, reportUrl } from './pages/About';
+import { PlayerProfile } from './pages/PlayerProfile';
+import { playerBySlug } from './lib/playerUrl';
 import { href, route } from './router';
 
 const PAGES: Record<string, { page: FunctionComponent; title?: Key }> = {
@@ -44,15 +46,21 @@ const PAGES: Record<string, { page: FunctionComponent; title?: Key }> = {
   about: { page: About, title: 'about.title' },
 };
 
-export function App() {
-  const entry = PAGES[route.value] ?? PAGES[''];
-  const Page = entry.page;
+const PLAYER = 'player/';
 
-  useEffect(() => trackPage(route.value), [route.value]);
+export function App() {
+  const slug = route.value.startsWith(PLAYER) ? route.value.slice(PLAYER.length) : null;
+  const entry = slug === null ? (PAGES[route.value] ?? PAGES['']) : null;
+  const Page = entry?.page;
+  const name = slug !== null && dataset.value ? playerBySlug(dataset.value.players, slug)?.name : undefined;
+
+  // Every player profile counts as one page, not five hundred.
+  useEffect(() => trackPage(slug === null ? route.value : 'player'), [route.value]);
 
   useEffect(() => {
-    document.title = entry.title ? t('title.page', { page: t(entry.title) }) : t('title.home');
-  }, [entry, lang.value]);
+    const page = name ?? (entry?.title ? t(entry.title) : null);
+    document.title = page ? t('title.page', { page }) : t('title.home');
+  }, [entry, name, lang.value]);
 
   return (
     <>
@@ -73,7 +81,7 @@ export function App() {
           // Keyed on the route so a game remounts (and re-reads its saved state) on each visit,
           // and the page animates in.
           <div class="page" key={route.value}>
-            <Page />
+            {Page ? <Page /> : <PlayerProfile slug={slug!} />}
           </div>
         ) : (
           <div class="skeleton" aria-busy="true" aria-label={t('app.loading')}>

@@ -1,3 +1,4 @@
+import { PlayerLink } from '../../components/PlayerLink';
 import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { Flag } from '../../components/Flag';
 import { cardFooter } from '../../lib/shareSpecs';
@@ -326,7 +327,9 @@ function EndPanel({ won, gaveUp, target, feedback, mode, day, stats, hinted, onN
       <div class="reveal">
         <Avatar player={target} size={56} />
         <div>
-          <p class="reveal__name">{target.name}</p>
+          <p class="reveal__name">
+            <PlayerLink player={target} />
+          </p>
           <p class="reveal__meta">
             <ClubChip code={target.club} /> · {posLabel(target.pos)} · <Flag flag={target.flag} /> {countryName(target.nat)} · {target.age}
           </p>

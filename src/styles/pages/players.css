@@ -45,3 +45,5 @@
 
 /* Grid items default to their content's width; an open card must not widen the page. */
 .players__list > li { min-width: 0; }
+
+.players__profile { margin-top: var(--space-3); width: 100%; justify-content: center; }

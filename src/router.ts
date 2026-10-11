@@ -2,12 +2,14 @@
 import { signal } from '@preact/signals';
 
 function current(): string {
+  // Unit tests import pages without a browser.
+  if (typeof location === 'undefined') return '';
   return location.hash.replace(/^#\/?/, '').split('?')[0] || '';
 }
 
 export const route = signal(current());
 
-window.addEventListener('hashchange', () => {
+globalThis.window?.addEventListener('hashchange', () => {
   route.value = current();
   window.scrollTo(0, 0);
 });

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const PAGES = ['', 'guess', 'road100', 'higher-lower', 'budget', 'transfer', 'beat-model', 'price-tag', 'market', 'league', 'stats', 'how', 'about'];
+const PAGES = ['', 'guess', 'road100', 'higher-lower', 'budget', 'transfer', 'beat-model', 'price-tag', 'market', 'league', 'stats', 'how', 'about', 'player/bukayo-saka'];
 
 test.beforeEach(async ({ page }) => {
   // Skip the first-visit screens (they have their own test), in English.
@@ -120,6 +120,19 @@ test('the friends league adds a friend from a link', async ({ page }) => {
 test('Market of the week lists risers and fallers', async ({ page }) => {
   await open(page, 'market');
   await expect(page.locator('.moves').first().locator('.move').first()).toBeVisible();
+});
+
+test("a player's name opens his profile", async ({ page }) => {
+  await open(page, 'market');
+  const link = page.locator('.move .player-link').first();
+  const name = await link.textContent();
+  await link.click();
+  await expect(page).toHaveURL(/#\/player\/[a-z0-9-]+$/);
+  await expect(page.locator('main h1')).toHaveText(name!);
+  await expect(page).toHaveTitle(new RegExp(name!));
+
+  await page.goto('./#/player/nobody-at-all');
+  await expect(page.locator('main h1')).toContainText('could not find');
 });
 
 test('every share page forwards to its game and has its own preview', async ({ page, request }) => {

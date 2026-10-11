@@ -1,3 +1,4 @@
+import { PlayerLink } from '../components/PlayerLink';
 import { useMemo } from 'preact/hooks';
 import { Icon } from '../components/Icon';
 import { Avatar } from '../components/Avatar';
@@ -16,7 +17,7 @@ function MoveRow({ m }: { m: Move }) {
     <li class="move">
       <Avatar player={m.player} size={30} />
       <span class="move__name">
-        {m.player.name}
+        <PlayerLink player={m.player} />
         <small>
           {meta.clubs[m.player.club].short} · {posLabel(m.player.pos)} · {formatEur(m.from)} → {formatEur(m.to)}
         </small>

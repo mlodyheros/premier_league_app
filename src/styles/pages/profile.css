@@ -1,0 +1,53 @@
+/* Player profile: one player, opened from his name anywhere in the app. */
+
+.profile { display: grid; gap: var(--space-3); }
+
+.profile__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  min-height: var(--touch-min);
+  color: var(--color-text-muted);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.profile__back:hover { color: var(--color-text); }
+
+.profile__tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+
+@media (min-width: 640px) { .profile__tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+.profile__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border);
+  font-variant-numeric: tabular-nums;
+}
+
+.profile__tile small { color: var(--color-text-muted); font-weight: var(--weight-semibold); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; }
+
+.profile__tile b { font-family: var(--display); font-size: 1.5rem; line-height: 1.1; }
+
+.profile__tile span { color: var(--color-text-muted); font-size: 0.78rem; }
+
+.profile__tile--ovr b { color: var(--color-primary); }
+
+.profile__tile.on { border-color: var(--color-primary); box-shadow: inset 0 0 0 1px var(--color-primary); }
+
+.profile__tile.up b { color: var(--color-primary); }
+
+.profile__tile.down b { color: var(--color-accent); }
+
+.profile__facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; margin: 0 0 var(--space-3); }
+
+@media (min-width: 640px) { .profile__facts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+.profile__facts dt { color: var(--color-text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; }
+
+.profile__facts dd { margin: 2px 0 0; font-weight: var(--weight-semibold); }

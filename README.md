@@ -35,6 +35,13 @@ A **Players** page (`#/stats`) lists all of them: search, filter by club and
 position, sort by rating, value, model-vs-TM gap, goals, assists, minutes or
 age, and open any player's full card.
 
+Every player also has a **profile** (`#/player/bukayo-saka`): rating next to
+his FC 27 card, both values with this week's change, the model's range,
+contract, fee and the career chart. His name opens it wherever a round is
+already over: the Market, the season result's XI, the Guess the Player reveal
+and the Players list. Names stay plain while a question is open, since the
+profile would give the answer away.
+
 The daily rounds (Guess the Player, Beat the Model, Price Tag) are the same for
 everyone on a given date, can be played once, and keep a daily streak.
 

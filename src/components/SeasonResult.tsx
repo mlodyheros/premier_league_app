@@ -1,3 +1,4 @@
+import { PlayerLink } from './PlayerLink';
 import type { ComponentChildren } from 'preact';
 import { Icon, type IconName } from './Icon';
 import { useEffect, useState } from 'preact/hooks';
@@ -219,7 +220,9 @@ export function SeasonResult({
             <li style={{ '--i': i }} class={topScorer?.p === p && (tally?.goals ?? 0) > 0 ? 'top' : ''}>
               <span class="xi-reveal__pos">{posLabel(slot.type)}</span>
               <Avatar player={p} size={28} />
-              <span class="xi-reveal__name">{p.name}</span>
+              <span class="xi-reveal__name">
+                <PlayerLink player={p} />
+              </span>
               {tally && (
                 <span class="xi-reveal__ga" title={`${t('stat.goals')} / ${t('stat.assists')}`}>
                   <b>

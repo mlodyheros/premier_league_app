@@ -53,11 +53,14 @@ export function PlayerCard({
   children,
   head,
   compact = false,
+  page = false,
 }: {
   player: Player;
   children?: ComponentChildren;
   /** Shown right under the name, above the record: what the question is about. */
   head?: ComponentChildren;
+  /** The card is the whole page (the profile): its name is the page heading. */
+  page?: boolean;
   compact?: boolean;
 }) {
   const s = player.stats;
@@ -66,7 +69,7 @@ export function PlayerCard({
       <div class="pcard__top">
         <Avatar player={player} size={compact ? 44 : 60} />
         <div class="pcard__id">
-          <h3 class="pcard__name">{player.name}</h3>
+          {page ? <h1 class="pcard__name">{player.name}</h1> : <h3 class="pcard__name">{player.name}</h3>}
           <p class="pcard__meta">
             <ClubChip code={player.club} /> · <abbr title={posFull(player.pos)}>{posLabel(player.pos)}</abbr> ·{' '}
             <Flag flag={player.flag} title={countryName(player.nat)} /> · {player.age}

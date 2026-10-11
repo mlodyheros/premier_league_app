@@ -16,7 +16,7 @@ const NAMES = [
   // Navigation and pages
   'home', 'dots', 'trophy', 'chart-line', 'users', 'book-2', 'settings', 'ball-football',
   // In the games
-  'trending-up', 'trending-down', 'sparkles', 'dice-5', 'bulb', 'camera', 'refresh', 'info-circle', 'arrow-left',
+  'trending-up', 'trending-down', 'sparkles', 'dice-5', 'bulb', 'camera', 'refresh', 'info-circle', 'arrow-left', 'arrow-right',
   // Budget XI themes and season badges
   'arrow-big-up-lines', 'scale', 'stars', 'crown', 'diamond', 'target-arrow', 'star', 'shield-check', 'flame',
   // Price Tag verdicts, Road chemistry, errors

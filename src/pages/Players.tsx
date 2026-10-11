@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'preact/hooks';
 import { Avatar, Crest } from '../components/Avatar';
 import { Chips } from '../components/Chips';
+import { Icon } from '../components/Icon';
 import { PlayerCard } from '../components/PlayerCard';
 import { ValueChart } from '../components/ValueChart';
 import { useHistory } from '../data/history';
@@ -11,7 +12,8 @@ import { t, type Key } from '../i18n';
 import { posLabel } from '../i18n/labels';
 import { fold, formatEur, formatInt, formatPct } from '../lib/format';
 import { rating } from '../lib/strength';
-import { routeParam } from '../router';
+import { playerPath } from '../lib/playerUrl';
+import { href, routeParam } from '../router';
 
 type Group = 'all' | 'GK' | 'DEF' | 'MID' | 'FWD';
 const GROUPS: Group[] = ['all', 'GK', 'DEF', 'MID', 'FWD'];
@@ -148,6 +150,9 @@ export function Players() {
                     </div>
                   </div>
                   {h?.career[p.name] && <ValueChart points={h.career[p.name]} unit={h.unit} label={t('chart.title')} />}
+                  <a class="btn players__profile" href={href(playerPath(p))}>
+                    {t('players.profile')} <Icon name="arrow-right" size={18} />
+                  </a>
                 </PlayerCard>
               </div>
             )}
