@@ -200,3 +200,18 @@ test('the about page links to a pre-filled bug report on GitHub', async ({ page 
   await expect(report).toHaveAttribute('href', /github\.com\/mlodyheros\/premier_league_app\/issues\/new\?title=/);
   await expect(page.locator('.site-footer__links a').first()).toHaveAttribute('href', '#/about');
 });
+
+test.describe('a newer build', () => {
+  // Requests a service worker handles are not routed by Playwright: no worker here.
+  test.use({ serviceWorkers: 'block' });
+
+test('offers a reload when a newer build is published', async ({ page }) => {
+  await open(page, '');
+  await expect(page.locator('.update-banner')).toHaveCount(0);
+  // The published page now names a different script: a new build is out.
+  await page.route(/index\.html\?v=/, (route) => route.fulfill({ contentType: 'text/html', body: '<script type="module" src="./assets/index-NEWBUILD1.js"></script>' }));
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await expect(page.locator('.update-banner')).toBeVisible();
+  await expect(page.locator('.update-banner')).toContainText('new version');
+});
+});

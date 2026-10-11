@@ -60,6 +60,8 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+  // The page's own "is there a newer build?" check: straight to the network, never cached.
+  if (request.cache === 'no-store') return;
   if (request.mode === 'navigate' || url.pathname.endsWith('.json')) {
     event.respondWith(networkFirst(request));
   } else {

@@ -6,6 +6,7 @@ import './styles/main.css';
 import { App } from './App';
 import { loadDataset } from './data/store';
 import { todayKey } from './lib/rng';
+import { watchForUpdates } from './lib/update';
 
 loadDataset();
 render(<App />, document.getElementById('app')!);
@@ -21,6 +22,9 @@ function checkDay() {
 }
 document.addEventListener('visibilitychange', checkDay);
 setInterval(checkDay, 60_000);
+
+// A new build published while the page is open: offer a reload.
+watchForUpdates();
 
 // Offline play and "Add to Home Screen". Only in the build: in development the
 // cache would serve stale modules.

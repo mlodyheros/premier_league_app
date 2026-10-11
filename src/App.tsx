@@ -5,6 +5,7 @@ import { BottomNav } from './components/BottomNav';
 import { Header } from './components/Header';
 import { Onboarding } from './components/Onboarding';
 import { ShareSheet } from './components/ShareSheet';
+import { UpdateBanner } from './components/UpdateBanner';
 import { Toasts } from './components/Toast';
 import { dataset, loadDataset, loadError } from './data/store';
 import { BeatModel } from './games/beat-model/BeatModel';
@@ -90,6 +91,7 @@ export function App() {
       {dataset.value && <BottomNav />}
       {dataset.value && <Onboarding />}
       {dataset.value && <ShareSheet />}
+      <UpdateBanner />
       <Toasts />
       {dataset.value && (
         <footer class="site-footer">

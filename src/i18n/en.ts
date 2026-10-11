@@ -649,4 +649,6 @@ export const en = {
   'about.issuePage': 'Page',
   'nav.about': 'About',
   'about.blurb': 'Data sources, privacy, report a bug.',
+  'update.ready': 'A new version of PL Games is out.',
+  'update.reload': 'Reload',
 } satisfies Record<string, Entry>;

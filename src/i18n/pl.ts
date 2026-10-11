@@ -673,4 +673,6 @@ export const pl: Dictionary = {
   'about.issuePage': 'Strona',
   'nav.about': 'O projekcie',
   'about.blurb': 'Źródła danych, prywatność, zgłoś błąd.',
+  'update.ready': 'Jest nowa wersja PL Games.',
+  'update.reload': 'Odśwież',
 };
