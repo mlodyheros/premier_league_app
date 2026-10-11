@@ -122,7 +122,7 @@ What the export adds:
   (worth €25m+, or €10m+ with 4,000+ Premier League minutes).
 - When clubs change (promotion and relegation), fetch the new crests with
   `python3 pipeline/fetch_crests.py` (the export warns about any missing one),
-  then add the club to `pipeline/reference.py`.
+  then add the club to `pipeline/reference.py`. Then run `npm run crests`: crests over 15KB are re-saved as a 192px, 128-colour image inside the same `.svg` (identical at the sizes shown; all 20 now weigh 212KB, not 752KB).
 - Club colours, flags and continents, from the hand-written
   [`pipeline/reference.py`](pipeline/reference.py). A new club or nationality
   stops the export with a message saying what to add there.
