@@ -29,7 +29,16 @@ import history  # noqa: E402
 OUT_DIR = HERE.parent / "public" / "data"
 # EA Sports FC 27 base-card ratings (FUTBIN, 2026-10-04), by our player name: the
 # reference the site's ratings are kept within REF_TOLERANCE of (src/lib/strength.ts).
-FC27: dict[str, int] = json.loads((HERE / "fc27-ratings.json").read_text())
+_FC27_RAW: dict[str, int] = json.loads((HERE / "fc27-ratings.json").read_text())
+# Names pl-value spells differently from the ratings file (a nickname, a short form).
+FC27_ALIASES = {"Charly Alcaraz": "Carlos Alcaraz", "Dan Bentley": "Daniel Bentley"}
+# Matched without accents or case, so a respelling upstream ("Đorđe" -> "Djordje") keeps the rating.
+FC27: dict[str, int] = {history.normalize_name(k): v for k, v in _FC27_RAW.items()}
+
+
+def fc27_rating(name: str) -> int | None:
+    key = history.normalize_name(FC27_ALIASES.get(name, name))
+    return FC27.get(key)
 REPO_URL = "https://github.com/mlodyheros/pl-value"
 RANGE_LEVEL = 0.8
 TIER_CODES = {"pl_history": 0, "non_pl_history": 1, "no_history": 2}
@@ -240,7 +249,7 @@ def build(root: Path) -> tuple[list[dict], dict]:
                 "tier": TIER_CODES[row.tier],
                 "perf": int(row.perf),
                 "known": _is_known(row),
-                **({"ref": FC27[row["name"]]} if row["name"] in FC27 else {}),
+                **({"ref": fc27_rating(row["name"])} if fc27_rating(row["name"]) is not None else {}),
                 "contract": None if pd.isna(row.contract_expiry) else str(row.contract_expiry)[:4],
                 "fee": fee,
                 "stats": {

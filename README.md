@@ -328,9 +328,10 @@ suggestions.
    ([`tests/rating-labels.test.ts`](tests/rating-labels.test.ts)): every one must
    stay within a point. Three Man Utd midfielders get explicit
    `RATING_ADJUSTMENTS`.
-5. **EA Sports FC 27.** 502 of the 540 players have an FC 27 base card (from
-   FUTBIN, in [`pipeline/fc27-ratings.json`](pipeline/fc27-ratings.json), added
-   to each player as `ref` by the export). Their rating is kept within two
+5. **EA Sports FC 27.** All but a handful of players (youngsters not in the
+   game) have an FC 27 base card (from FUTBIN and EA's own ratings site, in [`pipeline/fc27-ratings.json`](pipeline/fc27-ratings.json), added
+   to each player as `ref` by the export, matched without accents and with a few
+   aliases for respelled names, so an upstream respelling never loses a rating). Their rating is kept within two
    points of it (`REF_TOLERANCE`): the formula still moves it with form and the
    value source, but never far from what players know from the game. A test
    checks every one of them on both values. Players without a card (new
