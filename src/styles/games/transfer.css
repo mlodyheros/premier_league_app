@@ -88,3 +88,13 @@
 .tw-outlook { transition: opacity var(--dur-fast) ease; }
 
 .tw-outlook--updating { opacity: 0.55; }
+
+.tw-rules { display: flex; gap: 6px; align-items: flex-start; margin: 0 0 var(--space-2); color: var(--color-text-muted); font-size: 0.8rem; line-height: 1.4; }
+
+.tw-rules .icon { flex: none; margin-top: 1px; }
+
+.tw-deal small { margin-left: 6px; color: var(--color-text-muted); font-weight: var(--weight-regular); }
+
+.trow__price small { display: block; color: var(--color-text-muted); font-size: 0.7rem; font-weight: var(--weight-semibold); }
+
+.trow__price small.trow__expiring { color: var(--color-warning); }

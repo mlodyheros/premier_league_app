@@ -17,7 +17,7 @@ time, and scores, streaks and settings live in the browser's local storage.
 | **Budget XI** | Build the strongest XI on a themed budget, from a promoted side (€80M) to a sheikh's takeover (€1.5B), then play a season with it. "Fill the rest" completes an XI within the money left. |
 | **Beat the Model** | Does the model rate the player over or under his Transfermarkt value? Ten a round; daily and practice. |
 | **Price Tag** | Slide (or step through round amounts) to the value you think a player has. Five a round, up to 100 points each; daily and practice. |
-| **Transfer Window** | Take over a club with the board's budget, sell up to three and buy up to three from the other clubs, watch the season forecast (200 simulated seasons) move with every deal, then play the season and try to finish above the forecast made before the window. |
+| **Transfer Window** | Take over a club with the board's budget (15% of the squad's value), sell up to three and buy up to three from the other clubs (you pay 20% over value and sell for 10% under; a contract in its last year takes 30% off, two years left 10%; a player you sell joins the strongest club that can pay for him and that he improves), watch the season forecast (200 simulated seasons) move with every deal, then play the season and try to finish above the forecast made before the window. |
 
 Beyond the games: **Market of the week** (`#/market`), the week's biggest
 value risers and fallers, and a **Friends

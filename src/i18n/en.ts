@@ -586,7 +586,7 @@ export const en = {
   'road.restartConfirm': 'Throw this XI away and start a new draft? Your re-spins come back too.',
   'players.goalsShort': 'G',
   'players.assistsShort': 'A',
-  'how.games.transfer': 'Take over a club, sell up to three players and buy up to three from the other clubs within the board\'s budget. The forecast (200 simulated seasons with the same random draws) moves with every deal; then play the season and try to finish above the forecast made before the window. A player you buy leaves his club.',
+  'how.games.transfer': 'Take over a club, sell up to three players and buy up to three from the other clubs within the board\'s budget (15% of the squad\'s value). You pay 20% over a player\'s value and get 10% under it when you sell; a player in the last year of his contract costs 30% less, with two years left 10% less. A player you buy leaves his club, and one you sell joins the strongest club that can pay for him and that he improves. The forecast (200 simulated seasons with the same random draws) moves with every deal; then play the season and try to finish above the forecast made before the window.',
   'theme.label': 'Colours',
   'theme.night': 'Night',
   'theme.pl': 'Premier League',
@@ -661,4 +661,8 @@ export const en = {
   'profile.contract': 'Contract until',
   'profile.fee': 'Signed for',
   'players.profile': 'Full profile',
+  'tw.rules': 'Clubs sell {premium}% above value and buy {discount}% below it. A player in the last year of his contract goes {lastYear}% cheaper. Players you sell join the rival they strengthen most.',
+  'tw.to': 'to {club}',
+  'tw.contract': 'until {year}',
+  'tw.valueIs': 'Value {v}',
 } satisfies Record<string, Entry>;

@@ -610,7 +610,7 @@ export const pl: Dictionary = {
   'road.restartConfirm': 'Wyrzucić tę jedenastkę i zacząć nowy draft? Losowania też wrócą.',
   'players.goalsShort': 'G',
   'players.assistsShort': 'A',
-  'how.games.transfer': 'Przejmij klub, sprzedaj do trzech piłkarzy i kup do trzech z innych klubów w ramach budżetu od zarządu. Prognoza (200 symulowanych sezonów z tymi samymi losowaniami) zmienia się po każdym transferze; potem rozegraj sezon i spróbuj skończyć wyżej niż prognoza sprzed okna. Kupiony piłkarz odchodzi ze swojego klubu.',
+  'how.games.transfer': 'Przejmujesz klub, sprzedajesz do trzech piłkarzy i kupujesz do trzech z innych klubów w ramach budżetu zarządu (15% wartości kadry). Kupując, płacisz 20% więcej niż wartość piłkarza, a sprzedając, dostajesz 10% mniej. Piłkarz w ostatnim roku kontraktu kosztuje 30% mniej, a z dwoma latami 10% mniej. Kupiony piłkarz odchodzi ze swojego klubu, a sprzedany trafia do najsilniejszego klubu, który go kupi i któremu się przyda. Prognoza (200 symulowanych sezonów z tymi samymi losowaniami) zmienia się po każdym ruchu; potem grasz sezon i próbujesz skończyć wyżej, niż przewidywała prognoza sprzed okna.',
   'theme.label': 'Kolory',
   'theme.night': 'Nocny',
   'theme.pl': 'Premier League',
@@ -685,4 +685,8 @@ export const pl: Dictionary = {
   'profile.contract': 'Kontrakt do',
   'profile.fee': 'Kupiony za',
   'players.profile': 'Pełny profil',
+  'tw.rules': 'Kluby sprzedają {premium}% drożej niż wartość, a kupują {discount}% taniej. Piłkarz w ostatnim roku kontraktu jest o {lastYear}% tańszy. Sprzedani piłkarze trafiają do rywala, któremu najbardziej pomogą.',
+  'tw.to': 'do {club}',
+  'tw.contract': 'do {year}',
+  'tw.valueIs': 'Wartość {v}',
 };

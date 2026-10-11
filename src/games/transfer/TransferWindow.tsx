@@ -23,16 +23,25 @@ import { formationByKey, rating } from '../../lib/strength';
 import { autoFill } from '../budget/logic';
 import { USER_TEAM_ID } from '../../lib/league';
 import {
+  buyers,
+  buyPrice,
   canBuy,
   canSell,
+  type Ctx,
   leagueAfter,
   market,
   MAX_IN,
   MAX_OUT,
   moneyLeft,
+  LAST_YEAR_FACTOR,
+  BUY_PREMIUM,
+  SELL_SHARE,
   outlook,
+  seasonStart,
+  sellPrice,
   squadOf,
   startingBudget,
+  yearsLeft,
   type Outlook,
   type Window,
 } from './logic';
@@ -54,6 +63,7 @@ const GROUPS: Group[] = ['all', 'GK', 'DEF', 'MID', 'FWD'];
 export function TransferWindow() {
   const { players, meta } = useDataset();
   const source = valueSource.value;
+  const ctx = useMemo<Ctx>(() => ({ source, season: seasonStart(meta.dataDate) }), [source, meta.dataDate]);
   const [state, setState] = useState<State>(() => readJson<State>(KEY) ?? { window: null, season: null, before: null });
   const [tab, setTab] = useState<Tab>('squad');
   const [justPlayed, setJustPlayed] = useState(false);
@@ -72,8 +82,8 @@ export function TransferWindow() {
   }, [names]);
 
   const before = useMemo(
-    () => (w ? outlook(leagueAfter(players, meta, source, { club: w.club, sold: [], bought: [] })) : null),
-    [w?.club, source, players],
+    () => (w ? outlook(leagueAfter(players, meta, ctx, { club: w.club, sold: [], bought: [] })) : null),
+    [w?.club, ctx, players],
   );
   // The forecast simulates 200 seasons: on a phone that takes a moment, so a
   // deal shows at once and the forecast follows (marked as updating meanwhile).
@@ -83,11 +93,11 @@ export function TransferWindow() {
     if (!w) return setNow(null);
     setUpdating(true);
     const timer = setTimeout(() => {
-      setNow(outlook(leagueAfter(players, meta, source, w)));
+      setNow(outlook(leagueAfter(players, meta, ctx, w)));
       setUpdating(false);
     }, 0);
     return () => clearTimeout(timer);
-  }, [w, source, players]);
+  }, [w, ctx, players]);
 
   function chooseClub(club: string) {
     buzz('tap');
@@ -103,8 +113,8 @@ export function TransferWindow() {
   }
 
   function play() {
-    if (!w || !before || moneyLeft(players, w, source) < 0) return;
-    const league = leagueAfter(players, meta, source, w);
+    if (!w || !before || moneyLeft(players, w, ctx) < 0) return;
+    const league = leagueAfter(players, meta, ctx, w);
     const s = simulateSeason(league, USER_TEAM_ID, Math.random, REALISTIC, SEASON_FORM_SD);
     const squad = squadOf(players, w);
     const lineup = autoFill(squad, FORMATION, {}, Infinity, source);
@@ -210,6 +220,7 @@ export function TransferWindow() {
             onReset={() => setState({ window: null, season: null, before: null })}
             onPlay={play}
             updating={updating}
+            ctx={ctx}
           />
         )
       )}
@@ -261,8 +272,10 @@ function WindowView({
   onReset,
   onPlay,
   updating,
+  ctx,
 }: {
   updating: boolean;
+  ctx: Ctx;
   w: Window;
   before: Outlook;
   now: Outlook;
@@ -273,19 +286,20 @@ function WindowView({
   onPlay: () => void;
 }) {
   const { players, meta } = useDataset();
-  const source = valueSource.value;
+  const source = ctx.source;
   const [group, setGroup] = useState<Group>('all');
   const [query, setQuery] = useState('');
   const byName = useMemo(() => new Map(players.map((p) => [p.name, p])), [players]);
   const squad = squadOf(players, w);
-  const left = moneyLeft(players, w, source);
+  const left = moneyLeft(players, w, ctx);
+  const goesTo = useMemo(() => buyers(players, meta, w, ctx), [players, meta, w, ctx]);
 
   const offers = useMemo(() => {
     const q = fold(query.trim());
-    return market(players, w, source)
+    return market(players, w, ctx)
       .filter((p) => (group === 'all' || p.group === group) && (!q || fold(`${p.name} ${p.short}`).includes(q)))
       .slice(0, MARKET_ROWS);
-  }, [players, w, source, group, query]);
+  }, [players, w, ctx, group, query]);
 
   const undo = (name: string) =>
     onChange({ ...w, sold: w.sold.filter((n) => n !== name), bought: w.bought.filter((n) => n !== name) });
@@ -306,6 +320,14 @@ function WindowView({
         <Stat label={t('tw.top4')} before={before.top4} now={now.top4} format={pct} />
         <Stat label={t('tw.relegation')} before={before.relegation} now={now.relegation} format={pct} lowerIsBetter />
       </dl>
+      <p class="tw-rules">
+        <Icon name="info-circle" size={16} />
+        {t('tw.rules', {
+          premium: Math.round((BUY_PREMIUM - 1) * 100),
+          discount: Math.round((1 - SELL_SHARE) * 100),
+          lastYear: Math.round((1 - LAST_YEAR_FACTOR) * 100),
+        })}
+      </p>
       <p class="tw-money">
         {tj('tw.money', { v: <b class={left < 0 ? 'bad' : ''}>{formatEur(Math.max(0, left))}</b> })} ·{' '}
         {t('tw.deals', { out: w.sold.length, maxOut: MAX_OUT, in: w.bought.length, maxIn: MAX_IN })} · {t('common.ovr')}{' '}
@@ -316,8 +338,11 @@ function WindowView({
         <ul class="tw-deals">
           {w.sold.map((n) => (
             <li class="tw-deal tw-deal--out">
-              <span>↗ {byName.get(n)?.name ?? n}</span>
-              <span>+{formatEur(byName.get(n) ? valueOf(byName.get(n)!, source) : 0)}</span>
+              <span>
+                ↗ {byName.get(n)?.name ?? n}
+                {goesTo.has(n) && <small>{t('tw.to', { club: meta.clubs[goesTo.get(n)!].short })}</small>}
+              </span>
+              <span>+{formatEur(byName.get(n) ? sellPrice(byName.get(n)!, ctx) : 0)}</span>
               <button class="link-btn" onClick={() => undo(n)}>
                 {t('tw.undo')}
               </button>
@@ -326,7 +351,7 @@ function WindowView({
           {w.bought.map((n) => (
             <li class="tw-deal tw-deal--in">
               <span>↙ {byName.get(n)?.name ?? n}</span>
-              <span>−{formatEur(byName.get(n) ? valueOf(byName.get(n)!, source) : 0)}</span>
+              <span>−{formatEur(byName.get(n) ? buyPrice(byName.get(n)!, ctx) : 0)}</span>
               <button class="link-btn" onClick={() => undo(n)}>
                 {t('tw.undo')}
               </button>
@@ -350,7 +375,7 @@ function WindowView({
             .map((p) => {
               const isNew = w.bought.includes(p.name);
               return (
-                <Row player={p} tag={isNew ? t('tw.new') : undefined}>
+                <Row player={p} ctx={ctx} price={isNew ? buyPrice(p, ctx) : sellPrice(p, ctx)} tag={isNew ? t('tw.new') : undefined}>
                   {isNew ? (
                     <button class="btn btn--ghost btn--sm" onClick={() => undo(p.name)}>
                       {t('tw.undo')}
@@ -388,10 +413,10 @@ function WindowView({
           />
           <ul class="tw-list">
             {offers.map((p) => (
-              <Row player={p} club>
+              <Row player={p} ctx={ctx} price={buyPrice(p, ctx)} club>
                 <button
                   class="btn btn--primary btn--sm"
-                  disabled={!canBuy(players, w, p, source)}
+                  disabled={!canBuy(players, w, p, ctx)}
                   onClick={() => onChange({ ...w, bought: [...w.bought, p.name] })}
                 >
                   {t('tw.buy')}
@@ -445,9 +470,25 @@ function Stat({
   );
 }
 
-function Row({ player: p, club = false, tag, children }: { player: Player; club?: boolean; tag?: string; children: preact.ComponentChildren }) {
+function Row({
+  player: p,
+  ctx,
+  price,
+  club = false,
+  tag,
+  children,
+}: {
+  player: Player;
+  ctx: Ctx;
+  /** What the deal costs or brings, not his value. */
+  price: number;
+  club?: boolean;
+  tag?: string;
+  children: preact.ComponentChildren;
+}) {
   const { meta } = useDataset();
-  const source = valueSource.value;
+  const source = ctx.source;
+  const left = yearsLeft(p, ctx.season);
   return (
     <li class="trow">
       <Avatar player={p} size={30} />
@@ -460,7 +501,13 @@ function Row({ player: p, club = false, tag, children }: { player: Player; club?
         </small>
       </span>
       <span class="prow__ovr">{rating(p, source)}</span>
-      <span class="trow__price">{formatEur(valueOf(p, source))}</span>
+      <span class="trow__price" title={t('tw.valueIs', { v: formatEur(valueOf(p, source)) })}>
+        {formatEur(price)}
+        {/* Only a contract that lowers the price, under the price it lowers. */}
+        {left !== null && left <= 2 && (
+          <small class={left <= 1 ? 'trow__expiring' : ''}>{t('tw.contract', { year: p.contract! })}</small>
+        )}
+      </span>
       {children}
     </li>
   );
