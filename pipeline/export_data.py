@@ -39,7 +39,7 @@ FC27: dict[str, int] = {history.normalize_name(k): v for k, v in _FC27_RAW.items
 def fc27_rating(name: str) -> int | None:
     key = history.normalize_name(FC27_ALIASES.get(name, name))
     return FC27.get(key)
-REPO_URL = "https://github.com/mlodyheros/pl-value"
+REPO_URL = "https://github.com/mlodyheros/pl-value-predictor"
 RANGE_LEVEL = 0.8
 TIER_CODES = {"pl_history": 0, "non_pl_history": 1, "no_history": 2}
 
@@ -207,6 +207,7 @@ def build(root: Path) -> tuple[list[dict], dict]:
     df, calibration, confidence = src["df"], src["calibration"], src["confidence"]
     df = df.join(_fpl_extras(df, src["bootstrap"]))
     from backend.config import SEASONS
+    from backend.features import NUMERIC_FEATURES
 
     archive = _archive_totals(root, SEASONS)
 
@@ -302,7 +303,7 @@ def build(root: Path) -> tuple[list[dict], dict]:
         "players": len(players),
         "model": {
             "kind": "Linear regression on log(1 + value), weighted by √value",
-            "features": 25,
+            "features": len(NUMERIC_FEATURES),
             "scoring": "out-of-fold (5-fold), averaged over 20 random splits",
             "cvR2Log": round(metrics["cv_r2_log"], 3),
             "cvMaeEur": int(round(metrics["cv_mae_eur"], -4)),
@@ -315,6 +316,30 @@ def build(root: Path) -> tuple[list[dict], dict]:
         "clubs": CLUBS,
     }
     return players, meta
+
+
+# How much of a week's change in a model estimate the site shows that week.
+# The model refits every week on Transfermarkt's latest values and on a season
+# a few gameweeks old, and a typical estimate moved 9% in a week (a quarter of
+# them over 26%) while the market's own figure mostly stood still. Half now,
+# a quarter next week and so on: a lasting change arrives within a month, and
+# a one-week swing mostly never does. Exports within one ISO week all start
+# from the week before, so a daily refresh does not compound.
+WEEKLY_STEP = 0.5
+
+
+def smooth(players: list[dict], last_week: dict[str, int]) -> None:
+    """Move each estimate WEEKLY_STEP of the way (in log terms) from last
+    week's, scaling its range with it. New players keep the model's figure."""
+    for p in players:
+        before = last_week.get(p["name"])
+        if not before or not p["model"]:
+            continue
+        shown = math.exp(WEEKLY_STEP * math.log(p["model"]) + (1 - WEEKLY_STEP) * math.log(before))
+        scale = shown / p["model"]
+        p["model"] = int(round(shown, -4))
+        p["low"] = int(round(p["low"] * scale, -4))
+        p["high"] = int(round(p["high"] * scale, -4))
 
 
 def _diagnostics(players: list[dict]) -> dict:
@@ -365,6 +390,8 @@ def main() -> None:
         raise SystemExit(f"No built dataset under {root}; run pl-value's build first.")
 
     players, meta = build(root)
+    past = history.load()
+    smooth(players, history.last_week_model(past, meta["dataDate"]))
     _check(players)
     meta["model"]["diagnostics"] = _diagnostics(players)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -372,7 +399,7 @@ def main() -> None:
         json.dumps(players, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
     )
     (OUT_DIR / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2, allow_nan=False))
-    values = history.add_snapshot(history.load(), players, meta["dataDate"])
+    values = history.add_snapshot(past, players, meta["dataDate"])
     values["career"] = history.careers(root, players, meta["dataDate"])
     history.write(values)
     crest_dir = OUT_DIR.parent / "crests"

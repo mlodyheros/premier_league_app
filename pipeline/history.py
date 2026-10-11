@@ -66,6 +66,21 @@ def load(path: Path = HISTORY_PATH) -> dict:
     return empty()
 
 
+def last_week_model(history: dict, data_date: str) -> dict[str, int]:
+    """Each player's model estimate (EUR) in the newest snapshot from an earlier
+    ISO week than `data_date`: what the site showed last week."""
+    week = _week(data_date)
+    slots = [i for i, d in enumerate(history["dates"]) if _week(d) < week]
+    if not slots:
+        return {}
+    slot = slots[-1]
+    return {
+        name: row["model"][slot] * history["unit"]
+        for name, row in history["players"].items()
+        if row["model"][slot]
+    }
+
+
 def add_snapshot(history: dict, players: list[dict], data_date: str) -> dict:
     """Record this export's values; same ISO week as the last snapshot replaces it."""
     dates: list[str] = history["dates"]

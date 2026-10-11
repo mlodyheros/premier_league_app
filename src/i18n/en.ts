@@ -316,7 +316,7 @@ export const en = {
   'how.f.europe': 'Europe',
   'how.f.europeBody': 'Champions League games last season',
   'how.f.price': 'Price',
-  'how.f.priceBody': 'the last transfer fee, and how long ago it was paid',
+  'how.f.priceBody': 'the last transfer fee, how long ago it was paid, and the years left on the contract (for players of 24 and over: a season left costs about 20% against five)',
   'how.f.context': 'Context',
   'how.f.contextBody': 'not playing this season, young regulars, older regulars, backup goalkeepers',
   'how.f.known': 'What is known',
@@ -328,8 +328,7 @@ export const en = {
     'It predicts log(1 + value). Values run from €50K to €220M and errors are proportional, so the log scale is the natural one.',
   'how.train.weights':
     'Each player counts √value times, so the few stars are not outvoted by the many cheap players.',
-  'how.train.linear':
-    'Random forests and gradient boosting were tried too. With matched weights the linear model had the lowest error in euros, and it can be written down.',
+  'how.train.linear': 'Random forests and gradient boosting were tried too. With matched weights the linear model had the lowest error in euros, and it can be written down. A blend of boosting and the linear model was better on average but valued the stars about 10% low, so it was not taken.',
   'how.train.oof':
     'No player is ever valued by a model that trained on him. Each estimate comes from a 5-fold split that left him out, averaged over 20 different splits. With a single split a typical figure moved by about 6% depending on who shared the player\'s fold; averaged, about 1%.',
   'how.acc.title': 'How accurate it is',
@@ -665,4 +664,5 @@ export const en = {
   'tw.to': 'to {club}',
   'tw.contract': 'until {year}',
   'tw.valueIs': 'Value {v}',
+  'how.train.weekly': 'The model refits every week on new market values and a season only a few gameweeks old, so on its own a typical estimate moved about 9% a week. The figure shown here takes half of each week\'s change at once and the rest over the next weeks: a lasting change arrives within a month, a one-week swing mostly never does.',
 } satisfies Record<string, Entry>;

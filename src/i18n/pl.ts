@@ -342,7 +342,7 @@ export const pl: Dictionary = {
   'how.f.europe': 'Europa',
   'how.f.europeBody': 'mecze w Lidze Mistrzów w poprzednim sezonie',
   'how.f.price': 'Cena',
-  'how.f.priceBody': 'ostatnia kwota transferu i to, jak dawno ją zapłacono',
+  'how.f.priceBody': 'ostatnia kwota transferu, to, jak dawno ją zapłacono, i lata do końca kontraktu (u piłkarzy od 24 lat: rok do końca kosztuje około 20% w porównaniu z pięcioma)',
   'how.f.context': 'Kontekst',
   'how.f.contextBody': 'brak gry w tym sezonie, młodzi i starsi podstawowi zawodnicy, rezerwowi bramkarze',
   'how.f.known': 'Co wiadomo',
@@ -354,8 +354,7 @@ export const pl: Dictionary = {
     'Przewiduje log(1 + wartość). Wartości sięgają od 50 tys. € do 220 mln €, a błędy są proporcjonalne, więc skala logarytmiczna jest naturalna.',
   'how.train.weights':
     'Każdy piłkarz liczy się z wagą √wartości, żeby nieliczne gwiazdy nie zostały przegłosowane przez wielu tanich zawodników.',
-  'how.train.linear':
-    'Próbowano też lasów losowych i gradient boostingu. Przy tych samych wagach model liniowy miał najmniejszy błąd w euro, a do tego da się go zapisać wzorem.',
+  'how.train.linear': 'Sprawdzono też lasy losowe i gradient boosting. Przy tych samych wagach model liniowy miał najmniejszy błąd w euro i da się go zapisać. Mieszanka boostingu z modelem liniowym była średnio lepsza, ale zaniżała gwiazdy o około 10%, więc jej nie przyjęto.',
   'how.train.oof':
     'Żaden piłkarz nie jest wyceniany przez model, który się na nim uczył. Każda wycena pochodzi z podziału na 5 części, który go pomijał, uśredniona po 20 różnych podziałach. Przy jednym podziale typowa wycena zmieniała się o ok. 6% w zależności od tego, kto trafił do tej samej części; po uśrednieniu – o ok. 1%.',
   'how.acc.title': 'Jak jest dokładny',
@@ -689,4 +688,5 @@ export const pl: Dictionary = {
   'tw.to': 'do {club}',
   'tw.contract': 'do {year}',
   'tw.valueIs': 'Wartość {v}',
+  'how.train.weekly': 'Model uczy się co tydzień od nowa, na nowych wartościach rynkowych i na sezonie, który ma dopiero kilka kolejek, więc sam z siebie typowa wycena zmieniała się o około 9% tygodniowo. Pokazywana tu wartość przyjmuje od razu połowę tygodniowej zmiany, a resztę w kolejnych tygodniach: trwała zmiana dochodzi w ciągu miesiąca, a jednorazowy skok w większości przepada.',
 };

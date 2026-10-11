@@ -209,6 +209,15 @@ already in pl-value, for the career chart on the Players page. It is loaded
 only by the pages that use it. `python3 pipeline/history.py --from-git`
 rebuilds the snapshots from this repository's history of `players.json`.
 
+The model estimate the site shows is smoothed week to week. pl-value refits
+every week on new market values and a season a few gameweeks old, and on its
+own a typical estimate moved 9% a week (a tenth of them over 26%). The export
+(`smooth` in [`pipeline/export_data.py`](pipeline/export_data.py)) moves each
+estimate half the way, in log terms, from last week's snapshot to the new
+figure, and scales its range with it: the median weekly move fell to 5% and
+the 90th percentile to 13%. Every export in one ISO week starts from the week
+before, so daily refreshes do not compound.
+
 ## Tests
 
 `npm test` runs the unit tests (Vitest, `tests/`). `npm run e2e` runs

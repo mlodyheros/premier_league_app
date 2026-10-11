@@ -144,6 +144,7 @@ export function HowItWorks() {
           <li>{t('how.train.weights')}</li>
           <li>{t('how.train.linear')}</li>
           <li>{t('how.train.oof')}</li>
+          <li>{t('how.train.weekly')}</li>
         </ul>
       </section>
 

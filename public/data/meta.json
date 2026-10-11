@@ -2,21 +2,21 @@
   "season": "2026/27",
   "dataDate": "2026-10-10",
   "gameweek": 5,
-  "exportedAt": "2026-10-11T03:57:34+00:00",
+  "exportedAt": "2026-10-11T04:20:18+00:00",
   "source": {
     "name": "pl-value-predictor",
-    "url": "https://github.com/mlodyheros/pl-value"
+    "url": "https://github.com/mlodyheros/pl-value-predictor"
   },
   "players": 542,
   "model": {
     "kind": "Linear regression on log(1 + value), weighted by √value",
-    "features": 25,
+    "features": 28,
     "scoring": "out-of-fold (5-fold), averaged over 20 random splits",
-    "cvR2Log": 0.859,
-    "cvMaeEur": 6160000,
-    "cvRmseEur": 9020000,
-    "cvTopDecileMaeEur": 13500000,
-    "cvTopDecileRatio": 0.917,
+    "cvR2Log": 0.86,
+    "cvMaeEur": 6100000,
+    "cvRmseEur": 8960000,
+    "cvTopDecileMaeEur": 13670000,
+    "cvTopDecileRatio": 0.919,
     "rangeLevel": 0.8,
     "tiers": {
       "0": {
@@ -24,31 +24,31 @@
         "label": "backed by Premier League history",
         "players": 425,
         "rangeLow": 0.54,
-        "rangeHigh": 1.52
+        "rangeHigh": 1.51
       },
       "1": {
         "key": "non_pl_history",
         "label": "backed by other leagues only",
         "players": 60,
-        "rangeLow": 0.59,
-        "rangeHigh": 1.48
+        "rangeLow": 0.65,
+        "rangeHigh": 1.38
       },
       "2": {
         "key": "no_history",
         "label": "no recent playing record in any covered league",
         "players": 57,
-        "rangeLow": 0.36,
-        "rangeHigh": 1.71
+        "rangeLow": 0.38,
+        "rangeHigh": 1.67
       }
     },
     "diagnostics": {
-      "typicalMiss": 0.266,
-      "inRange": 432,
-      "ratioUnder5m": 1.71,
-      "ratioOver20m": 0.96,
-      "typicalMissNoRecord": 0.403,
-      "typicalMissWithRecord": 0.258,
-      "totalModelEur": 14106270000,
+      "typicalMiss": 0.262,
+      "inRange": 428,
+      "ratioUnder5m": 1.65,
+      "ratioOver20m": 0.91,
+      "typicalMissNoRecord": 0.413,
+      "typicalMissWithRecord": 0.256,
+      "totalModelEur": 13609760000,
       "totalTmEur": 14105275000
     }
   },
