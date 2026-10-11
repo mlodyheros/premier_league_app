@@ -82,3 +82,19 @@
   .hl__vs { top: 50%; transform: translate(-50%, -50%); width: 52px; height: 52px; font-size: 1.2rem; }
   .hl__compare, .hl__question, .hl__buttons { max-width: 560px; margin-left: auto; margin-right: auto; }
 }
+
+/* Phones: the pair, the question and the buttons on one screen, the records just below. */
+@media (max-width: 720px) {
+  .hl .pool-note { display: none; }
+  .hl .chips { margin-bottom: var(--space-3); }
+  .hl__side { padding: var(--space-3) var(--space-1) var(--space-2); gap: 2px; }
+  .hl__side .avatar { width: 48px !important; height: 48px !important; font-size: 18px !important; }
+  .hl__name { margin-top: 4px; font-size: 1.12rem; min-height: 2.15em; }
+  .hl__meta { font-size: 0.74rem; }
+  .hl__value { margin-top: 4px; font-size: 1.8rem; }
+  .hl__vs { top: 34px; width: 34px; height: 34px; font-size: 0.85rem; }
+  .hl__question { margin-top: var(--space-2); font-size: 0.95rem; }
+  .hl__compare { margin-top: var(--space-2); border-spacing: 0 3px; }
+  .hl__compare td { padding: 4px var(--space-2); font-size: 1.05rem; }
+  .hl__compare tbody th { padding: 4px; font-size: 0.7rem; }
+}
