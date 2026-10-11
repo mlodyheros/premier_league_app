@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import type { History } from '../src/data/history';
 import type { Player } from '../src/data/types';
 import { sideOf } from '../src/games/beat-model/logic';
 import {
@@ -8,7 +7,6 @@ import {
   computeBeat,
   computePrice,
   guessTarget,
-  marketRound,
   priceRound,
   thaw,
   writeDay,
@@ -18,12 +16,11 @@ import { dailyTarget } from '../src/games/guess/logic';
 import { setRatingPool } from '../src/lib/strength';
 
 const players: Player[] = JSON.parse(readFileSync('public/data/players.json', 'utf8'));
-const history: History = JSON.parse(readFileSync('public/data/history.json', 'utf8'));
 setRatingPool(players);
 const DAY = '2026-10-10';
 
 describe('frozen daily rounds', () => {
-  const day = writeDay(players, history, DAY, new Set());
+  const day = writeDay(players, DAY, new Set());
   const schedule: Schedule = { [DAY]: day };
 
   it('a scheduled round is the round the browser computes from the same data', () => {
@@ -54,14 +51,8 @@ describe('frozen daily rounds', () => {
   });
 
   it('does not repeat a recent guess answer', () => {
-    const again = writeDay(players, history, DAY, new Set([day.guess]));
+    const again = writeDay(players, DAY, new Set([day.guess]));
     expect(again.guess).not.toBe(day.guess);
   });
 
-  it('freezes the market quiz with its numbers', () => {
-    expect(day.market?.length).toBe(5);
-    const pairs = marketRound(players, schedule, null, DAY)!;
-    expect(pairs.map(([a, b]) => [a.player.name, b.player.name])).toEqual(day.market!.map(({ a, b }) => [a.name, b.name]));
-    for (const [a, b] of pairs) expect(Math.abs(a.change - b.change)).toBeGreaterThanOrEqual(0.05);
-  });
 });

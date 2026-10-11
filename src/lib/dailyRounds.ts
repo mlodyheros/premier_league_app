@@ -10,14 +10,12 @@
  * written. The browser plays the scheduled round, and computes one itself
  * only for a day the schedule does not have.
  */
-import type { History } from '../data/history';
 import type { Player } from '../data/types';
 import { drawRound } from '../games/beat-model/logic';
 import { dailyPool, dailyTarget } from '../games/guess/logic';
 import { legacyPool, ROUNDS as PRICE_ROUNDS } from '../games/price-tag/logic';
 import { dailyRand } from './daily';
-import { inPool, dailyPoolFor } from './pools';
-import { quizPairs, weeklyMoves, type Move } from './market';
+import { dailyPoolFor } from './pools';
 import { shuffled } from './rng';
 
 /** A player as he was when the round was written. */
@@ -29,18 +27,12 @@ export interface Frozen {
   high: number;
 }
 
-/** One "who gained more?" pair: names, values a week ago and now. */
-export interface FrozenPair {
-  a: Frozen & { from: number };
-  b: Frozen & { from: number };
-}
-
 export interface DayRounds {
   guess: string;
   beat: Frozen[];
   price: Frozen[];
-  /** Missing while there is only one week of history. */
-  market?: FrozenPair[];
+  /** Days written before the market quiz was dropped still carry its pairs; they are ignored. */
+  market?: unknown;
 }
 
 /** Date (YYYY-MM-DD) → that day's rounds. */
@@ -70,15 +62,6 @@ export function computePrice(players: readonly Player[], day: string): Player[] 
   return shuffled(dailyPoolFor(players, day, legacyPool), dailyRand('price', day)).slice(0, PRICE_ROUNDS);
 }
 
-/** Quiz moves come from players a fan knows: the daily pool. */
-export function quizMoves(h: History, players: readonly Player[]): Move[] {
-  return (weeklyMoves(h, players, 'model')?.all ?? []).filter((m) => inPool(m.player, 'normal'));
-}
-
-export function computeMarket(h: History, players: readonly Player[], day: string): [Move, Move][] {
-  return quizPairs(quizMoves(h, players), dailyRand('market', day));
-}
-
 // What the games call.
 
 export function guessTarget(players: readonly Player[], schedule: Schedule, day: string): Player {
@@ -96,38 +79,13 @@ export function priceRound(players: readonly Player[], schedule: Schedule, day: 
   return (frozen && thaw(players, frozen)) || computePrice(players, day);
 }
 
-/** The quiz pairs as moves; null when neither the schedule nor the history can make one. */
-export function marketRound(
-  players: readonly Player[],
-  schedule: Schedule,
-  h: History | null,
-  day: string,
-): [Move, Move][] | null {
-  const frozen = schedule[day]?.market;
-  if (frozen) {
-    const pairs: [Move, Move][] = [];
-    for (const { a, b } of frozen) {
-      const [pa, pb] = thaw(players, [a, b]) ?? [];
-      if (!pa || !pb) break;
-      pairs.push([
-        { player: pa, from: a.from, to: a.model, change: a.model / a.from - 1 },
-        { player: pb, from: b.from, to: b.model, change: b.model / b.from - 1 },
-      ]);
-    }
-    if (pairs.length === frozen.length) return pairs;
-  }
-  if (!h) return null;
-  const pairs = computeMarket(h, players, day);
-  return pairs.length ? pairs : null;
-}
-
 // Writing a day (pipeline/daily.ts).
 
 /**
  * A day's rounds from today's data. The guess answer avoids everyone already
  * scheduled in `recent` (names), so nobody comes back until the pool is used up.
  */
-export function writeDay(players: readonly Player[], h: History | null, day: string, recent: ReadonlySet<string>): DayRounds {
+export function writeDay(players: readonly Player[], day: string, recent: ReadonlySet<string>): DayRounds {
   let guess = dailyTarget(players, day).name;
   if (recent.has(guess)) {
     const fresh = dailyPool(players, day).filter((p) => !recent.has(p.name));
@@ -138,12 +96,5 @@ export function writeDay(players: readonly Player[], h: History | null, day: str
     beat: computeBeat(players, day).map(freeze),
     price: computePrice(players, day).map(freeze),
   };
-  const market = h ? computeMarket(h, players, day) : [];
-  if (market.length) {
-    out.market = market.map(([a, b]) => ({
-      a: { ...freeze(a.player), model: a.to, from: a.from },
-      b: { ...freeze(b.player), model: b.to, from: b.from },
-    }));
-  }
   return out;
 }

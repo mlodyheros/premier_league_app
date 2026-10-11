@@ -1,4 +1,4 @@
-/** The week's risers and fallers, and the daily "who gained more?" quiz. */
+/** The week's risers and fallers. */
 import type { History } from '../data/history';
 import type { Player } from '../data/types';
 import type { ValueSource } from '../data/valueSource';
@@ -46,27 +46,4 @@ export function weeklyMoves(h: History, players: readonly Player[], source: Valu
     fallers: byChange.filter((m) => m.change < 0).reverse().slice(0, limit),
     all,
   };
-}
-
-export const QUIZ_ROUNDS = 5;
-
-/**
- * Pairs for "who gained more this week?": two players whose changes differ by
- * at least five points, so every pair has a clear answer, and nobody twice.
- */
-export function quizPairs(moves: readonly Move[], rand: () => number, rounds = QUIZ_ROUNDS): [Move, Move][] {
-  const pool = [...moves].sort((a, b) => a.player.name.localeCompare(b.player.name));
-  const used = new Set<number>();
-  const pairs: [Move, Move][] = [];
-  for (let tries = 0; pairs.length < rounds && tries < 500; tries++) {
-    const a = pool[Math.floor(rand() * pool.length)];
-    const b = pool[Math.floor(rand() * pool.length)];
-    if (!a || !b || a === b || used.has(a.player.id) || used.has(b.player.id)) continue;
-    if (Math.abs(a.change - b.change) < 0.05) continue;
-    used.add(a.player.id);
-    used.add(b.player.id);
-    // Draw which one goes on the left, so the answer is not always the same side.
-    pairs.push(rand() < 0.5 ? [a, b] : [b, a]);
-  }
-  return pairs;
 }

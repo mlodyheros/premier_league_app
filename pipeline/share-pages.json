@@ -1,11 +1,101 @@
 [
-  { "path": "guess", "pl": ["Zgadnij piłkarza", "Wordle w wersji Premier League: klub, pozycja, narodowość, wiek i wartość. Nowy piłkarz codziennie."], "en": ["Guess the Player", "Premier League Wordle: club, position, nationality, age and value clues. A new player every day."] },
-  { "path": "road100", "pl": ["100 PTS Challenge", "Wylosuj klub, weź piłkarza, skompletuj jedenastkę i rozegraj sezon. Cel: 100 punktów."], "en": ["100 PTS Challenge", "Spin a club, draft a player, fill an XI and play a season. The goal: 100 points."] },
-  { "path": "higher-lower", "pl": ["Więcej czy mniej", "Który piłkarz jest wart więcej? Nie przerwij serii."], "en": ["Higher or Lower", "Which player is worth more? Keep the streak going."] },
-  { "path": "budget", "pl": ["Jedenastka za budżet", "Od beniaminka po szejka: zbuduj najmocniejszą jedenastkę za swoje pieniądze."], "en": ["Budget XI", "From a promoted side to a sheikh: build the strongest XI your money buys."] },
-  { "path": "transfer", "pl": ["Okno transferowe", "Przejmij klub, sprzedaj trzech, kup trzech i pobij prognozę na sezon."], "en": ["Transfer Window", "Take over a club, sell three, buy three, and beat the forecast for its season."] },
-  { "path": "beat-model", "pl": ["Pokonaj model", "Czy model wycenia piłkarza wyżej, czy niżej niż Transfermarkt? Dziesięć pytań dziennie."], "en": ["Beat the Model", "Does the model value the player above or below Transfermarkt? Ten a day."] },
-  { "path": "price-tag", "pl": ["Wyceń piłkarza", "Ile jest wart? Przesuń suwak; im bliżej, tym więcej punktów."], "en": ["Price Tag", "What is he worth? Slide to a price; the closer, the more points."] },
-  { "path": "market", "pl": ["Rynek tygodnia", "Kto zyskał, kto stracił w tym tygodniu, i quiz: kto zyskał więcej?"], "en": ["Market of the week", "This week's risers and fallers, and a quiz: who gained more?"] },
-  { "path": "league", "pl": ["Liga znajomych", "Porównaj dzisiejsze wyniki i rekordy ze znajomymi. Bez kont."], "en": ["Friends league", "Compare today's results and records with friends. No accounts."] }
+  {
+    "path": "guess",
+    "pl": [
+      "Zgadnij piłkarza",
+      "Wordle w wersji Premier League: klub, pozycja, narodowość, wiek i wartość. Nowy piłkarz codziennie."
+    ],
+    "en": [
+      "Guess the Player",
+      "Premier League Wordle: club, position, nationality, age and value clues. A new player every day."
+    ]
+  },
+  {
+    "path": "road100",
+    "pl": [
+      "100 PTS Challenge",
+      "Wylosuj klub, weź piłkarza, skompletuj jedenastkę i rozegraj sezon. Cel: 100 punktów."
+    ],
+    "en": [
+      "100 PTS Challenge",
+      "Spin a club, draft a player, fill an XI and play a season. The goal: 100 points."
+    ]
+  },
+  {
+    "path": "higher-lower",
+    "pl": [
+      "Więcej czy mniej",
+      "Który piłkarz jest wart więcej? Nie przerwij serii."
+    ],
+    "en": [
+      "Higher or Lower",
+      "Which player is worth more? Keep the streak going."
+    ]
+  },
+  {
+    "path": "budget",
+    "pl": [
+      "Jedenastka za budżet",
+      "Od beniaminka po szejka: zbuduj najmocniejszą jedenastkę za swoje pieniądze."
+    ],
+    "en": [
+      "Budget XI",
+      "From a promoted side to a sheikh: build the strongest XI your money buys."
+    ]
+  },
+  {
+    "path": "transfer",
+    "pl": [
+      "Okno transferowe",
+      "Przejmij klub, sprzedaj trzech, kup trzech i pobij prognozę na sezon."
+    ],
+    "en": [
+      "Transfer Window",
+      "Take over a club, sell three, buy three, and beat the forecast for its season."
+    ]
+  },
+  {
+    "path": "beat-model",
+    "pl": [
+      "Pokonaj model",
+      "Czy model wycenia piłkarza wyżej, czy niżej niż Transfermarkt? Dziesięć pytań dziennie."
+    ],
+    "en": [
+      "Beat the Model",
+      "Does the model value the player above or below Transfermarkt? Ten a day."
+    ]
+  },
+  {
+    "path": "price-tag",
+    "pl": [
+      "Wyceń piłkarza",
+      "Ile jest wart? Przesuń suwak; im bliżej, tym więcej punktów."
+    ],
+    "en": [
+      "Price Tag",
+      "What is he worth? Slide to a price; the closer, the more points."
+    ]
+  },
+  {
+    "path": "market",
+    "pl": [
+      "Rynek tygodnia",
+      "Kto zyskał, a kto stracił na wartości w tym tygodniu, według Transfermarkt i modelu."
+    ],
+    "en": [
+      "Market of the week",
+      "This week's biggest value risers and fallers, by Transfermarkt and by the model."
+    ]
+  },
+  {
+    "path": "league",
+    "pl": [
+      "Liga znajomych",
+      "Porównaj dzisiejsze wyniki i rekordy ze znajomymi. Bez kont."
+    ],
+    "en": [
+      "Friends league",
+      "Compare today's results and records with friends. No accounts."
+    ]
+  }
 ]

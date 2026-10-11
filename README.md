@@ -20,7 +20,7 @@ time, and scores, streaks and settings live in the browser's local storage.
 | **Transfer Window** | Take over a club with the board's budget, sell up to three and buy up to three from the other clubs, watch the season forecast (200 simulated seasons) move with every deal, then play the season and try to finish above the forecast made before the window. |
 
 Beyond the games: **Market of the week** (`#/market`), the week's biggest
-value risers and fallers with a daily "who gained more?" quiz, and a **Friends
+value risers and fallers, and a **Friends
 league** (`#/league`) that compares today's results and personal bests with
 friends. The league needs no accounts or server: everyone's results travel as a
 code inside a link (`src/lib/friends.ts`), and opening a friend's link adds them
@@ -178,7 +178,7 @@ they are served from is `VITE_SITE_URL` in [`.env`](.env).
 ## Daily rounds
 
 The daily rounds (Guess the Player's answer, Beat the Model's ten, Price
-Tag's five, the Market quiz's five pairs) are written into
+Tag's five) are written into
 `public/data/daily.json` by [`pipeline/daily.ts`](pipeline/daily.ts), today
 and two days ahead, with the values they are asked with. A day once written
 never changes, so a data update in the middle of a day cannot change its

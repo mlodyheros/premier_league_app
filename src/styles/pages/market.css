@@ -1,4 +1,4 @@
-/* Market of the week: risers, fallers, the quiz. */
+/* Market of the week: risers and fallers. */
 
 .market__head h1 { font-size: clamp(2rem, 8vw, 2.8rem); }
 
@@ -22,39 +22,15 @@
 
 .move__pct.down { color: var(--color-accent); }
 
-.quiz { margin-top: var(--space-6); }
 
-.quiz .progress { margin: var(--space-3) 0; }
 
-.quiz__pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
 
-.quiz__pick {
-  display: grid;
-  justify-items: center;
-  gap: 6px;
-  min-height: 150px;
-  padding: var(--space-3);
-  border-radius: var(--radius);
-  background: linear-gradient(160deg, var(--color-surface-raised), var(--color-surface));
-  border: 1px solid var(--color-border-strong);
-  color: var(--color-text);
-  font: inherit;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color var(--dur-fast) ease, transform var(--dur-fast) ease;
-}
 
-.quiz__pick:hover { border-color: var(--color-primary); }
 
-.quiz__pick:active { transform: scale(0.97); }
 
-.quiz__pick small { color: var(--color-text-muted); }
 
-.quiz__last { margin: 0 0 var(--space-3); font-weight: var(--weight-semibold); }
 
-.quiz__last.good { color: var(--color-primary); }
 
-.quiz__last.bad { color: var(--color-accent); }
 
 .market__foot { margin-top: var(--space-6); color: var(--color-text-muted); font-size: 0.9rem; }
 

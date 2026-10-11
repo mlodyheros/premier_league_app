@@ -11,7 +11,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { History } from '../src/data/history';
 import type { Player } from '../src/data/types';
 import { writeDay, type Schedule } from '../src/lib/dailyRounds';
 import { setRatingPool } from '../src/lib/strength';
@@ -34,7 +33,6 @@ function addDays(day: string, n: number): string {
 
 const players = read<Player[]>('players.json');
 setRatingPool(players);
-const history = existsSync(join(dataDir, 'history.json')) ? read<History>('history.json') : null;
 const schedule: Schedule = existsSync(join(dataDir, 'daily.json')) ? read<Schedule>('daily.json') : {};
 
 const today = process.argv[2] ?? localDay(new Date());
@@ -47,7 +45,7 @@ for (let i = 0; i <= AHEAD; i++) {
       .filter(([d]) => d < day && d >= addDays(day, -NO_REPEAT_DAYS))
       .map(([, r]) => r.guess),
   );
-  schedule[day] = writeDay(players, history, day, recent);
+  schedule[day] = writeDay(players, day, recent);
   written.push(day);
 }
 
