@@ -49,3 +49,13 @@
 .market-tile .up { color: var(--color-primary); }
 
 .market-tile .down { color: var(--color-accent); }
+
+.move__delta { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; }
+
+.move__delta b { font-family: var(--display); font-size: 1.15rem; }
+
+.move__delta small { color: var(--color-text-muted); font-size: 0.72rem; font-weight: var(--weight-semibold); }
+
+.move__delta.up b { color: var(--color-primary); }
+
+.move__delta.down b { color: var(--color-accent); }

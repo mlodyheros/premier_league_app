@@ -38,12 +38,14 @@ export function weeklyMoves(h: History, players: readonly Player[], source: Valu
     if (Math.max(from, to) < MOVE_MIN_VALUE) continue;
     all.push({ player: p, from, to, change: to / from - 1 });
   }
-  const byChange = [...all].sort((x, y) => y.change - x.change);
+  // Ranked by the change in euros: a €0.3M youngster revalued at €7M is +2233%,
+  // which says less than a star's €15M rise.
+  const byAmount = [...all].sort((x, y) => y.to - y.from - (x.to - x.from));
   return {
     from: h.dates[n - 2],
     to: h.dates[n - 1],
-    risers: byChange.filter((m) => m.change > 0).slice(0, limit),
-    fallers: byChange.filter((m) => m.change < 0).reverse().slice(0, limit),
+    risers: byAmount.filter((m) => m.to > m.from).slice(0, limit),
+    fallers: byAmount.filter((m) => m.to < m.from).reverse().slice(0, limit),
     all,
   };
 }

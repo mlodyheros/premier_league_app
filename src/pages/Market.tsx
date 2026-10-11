@@ -21,7 +21,13 @@ function MoveRow({ m }: { m: Move }) {
           {meta.clubs[m.player.club].short} · {posLabel(m.player.pos)} · {formatEur(m.from)} → {formatEur(m.to)}
         </small>
       </span>
-      <b class={`move__pct ${m.change > 0 ? 'up' : 'down'}`}>{formatPct(m.change)}</b>
+      <span class={`move__delta ${m.change > 0 ? 'up' : 'down'}`}>
+        <b>
+          {m.to > m.from ? '+' : '−'}
+          {formatEur(Math.abs(m.to - m.from))}
+        </b>
+        <small>{formatPct(m.change)}</small>
+      </span>
     </li>
   );
 }
