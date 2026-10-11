@@ -35,6 +35,8 @@ interface Saved {
 }
 
 const KEY = 'budget:draft';
+/** Phones show the picker as a bottom sheet (a modal); wider screens beside the pitch. */
+const sheetLayout = () => typeof matchMedia !== 'undefined' && matchMedia('(max-width: 720px)').matches;
 const MAX_ROWS = 60;
 
 export function BudgetXI() {
@@ -112,13 +114,44 @@ export function BudgetXI() {
     }
   }, []);
 
-  // On phones the picker is a bottom sheet: Escape closes it.
+  // On phones the picker is a bottom sheet over the page, so it behaves like a
+  // dialog: focus moves in, Tab stays inside, Escape closes it, and focus goes
+  // back to the slot that opened it.
+  const sheetOpen = !!selected;
   useEffect(() => {
-    if (!selected) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setSelected(null);
+    if (!sheetOpen) return;
+    const phone = sheetLayout();
+    const opener = document.activeElement as HTMLElement | null;
+    if (phone) requestAnimationFrame(() => pickerRef.current?.querySelector<HTMLElement>('.picker__close')?.focus());
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelected(null);
+        return;
+      }
+      if (!phone || e.key !== 'Tab' || !pickerRef.current) return;
+      const focusable = [
+        ...pickerRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), input, select, [href]'),
+      ].filter((el) => el.offsetParent !== null);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      } else if (!pickerRef.current.contains(document.activeElement)) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [selected]);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      if (phone && opener && document.contains(opener)) opener.focus();
+    };
+  }, [sheetOpen]);
 
   function fillRest() {
     const filled = autoFill(players, formation, lineup, budget, source);
@@ -283,7 +316,13 @@ export function BudgetXI() {
         <Pitch formation={formation} lineup={lineup} source={source} selected={selected} onSlot={openSlot} />
 
         {slot && <div class="picker-backdrop" onClick={() => setSelected(null)} aria-hidden="true" />}
-        <div class={`picker ${slot ? 'picker--open' : ''}`} ref={pickerRef} role={slot ? 'dialog' : undefined} aria-label={slot ? posLabel(slot.type) : undefined}>
+        <div
+          class={`picker ${slot ? 'picker--open' : ''}`}
+          ref={pickerRef}
+          role={slot && sheetLayout() ? 'dialog' : undefined}
+          aria-modal={slot && sheetLayout() ? true : undefined}
+          aria-label={slot ? posLabel(slot.type) : undefined}
+        >
           {!slot ? (
             <p class="picker__hint">
               {complete ? t('budget.hintSwap') : t('budget.hintPick')}

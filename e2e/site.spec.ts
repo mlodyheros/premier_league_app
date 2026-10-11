@@ -75,6 +75,10 @@ test.describe('on a phone', () => {
     const sheet = page.locator('.picker--open');
     await expect(sheet).toBeVisible();
     await expect(sheet.locator('.prow').first()).toBeInViewport();
+    // A dialog: focus moves in and Tab stays inside.
+    await expect(sheet.locator('.picker__close')).toBeFocused();
+    for (let i = 0; i < 6; i++) await page.keyboard.press('Tab');
+    expect(await page.evaluate(() => !!document.activeElement?.closest('.picker--open'))).toBe(true);
     await page.keyboard.press('Escape');
     await expect(page.locator('.picker--open')).toHaveCount(0);
   });
