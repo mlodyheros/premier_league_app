@@ -354,3 +354,23 @@ describe('EA FC 27', () => {
     }
   });
 });
+
+describe('draws', () => {
+  it('come up about as often as in the Premier League (22-25%)', async () => {
+    const { simulateSeason, REALISTIC, SEASON_FORM_SD } = await import('../src/lib/season');
+    const { clubTeams } = await import('../src/lib/league');
+    const meta = JSON.parse(readFileSync('public/data/meta.json', 'utf8'));
+    const clubs = clubTeams(players, meta, 'tm');
+    const rand = mulberry32(9);
+    let draws = 0;
+    let results = 0;
+    for (let i = 0; i < 60; i++) {
+      for (const row of simulateSeason(clubs, 'none', rand, REALISTIC, SEASON_FORM_SD).table) {
+        draws += row.drawn;
+        results += row.played;
+      }
+    }
+    expect(draws / results).toBeGreaterThan(0.2);
+    expect(draws / results).toBeLessThan(0.26);
+  });
+});

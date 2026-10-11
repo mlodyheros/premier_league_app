@@ -368,7 +368,9 @@ goalkeeper only plays in goal.
   strength gap: a stronger side's goals rise by 7% per rating point, a weaker
   side's fall by 21.5% (FC 27's ratings are closer together than the old
   scale, so each point counts for more). Favourites therefore win 2-0 and 3-0 far more often than
-  7-0.
+  7-0. Two independent Poisson draws give too few 0-0 and 1-1 games, so the four
+  lowest scores get the Dixon-Coles correction (rho −0.2): a simulated league
+  has 22% draws, like the Premier League's 22–25%.
 
 With these settings a simulated real league averages 2.7 goals a game, with a
 champion in the 90s. The **100-point chance** shown for an XI is exact:

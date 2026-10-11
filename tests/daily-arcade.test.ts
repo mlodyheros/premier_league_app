@@ -52,7 +52,8 @@ describe('Road to 38-0 difficulty', () => {
 
   it('makes 38-0 possible in arcade for a strong draft, and a dream in realistic', () => {
     expect(1 / odds(STRONG_DRAFT, 'arcade')).toBeGreaterThan(50);
-    expect(1 / odds(STRONG_DRAFT, 'arcade')).toBeLessThan(2000);
+    // With realistic draw rates (Dixon-Coles) a perfect season is rarer: about 1 in 2,500.
+    expect(1 / odds(STRONG_DRAFT, 'arcade')).toBeLessThan(5000);
     expect(1 / odds(STRONG_DRAFT, 'realistic')).toBeGreaterThan(100_000);
   });
 

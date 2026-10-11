@@ -172,8 +172,11 @@ export function simulateSeason(
   for (const home of teams) {
     for (const away of teams) {
       if (home.id === away.id) continue;
-      const hg = poisson(expectedGoals(home.strength, away.strength, true, m), rand);
-      const ag = poisson(expectedGoals(away.strength, home.strength, false, m), rand);
+      const [hg, ag] = matchScore(
+        expectedGoals(home.strength, away.strength, true, m),
+        expectedGoals(away.strength, home.strength, false, m),
+        rand,
+      );
       record(rows.get(home.id)!, hg, ag);
       record(rows.get(away.id)!, ag, hg);
       if (home.id === focusId || away.id === focusId) {
@@ -261,6 +264,34 @@ export function expectedPoints(strength: number, opponents: readonly number[], m
 }
 
 /** Win / draw / loss probabilities for one match, by exact Poisson sums. */
+/**
+ * Dixon-Coles correction: two independent Poisson scores give too few 0-0 and
+ * 1-1 draws (19% in a simulated league against the Premier League's 22-25%).
+ * Scaling the four low scores by tau, with rho below zero, moves a little
+ * probability from 1-0 and 0-1 to 0-0 and 1-1 and keeps each side's goal
+ * average; rho -0.2 gives 22% draws. Tau is floored at zero for lopsided
+ * games, where a side expects four or more goals.
+ */
+export const DRAW_RHO = -0.2;
+
+export function lowScoreTau(a: number, b: number, lf: number, la: number, rho = DRAW_RHO): number {
+  if (a === 0 && b === 0) return 1 - lf * la * rho;
+  if (a === 0 && b === 1) return Math.max(0, 1 + lf * rho);
+  if (a === 1 && b === 0) return Math.max(0, 1 + la * rho);
+  if (a === 1 && b === 1) return 1 - rho;
+  return 1;
+}
+
+/** A match's score: two Poisson draws, kept or redrawn so the Dixon-Coles odds hold. */
+export function matchScore(lf: number, la: number, rand: () => number, rho = DRAW_RHO): [number, number] {
+  const most = Math.max(1, 1 - lf * la * rho, 1 - rho);
+  for (;;) {
+    const a = poisson(lf, rand);
+    const b = poisson(la, rand);
+    if (rand() * most <= lowScoreTau(a, b, lf, la, rho)) return [a, b];
+  }
+}
+
 export function winProbability(
   attack: number,
   defence: number,
@@ -276,12 +307,15 @@ export function winProbability(
   };
   let win = 0;
   let draw = 0;
+  let total = 0;
   for (let a = 0; a <= 12; a++) {
     for (let b = 0; b <= 12; b++) {
-      const p = pmf(lf, a) * pmf(la, b);
+      const p = pmf(lf, a) * pmf(la, b) * lowScoreTau(a, b, lf, la);
+      total += p;
       if (a > b) win += p;
       else if (a === b) draw += p;
     }
   }
-  return { win, draw, loss: 1 - win - draw };
+  // Tau keeps the total at 1 unless it was floored; renormalise for that case.
+  return { win: win / total, draw: draw / total, loss: 1 - (win + draw) / total };
 }
