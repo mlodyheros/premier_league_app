@@ -1,8 +1,8 @@
 {
   "season": "2026/27",
-  "dataDate": "2026-10-30",
-  "gameweek": 8,
-  "exportedAt": "2026-11-05T03:18:33+00:00",
+  "dataDate": "2026-11-05",
+  "gameweek": 9,
+  "exportedAt": "2026-11-05T12:45:14+00:00",
   "source": {
     "name": "pl-value-predictor",
     "url": "https://github.com/mlodyheros/pl-value-predictor"
@@ -12,43 +12,43 @@
     "kind": "Linear regression on log(1 + value), weighted by √value",
     "features": 28,
     "scoring": "out-of-fold (5-fold), averaged over 20 random splits",
-    "cvR2Log": 0.864,
+    "cvR2Log": 0.866,
     "cvMaeEur": 5900000,
     "cvRmseEur": 8750000,
-    "cvTopDecileMaeEur": 12650000,
-    "cvTopDecileRatio": 0.897,
+    "cvTopDecileMaeEur": 12570000,
+    "cvTopDecileRatio": 0.896,
     "rangeLevel": 0.8,
     "tiers": {
       "0": {
         "key": "pl_history",
         "label": "backed by Premier League history",
         "players": 428,
-        "rangeLow": 0.56,
-        "rangeHigh": 1.48
+        "rangeLow": 0.55,
+        "rangeHigh": 1.5
       },
       "1": {
         "key": "non_pl_history",
         "label": "backed by other leagues only",
         "players": 60,
         "rangeLow": 0.61,
-        "rangeHigh": 1.46
+        "rangeHigh": 1.45
       },
       "2": {
         "key": "no_history",
         "label": "no recent playing record in any covered league",
         "players": 57,
-        "rangeLow": 0.39,
-        "rangeHigh": 1.92
+        "rangeLow": 0.38,
+        "rangeHigh": 1.9
       }
     },
     "diagnostics": {
-      "typicalMiss": 0.244,
-      "inRange": 434,
-      "ratioUnder5m": 1.72,
+      "typicalMiss": 0.249,
+      "inRange": 436,
+      "ratioUnder5m": 1.7,
       "ratioOver20m": 0.96,
-      "typicalMissNoRecord": 0.48,
-      "typicalMissWithRecord": 0.24,
-      "totalModelEur": 14041050000,
+      "typicalMissNoRecord": 0.511,
+      "typicalMissWithRecord": 0.242,
+      "totalModelEur": 14073050000,
       "totalTmEur": 14107375000
     }
   },
