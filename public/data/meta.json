@@ -1,55 +1,55 @@
 {
   "season": "2026/27",
-  "dataDate": "2026-10-10",
-  "gameweek": 5,
-  "exportedAt": "2026-10-11T04:20:18+00:00",
+  "dataDate": "2026-10-30",
+  "gameweek": 8,
+  "exportedAt": "2026-11-05T03:17:05+00:00",
   "source": {
     "name": "pl-value-predictor",
     "url": "https://github.com/mlodyheros/pl-value-predictor"
   },
-  "players": 542,
+  "players": 545,
   "model": {
     "kind": "Linear regression on log(1 + value), weighted by √value",
     "features": 28,
     "scoring": "out-of-fold (5-fold), averaged over 20 random splits",
-    "cvR2Log": 0.86,
-    "cvMaeEur": 6100000,
-    "cvRmseEur": 8960000,
-    "cvTopDecileMaeEur": 13670000,
-    "cvTopDecileRatio": 0.919,
+    "cvR2Log": 0.864,
+    "cvMaeEur": 5900000,
+    "cvRmseEur": 8750000,
+    "cvTopDecileMaeEur": 12650000,
+    "cvTopDecileRatio": 0.897,
     "rangeLevel": 0.8,
     "tiers": {
       "0": {
         "key": "pl_history",
         "label": "backed by Premier League history",
-        "players": 425,
-        "rangeLow": 0.54,
-        "rangeHigh": 1.51
+        "players": 428,
+        "rangeLow": 0.56,
+        "rangeHigh": 1.48
       },
       "1": {
         "key": "non_pl_history",
         "label": "backed by other leagues only",
         "players": 60,
-        "rangeLow": 0.65,
-        "rangeHigh": 1.38
+        "rangeLow": 0.61,
+        "rangeHigh": 1.46
       },
       "2": {
         "key": "no_history",
         "label": "no recent playing record in any covered league",
         "players": 57,
-        "rangeLow": 0.38,
-        "rangeHigh": 1.67
+        "rangeLow": 0.39,
+        "rangeHigh": 1.92
       }
     },
     "diagnostics": {
-      "typicalMiss": 0.262,
-      "inRange": 428,
-      "ratioUnder5m": 1.65,
-      "ratioOver20m": 0.91,
-      "typicalMissNoRecord": 0.413,
-      "typicalMissWithRecord": 0.256,
-      "totalModelEur": 13609760000,
-      "totalTmEur": 14105275000
+      "typicalMiss": 0.243,
+      "inRange": 434,
+      "ratioUnder5m": 1.73,
+      "ratioOver20m": 0.95,
+      "typicalMissNoRecord": 0.424,
+      "typicalMissWithRecord": 0.234,
+      "totalModelEur": 13846930000,
+      "totalTmEur": 14107375000
     }
   },
   "clubs": {
