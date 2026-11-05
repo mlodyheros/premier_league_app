@@ -502,7 +502,7 @@ export const pl: Dictionary = {
   'home.crests': 'Piłkarze według klubu',
   'home.crestLink': '{club}: wszyscy piłkarze',
   'home.tmNoteLink': 'Jak to działa →',
-  'onboard.1.title': 'Sześć gier o Premier League',
+  'onboard.1.title': 'Siedem gier o Premier League',
   'onboard.1.body': 'Prawdziwe kadry, prawdziwe liczby. Trzy gry mają {b}: tę samą rundę dla wszystkich, nową o północy. W pozostałe grasz, ile chcesz.',
   'onboard.daily': 'rundę dzienną',
   'onboard.2.title': 'Dwie ceny każdego piłkarza',

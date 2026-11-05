@@ -477,7 +477,7 @@ export const en = {
   'home.crests': 'Players by club',
   'home.crestLink': '{club}: all players',
   'home.tmNoteLink': 'How it works →',
-  'onboard.1.title': 'Six Premier League games',
+  'onboard.1.title': 'Seven Premier League games',
   'onboard.1.body': 'Real squads, real numbers. Three games have a {b}: the same round for everyone, new at midnight. The others you can play as long as you like.',
   'onboard.daily': 'daily round',
   'onboard.2.title': 'Two prices for every player',
