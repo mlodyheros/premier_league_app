@@ -101,6 +101,8 @@ export default defineConfig(({ mode }) => {
     base: './',
     plugins: [preact(), sharePages(env.VITE_SITE_URL ?? ''), contentSecurityPolicy()],
     // Unit tests only; e2e/ is Playwright's.
-    test: { environment: 'node', include: ['tests/**/*.test.ts'] },
+    // The daily publish runs the tests on a Mac that may have just woken up: the
+    // default 5 s timeout failed it on tests that take a fraction of that.
+    test: { environment: 'node', include: ['tests/**/*.test.ts'], testTimeout: 30_000 },
   };
 });
