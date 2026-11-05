@@ -216,7 +216,8 @@ own a typical estimate moved 9% a week (a tenth of them over 26%). The export
 estimate half the way, in log terms, from last week's snapshot to the new
 figure, and scales its range with it: the median weekly move fell to 5% and
 the 90th percentile to 13%. Every export in one ISO week starts from the week
-before, so daily refreshes do not compound.
+before, so daily refreshes do not compound, and after a gap of several weeks
+the step compounds instead (7/8 of the way after three).
 
 ## Tests
 

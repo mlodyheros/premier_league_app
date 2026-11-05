@@ -328,14 +328,17 @@ def build(root: Path) -> tuple[list[dict], dict]:
 WEEKLY_STEP = 0.5
 
 
-def smooth(players: list[dict], last_week: dict[str, int]) -> None:
+def smooth(players: list[dict], last_week: dict[str, int], weeks: float = 1) -> None:
     """Move each estimate WEEKLY_STEP of the way (in log terms) from last
-    week's, scaling its range with it. New players keep the model's figure."""
+    week's for each week since, scaling its range with it: after three weeks
+    without a snapshot (a broken refresh) it moves 7/8 of the way, not half.
+    New players keep the model's figure."""
+    step = 1 - (1 - WEEKLY_STEP) ** weeks
     for p in players:
         before = last_week.get(p["name"])
         if not before or not p["model"]:
             continue
-        shown = math.exp(WEEKLY_STEP * math.log(p["model"]) + (1 - WEEKLY_STEP) * math.log(before))
+        shown = math.exp(step * math.log(p["model"]) + (1 - step) * math.log(before))
         scale = shown / p["model"]
         p["model"] = int(round(shown, -4))
         p["low"] = int(round(p["low"] * scale, -4))
@@ -391,7 +394,7 @@ def main() -> None:
 
     players, meta = build(root)
     past = history.load()
-    smooth(players, history.last_week_model(past, meta["dataDate"]))
+    smooth(players, *history.last_week_model(past, meta["dataDate"]))
     _check(players)
     meta["model"]["diagnostics"] = _diagnostics(players)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
