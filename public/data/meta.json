@@ -1,8 +1,8 @@
 {
   "season": "2026/27",
-  "dataDate": "2026-11-06",
+  "dataDate": "2026-11-07",
   "gameweek": 9,
-  "exportedAt": "2026-11-06T12:31:03+00:00",
+  "exportedAt": "2026-11-07T12:46:16+00:00",
   "source": {
     "name": "pl-value-predictor",
     "url": "https://github.com/mlodyheros/pl-value-predictor"
@@ -15,7 +15,7 @@
     "cvR2Log": 0.866,
     "cvMaeEur": 5900000,
     "cvRmseEur": 8750000,
-    "cvTopDecileMaeEur": 12570000,
+    "cvTopDecileMaeEur": 12540000,
     "cvTopDecileRatio": 0.896,
     "rangeLevel": 0.8,
     "tiers": {
@@ -24,14 +24,14 @@
         "label": "backed by Premier League history",
         "players": 428,
         "rangeLow": 0.55,
-        "rangeHigh": 1.5
+        "rangeHigh": 1.49
       },
       "1": {
         "key": "non_pl_history",
         "label": "backed by other leagues only",
         "players": 60,
-        "rangeLow": 0.61,
-        "rangeHigh": 1.45
+        "rangeLow": 0.6,
+        "rangeHigh": 1.44
       },
       "2": {
         "key": "no_history",
@@ -42,13 +42,13 @@
       }
     },
     "diagnostics": {
-      "typicalMiss": 0.249,
+      "typicalMiss": 0.248,
       "inRange": 436,
       "ratioUnder5m": 1.7,
       "ratioOver20m": 0.96,
-      "typicalMissNoRecord": 0.511,
-      "typicalMissWithRecord": 0.242,
-      "totalModelEur": 14073060000,
+      "typicalMissNoRecord": 0.508,
+      "typicalMissWithRecord": 0.24,
+      "totalModelEur": 14073850000,
       "totalTmEur": 14107375000
     }
   },
