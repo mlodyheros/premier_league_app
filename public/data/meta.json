@@ -1,8 +1,8 @@
 {
   "season": "2026/27",
-  "dataDate": "2026-11-22",
+  "dataDate": "2026-11-23",
   "gameweek": 10,
-  "exportedAt": "2026-11-22T12:46:40+00:00",
+  "exportedAt": "2026-11-23T12:40:58+00:00",
   "source": {
     "name": "pl-value-predictor",
     "url": "https://github.com/mlodyheros/pl-value-predictor"
@@ -13,9 +13,9 @@
     "features": 28,
     "scoring": "out-of-fold (5-fold), averaged over 20 random splits",
     "cvR2Log": 0.868,
-    "cvMaeEur": 5870000,
-    "cvRmseEur": 8660000,
-    "cvTopDecileMaeEur": 12070000,
+    "cvMaeEur": 5860000,
+    "cvRmseEur": 8670000,
+    "cvTopDecileMaeEur": 11900000,
     "cvTopDecileRatio": 0.901,
     "rangeLevel": 0.8,
     "tiers": {
@@ -31,7 +31,7 @@
         "label": "backed by other leagues only",
         "players": 60,
         "rangeLow": 0.6,
-        "rangeHigh": 1.38
+        "rangeHigh": 1.39
       },
       "2": {
         "key": "no_history",
@@ -42,13 +42,13 @@
       }
     },
     "diagnostics": {
-      "typicalMiss": 0.257,
-      "inRange": 437,
-      "ratioUnder5m": 1.59,
+      "typicalMiss": 0.26,
+      "inRange": 439,
+      "ratioUnder5m": 1.57,
       "ratioOver20m": 0.98,
-      "typicalMissNoRecord": 0.488,
-      "typicalMissWithRecord": 0.243,
-      "totalModelEur": 14105380000,
+      "typicalMissNoRecord": 0.478,
+      "typicalMissWithRecord": 0.24,
+      "totalModelEur": 14113880000,
       "totalTmEur": 14107375000
     }
   },
