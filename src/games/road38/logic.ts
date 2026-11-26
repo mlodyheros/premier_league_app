@@ -5,10 +5,12 @@ import { fit, slotRating, type Formation, type Lineup, type Slot } from '../../l
 
 export const RESPINS = 3;
 
+/** Slots still empty, in formation order. */
 export function openSlots(formation: Formation, lineup: Lineup): Slot[] {
   return formation.slots.filter((s) => !lineup[s.id]);
 }
 
+/** Ids of the players drafted so far: they leave their clubs for the season. */
 export function draftedIds(lineup: Lineup): Set<number> {
   return new Set(Object.values(lineup).flatMap((p) => (p ? [p.id] : [])));
 }

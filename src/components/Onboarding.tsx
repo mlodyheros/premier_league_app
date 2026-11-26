@@ -13,6 +13,7 @@ const STEPS: { icon: IconName; title: Key; body: Key }[] = [
 export function Onboarding() {
   const dialog = useRef<HTMLDialogElement>(null);
   const [step, setStep] = useState(0);
+  // Checked once, on the first render: a later visit sees the flag set by close().
   const [show] = useState(() => !readJson<boolean>('onboarded'));
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export function Onboarding() {
   const s = STEPS[step];
   const last = step === STEPS.length - 1;
   return (
+    // Escape closes a <dialog> without close(): onClose marks it seen too.
     <dialog ref={dialog} class="settings onboard" aria-labelledby="onboard-title" onClose={() => writeJson('onboarded', true)}>
       <div class="settings__inner">
         <span class="onboard__icon" aria-hidden="true">

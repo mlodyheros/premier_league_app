@@ -20,6 +20,7 @@ export function themeFor(budget: number | undefined): (typeof THEMES)[number] {
   return THEMES.find((th) => th.budget === budget) ?? THEMES.find((th) => th.key === DEFAULT_THEME)!;
 }
 
+/** The lineup's total value on `source`. */
 export function spent(lineup: Lineup, source: ValueSource): number {
   return Object.values(lineup).reduce((sum, p) => sum + (p ? valueOf(p, source) : 0), 0);
 }
@@ -80,6 +81,7 @@ export function options(
   return out.sort((a, b) => Number(b.affordable) - Number(a.affordable) || by[sort](a, b));
 }
 
+/** Every slot of the formation has a player. */
 export function isComplete(formation: Formation, lineup: Lineup): boolean {
   return formation.slots.every((s) => lineup[s.id]);
 }

@@ -22,6 +22,7 @@ function seasonStats(p: Player): Stat[] {
   return [minutes, ['stat.goals', String(s.goals)], ['stat.assists', String(s.assists)]];
 }
 
+/** The same idea over his Premier League career. */
 function historyStats(p: Player): Stat[] {
   const s: PlayerStats = p.stats;
   const starts: Stat = ['stat.starts', formatInt(s.plStarts)];
@@ -30,6 +31,7 @@ function historyStats(p: Player): Stat[] {
   return [starts, ['stat.goals', String(s.plGoals)], ['stat.assists', String(s.plAssists)]];
 }
 
+/** A titled row of up to three numbers, with an optional note under the title. */
 function StatRow({ title, stats, note }: { title: string; stats: Stat[]; note?: string }) {
   return (
     <div class="pcard__block">

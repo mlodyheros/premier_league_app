@@ -49,6 +49,8 @@ export function PlayerSearch({ onPick, exclude, placeholder = t('search.placehol
   const { results, fuzzy } = useMemo(() => {
     const q = fold(query.trim());
     if (q.length < 2) return { results: [], fuzzy: false };
+    // Names where a word starts with the query rank above names that only contain it;
+    // each group is sorted by value, so the famous player comes first.
     const starts: Player[] = [];
     const contains: Player[] = [];
     for (const { p, key } of index) {
@@ -68,6 +70,8 @@ export function PlayerSearch({ onPick, exclude, placeholder = t('search.placehol
     for (const { p, key } of index) {
       if (exclude?.has(p.id)) continue;
       const words = [...key.split(/[\s.'-]+/), key];
+      // Compare against each word and against its first q.length letters, so a
+      // half-typed surname still matches (the prefix costs one extra edit).
       const d = Math.min(...words.map((w) => Math.min(distance(q, w, limit), distance(q, w.slice(0, q.length), limit) + 1)));
       if (d <= limit) near.push({ p, d });
     }
@@ -142,6 +146,7 @@ export function PlayerSearch({ onPick, exclude, placeholder = t('search.placehol
               aria-selected={i === active}
               class={i === active ? 'active' : ''}
               onMouseEnter={() => setActive(i)}
+              // mousedown with preventDefault, not click: the input never loses focus, so typing can go on.
               onMouseDown={(e) => {
                 e.preventDefault();
                 choose(p);

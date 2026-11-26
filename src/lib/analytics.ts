@@ -31,6 +31,7 @@ export const analyticsAvailable = Boolean(CODE);
 export const analyticsEnabled = signal<boolean>(readJson<boolean>('analytics') ?? true);
 effect(() => writeJson('analytics', analyticsEnabled.value));
 
+/** All the conditions in the header: built with a code, switched on, no DNT, not local. */
 function allowed(): boolean {
   if (!CODE || !analyticsEnabled.value || typeof window === 'undefined') return false;
   if (navigator.doNotTrack === '1') return false;
@@ -39,6 +40,7 @@ function allowed(): boolean {
 
 let loading: Promise<void> | null = null;
 
+/** Inject the GoatCounter script once; resolves even if it fails, so callers never hang. */
 function load(): Promise<void> {
   if (loading) return loading;
   loading = new Promise((resolve) => {

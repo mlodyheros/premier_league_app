@@ -55,6 +55,7 @@ export function Avatar({ player, size = 40 }: { player: Player; size?: number })
       }}
     >
       <span class="avatar__text">{initials(player.name)}</span>
+      {/* Below 26px the corner crest is too small to read, so it's left off. */}
       {size >= 26 && (
         <span class="avatar__crest">
           <Crest code={player.club} size={Math.max(12, Math.round(size * 0.42))} />
@@ -64,6 +65,7 @@ export function Avatar({ player, size = 40 }: { player: Player; size?: number })
   );
 }
 
+/** Crest and short name, with the full name on hover. */
 export function ClubChip({ code }: { code: string }) {
   const club = useDataset().meta.clubs[code];
   return (

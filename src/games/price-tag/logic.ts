@@ -33,6 +33,7 @@ export function sliderToEur(t: number): number {
   return roundPrice(SLIDER_MIN * Math.exp(SPAN * x));
 }
 
+/** The inverse of sliderToEur, for placing scale labels and the −/+ steps. */
 export function eurToSlider(eur: number): number {
   const x = Math.log(eur / SLIDER_MIN) / SPAN;
   return Math.min(1, Math.max(0, x)) ** (1 / BEND);
@@ -71,6 +72,7 @@ export function verdictIcon(points: number): 'target-arrow' | 'thumb-up' | 'mood
   return 'mood-sad';
 }
 
+/** One square per player for share texts, on the same bands as the page. */
 export function emoji(points: number): string {
   if (points >= 90) return '🎯';
   if (points >= 60) return '🟩';

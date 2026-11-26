@@ -37,6 +37,7 @@ FC27: dict[str, int] = {history.normalize_name(k): v for k, v in _FC27_RAW.items
 
 
 def fc27_rating(name: str) -> int | None:
+    """A player's FC 27 base rating, or None if he has no card in the file."""
     key = history.normalize_name(FC27_ALIASES.get(name, name))
     return FC27.get(key)
 REPO_URL = "https://github.com/mlodyheros/pl-value-predictor"
@@ -78,6 +79,8 @@ SEASON_FULL_WEIGHT_GW = 19
 
 
 def _load_pl_value(root: Path):
+    """pl-value's dataset with out-of-fold estimates (each player priced by a model
+    that never saw him), evidence tiers, calibration and the FPL snapshot."""
     sys.path.insert(0, str(root))
     import pandas as pd
     from backend import confidence
@@ -195,12 +198,14 @@ def _is_known(row) -> bool:
 
 
 def _season(bootstrap) -> str:
+    """The season label, e.g. "2026/27", from the first gameweek's deadline."""
     first = min(e["deadline_time"] for e in bootstrap["events"])
     year = int(first[:4])
     return f"{year}/{str(year + 1)[-2:]}"
 
 
 def build(root: Path) -> tuple[list[dict], dict]:
+    """Every player as the site's Player shape (src/data/types.ts), plus meta.json's contents."""
     import pandas as pd
 
     src = _load_pl_value(root)
@@ -369,6 +374,7 @@ def _diagnostics(players: list[dict]) -> dict:
 
 
 def _check(players: list[dict]) -> None:
+    """Stop the export rather than publish values the site cannot show."""
     for p in players:
         for key in ("tm", "model", "low", "high"):
             if not (isinstance(p[key], int) and p[key] > 0):
@@ -394,6 +400,7 @@ def main() -> None:
 
     players, meta = build(root)
     past = history.load()
+    # Damp the week-to-week swing of the estimates before anything is written.
     smooth(players, *history.last_week_model(past, meta["dataDate"]))
     _check(players)
     meta["model"]["diagnostics"] = _diagnostics(players)
@@ -402,6 +409,7 @@ def main() -> None:
         json.dumps(players, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
     )
     (OUT_DIR / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2, allow_nan=False))
+    # The snapshot keeps the smoothed figures: the same ones the site shows this week.
     values = history.add_snapshot(past, players, meta["dataDate"])
     values["career"] = history.careers(root, players, meta["dataDate"])
     history.write(values)

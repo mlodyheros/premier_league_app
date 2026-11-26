@@ -1,3 +1,7 @@
+/**
+ * Road to 38-0: a slot-machine draft. Spin a club (and in some modes a position),
+ * take one of its players, repeat until the XI is full, then play a 38-game season.
+ */
 import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { Icon } from '../../components/Icon';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
@@ -65,10 +69,12 @@ const TOTALS_KEY = 'road:totals';
 /** The reel slows down: the gaps between frames, in ms. */
 const REEL = [55, 55, 60, 65, 70, 80, 90, 105, 125, 150, 185, 230, 290];
 
+/** An empty draft with every re-draw back; formation and modes carry over. */
 function fresh(formation = '433', difficulty: Difficulty = 'realistic', draft: DraftMode = 'standard'): State {
   return { formation, picks: {}, respins: RESPINS, respinsSlot: RESPINS, spin: null, season: null, difficulty, draft };
 }
 
+/** The saved draft, upgraded from older save shapes. */
 function load(): State {
   const saved = readJson<State>(KEY);
   if (!saved) return fresh();
@@ -85,6 +91,7 @@ function bestKeyFor(source: ValueSource, difficulty: Difficulty, draft: DraftMod
   return key;
 }
 
+/** The game page: setup, the reels and picker while drafting, then the season result. */
 export function Road38() {
   const { players, meta } = useDataset();
   const source = valueSource.value;
@@ -227,6 +234,7 @@ export function Road38() {
     finish.current();
   }
 
+  /** Put the pick in its slot and clear the draw: the next pick needs a new spin. */
   function choose(playerName: string, slot: Slot) {
     buzz('tap');
     setState((s) => ({ ...s, picks: { ...s.picks, [slot.id]: playerName }, spin: null }));
@@ -234,16 +242,19 @@ export function Road38() {
     setLanded({ club: false, slot: false });
   }
 
+  /** Tapping an empty slot narrows the list to it; not allowed when a position was drawn. */
   function onSlot(slot: Slot) {
     if (lineup[slot.id] || !ready || drawnSlot) return;
     setSelected(selected === slot.id ? null : slot.id);
   }
 
+  // Drafted players are taken out of their real clubs (`without`), so the league gets weaker where you drafted.
   const preview = useMemo(
     () => (complete ? previewSeason({ players, meta, source, strength, difficulty, without: draftedIds(lineup) }) : null),
     [complete, strength, difficulty, source, state.picks],
   );
 
+  /** Play the season, then update the best and the lifetime totals. */
   function kickOff() {
     const season = playSeason({
       players,
@@ -284,6 +295,7 @@ export function Road38() {
     newDraft();
   }
 
+  /** Start over with the same setup. */
   function newDraft() {
     setState(fresh(state.formation, difficulty, draft));
     setSelected(null);
@@ -296,6 +308,7 @@ export function Road38() {
     kickOff();
   }
 
+  /** Share text: W-D-L, points, finish, badges and the modes played. */
   function shareTextFor(season: SavedSeason): string {
     const row = userRow(season.table);
     const icons = seasonBadges(row, season.position).map((b) => b.icon).join('');

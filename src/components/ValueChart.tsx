@@ -5,6 +5,7 @@ const W = 320;
 const H = 130;
 const PAD = { top: 18, right: 8, bottom: 20, left: 8 };
 
+/** "2024-07" -> months since year 0, so dates can be spaced evenly on the x axis. */
 function monthIndex(ym: string): number {
   const [y, m] = ym.split('-').map(Number);
   return y * 12 + (m - 1);
@@ -20,6 +21,7 @@ export function ValueChart({ points, unit, label }: { points: [string, number][]
   const vs = points.map(([, v]) => v * unit);
   const x0 = xs[0];
   const x1 = Math.max(xs[xs.length - 1], x0 + 1);
+  // 12% headroom above the peak for its label; `|| 1` guards an all-zero series.
   const top = Math.max(...vs) * 1.12 || 1;
   const x = (i: number) => PAD.left + ((xs[i] - x0) / (x1 - x0)) * (W - PAD.left - PAD.right);
   const y = (v: number) => PAD.top + (1 - v / top) * (H - PAD.top - PAD.bottom);

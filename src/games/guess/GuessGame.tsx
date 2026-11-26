@@ -1,3 +1,7 @@
+/**
+ * Guess the Player: name the hidden Premier League player in eight tries, with
+ * club, position, nationality, age and value tiles as clues. Daily or unlimited.
+ */
 import { PlayerLink } from '../../components/PlayerLink';
 import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { Flag } from '../../components/Flag';
@@ -50,10 +54,12 @@ const MODE_KEY = 'guess:mode';
 const dailyKey = (day: string) => `guess:daily:${day}`;
 const UNLIMITED_KEY = 'guess:unlimited';
 
+/** A fresh unlimited round, drawn from the pool level chosen in settings. */
 function newUnlimitedRound(players: Player[]): Round {
   return { target: pick(poolOf(players, poolLevel.value)).name, guesses: [], recorded: false };
 }
 
+/** The game page: mode tabs, the search box, the board of guesses and the end panel. */
 export function GuessGame() {
   const { players, schedule } = useDataset();
   const byName = useMemo(() => new Map(players.map((p) => [p.name, p])), [players]);
@@ -66,6 +72,7 @@ export function GuessGame() {
 
   function loadRound(m: Mode): Round {
     if (m === 'daily') {
+      // A saved daily round only counts if it was for today's answer (the schedule can change it).
       const target = guessTarget(players, schedule, day).name;
       const saved = readJson<Round>(dailyKey(day));
       return saved && saved.target === target ? saved : { target, guesses: [], recorded: false };
@@ -85,6 +92,7 @@ export function GuessGame() {
   const feedback = guesses.map((g) => compare(g, target, source));
   const won = feedback.some((f) => f.correct);
   const over = won || !!round.gaveUp || guesses.length >= MAX_GUESSES;
+  // Daily and unlimited keep separate stats, so unlimited can't pad the daily streak.
   const statsKey = `guess-${mode}`;
   const [stats, setStats] = useState(() => loadStats(statsKey, MAX_GUESSES));
 
@@ -132,8 +140,10 @@ export function GuessGame() {
     () => (guesses.length ? stillPossible(answerPool, guesses, feedback, source).length : answerPool.length),
     [answerPool, round.guesses, source],
   );
+  // No hint once the club is already known from a green tile.
   const clubKnown = feedback.some((f) => f.club === 'hit');
   const canHint = !over && !round.hint && !clubKnown && guesses.length >= HINT_AFTER;
+  // Newest guess on top.
   const rows = guesses.map((g, i) => ({ g, f: feedback[i] })).reverse();
 
   return (
@@ -242,6 +252,7 @@ export function GuessGame() {
   );
 }
 
+/** One clue tile; `dir` adds the higher/lower arrow for age and value. */
 function Tile({ mark, children, dir }: { mark: Mark; children: ComponentChildren; dir?: 'up' | 'down' | null }) {
   const label = t(`guess.mark.${mark}`);
   const hint = dir === 'up' ? t('guess.higher') : dir === 'down' ? t('guess.lower') : '';
@@ -253,6 +264,7 @@ function Tile({ mark, children, dir }: { mark: Mark; children: ComponentChildren
   );
 }
 
+/** A guessed player and his five clue tiles. */
 function GuessRow({ player, f }: { player: Player; f: Feedback }) {
   const { meta } = useDataset();
   return (
@@ -297,6 +309,7 @@ interface EndProps {
   onNext: () => void;
 }
 
+/** Shown when the round is over: the answer, share, next round and stats. */
 function EndPanel({ won, gaveUp, target, feedback, mode, day, stats, hinted, onNext }: EndProps) {
   const { meta } = useDataset();
   const countdown = useCountdown(mode === 'daily');

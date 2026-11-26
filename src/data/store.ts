@@ -25,6 +25,7 @@ async function fetchJson<T>(file: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+/** Fetch players, meta and the daily schedule into `dataset`; a failure goes to `loadError`. */
 export async function loadDataset(): Promise<void> {
   loadError.value = null;
   try {
@@ -33,6 +34,7 @@ export async function loadDataset(): Promise<void> {
       fetchJson<Meta>('meta.json'),
       fetchJson<Schedule>('daily.json').catch(() => ({}) as Schedule),
     ]);
+    // Ratings are ranked across the whole league, so the pool is set before anything renders.
     setRatingPool(players);
     dataset.value = { players, meta, schedule, byId: new Map(players.map((p) => [p.id, p])) };
   } catch (err) {

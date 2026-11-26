@@ -14,11 +14,13 @@ export function dailyRand(game: string, day: string): () => number {
 export function recordDaily(game: string, day: string, won = true, result?: string): GameStats {
   if (result) saveDailyResult(game, day, result);
   const key = `${game}-daily`;
+  // No guess distribution for these games: 0 slots, 0 guesses.
   const next = recordResult(loadStats(key, 0), won, 0, { today: day, yesterday: previousDayKey(day) });
   saveStats(key, next);
   return next;
 }
 
+/** Days in a row this game's daily round was finished. */
 export function dailyStreak(game: string): number {
   return loadStats(`${game}-daily`, 0).streak;
 }
@@ -28,6 +30,7 @@ export function saveDailyResult(game: string, day: string, result: string): void
   writeJson(`daily:result:${game}:${day}`, result);
 }
 
+/** The saved result for a day, or null if that round wasn't played. */
 export function dailyResult(game: string, day: string): string | null {
   return readJson<string>(`daily:result:${game}:${day}`);
 }

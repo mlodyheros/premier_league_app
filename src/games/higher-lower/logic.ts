@@ -67,6 +67,7 @@ export function nextChallenger(
   return from[Math.floor(rand() * from.length)];
 }
 
+/** Values never tie (nextChallenger avoids it), so "not higher" means lower. */
 export function isCorrect(current: Player, challenger: Player, call: Call, source: ValueSource): boolean {
   const higher = valueOf(challenger, source) > valueOf(current, source);
   return call === 'higher' ? higher : !higher;

@@ -17,6 +17,7 @@ export function ValueCompare({ player, range = false }: { player: Player; range?
         <small>{t('compare.tm')}</small>
         {formatEur(player.tm)}
       </span>
+      {/* Under half a percent either way counts as no gap. */}
       <span class={`vc vc--gap ${gap > 0.005 ? 'up' : gap < -0.005 ? 'down' : ''}`}>
         <small>{t('compare.gap')}</small>
         {formatPct(gap)}

@@ -1,3 +1,7 @@
+/**
+ * Higher or Lower: is the next player worth more or less than this one? Keep
+ * calling right to build a streak; one wrong call ends the run.
+ */
 import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { cardFooter } from '../../lib/shareSpecs';
 import { openShare } from '../../components/ShareSheet';
@@ -29,8 +33,10 @@ const REVEAL_MS = 1300;
 const COUNT_MS = 650;
 const RECENT = 40;
 
+/** ask -> reveal -> ask again on a right call, or -> over on a wrong one. */
 type Phase = 'ask' | 'reveal' | 'over';
 
+/** The game page: the pair, the call buttons, the reveal and the end of a run. */
 export function HigherLower() {
   const { players } = useDataset();
   const source = valueSource.value;
@@ -39,6 +45,7 @@ export function HigherLower() {
   const candidates = useMemo(() => pool(players, level, theme), [players, level, theme]);
   /** Records are kept per theme: a goalkeepers-only streak is a different game. */
   const bestKey = theme === 'all' ? `hl:${source}` : `hl:${source}:${theme}`;
+  // Ids of the last RECENT players shown, so the same faces don't come straight back.
   const recent = useRef<number[]>([]);
 
   const [current, setCurrent] = useState<Player>(() => pick(candidates));
@@ -64,6 +71,7 @@ export function HigherLower() {
     recent.current = [...recent.current, p.id].slice(-RECENT);
   }
 
+  /** Lock in a call, reveal the value, then move on (right) or end the run (wrong). */
   function call(c: Call) {
     if (phase !== 'ask') return;
     const right = isCorrect(current, challenger, c, source);
@@ -75,6 +83,7 @@ export function HigherLower() {
       setStreak(next);
       setTimeout(() => {
         remember(current);
+        // The challenger becomes the one to beat; the next challenger is drawn at the new streak's difficulty.
         setCurrent(challenger);
         setChallenger(nextChallenger(challenger, candidates, source, next, new Set(recent.current)));
         setLastCall(null);

@@ -15,6 +15,7 @@ export const MIN_GAP = 0.08;
 
 export type Side = 'over' | 'under';
 
+/** The right answer for a player: is the model above or below Transfermarkt? */
 export function sideOf(p: Player): Side {
   return modelGap(p) > 0 ? 'over' : 'under';
 }

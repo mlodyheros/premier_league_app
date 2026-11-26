@@ -21,6 +21,7 @@ const tmp = mkdtempSync(join(tmpdir(), 'crests-'));
 for (const f of readdirSync(dir).filter((f) => f.endsWith('.svg'))) {
   const path = join(dir, f);
   const svg = readFileSync(path, 'utf8');
+  // Skip crests that are light already, and ones this script has compressed before.
   if (statSync(path).size < LIMIT || svg.includes('data:image/png;base64') && svg.length < 30_000) continue;
   const png = new Resvg(svg, { fitTo: { mode: 'height', value: HEIGHT } }).render();
   const raw = join(tmp, f.replace('.svg', '.png'));

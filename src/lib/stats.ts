@@ -12,6 +12,7 @@ export interface GameStats {
   lastDay?: string;
 }
 
+/** Zeroed stats with `slots` distribution buckets. */
 export function emptyStats(slots: number): GameStats {
   return { played: 0, won: 0, streak: 0, bestStreak: 0, distribution: Array(slots).fill(0) };
 }
@@ -19,6 +20,7 @@ export function emptyStats(slots: number): GameStats {
 export function loadStats(key: string, slots: number): GameStats {
   const saved = readJson<GameStats>(`stats:${key}`);
   if (!saved) return emptyStats(slots);
+  // Resize the saved distribution to `slots`, so a change to the max guesses can't break old saves.
   const distribution = Array.from({ length: slots }, (_, i) => saved.distribution?.[i] ?? 0);
   return { ...emptyStats(slots), ...saved, distribution };
 }
@@ -33,6 +35,7 @@ export function recordResult(
   guesses: number,
   daily?: { today: string; yesterday: string },
 ): GameStats {
+  // A daily result counts once per day, even if the round is replayed or recorded twice.
   if (daily && stats.lastDay === daily.today) return stats;
   const continues = !daily || stats.lastDay === daily.yesterday;
   const streak = won ? (continues ? stats.streak + 1 : 1) : 0;
@@ -48,6 +51,7 @@ export function recordResult(
   };
 }
 
+/** Store stats under the same key loadStats reads. */
 export function saveStats(key: string, stats: GameStats): void {
   writeJson(`stats:${key}`, stats);
 }

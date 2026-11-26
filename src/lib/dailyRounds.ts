@@ -38,6 +38,7 @@ export interface DayRounds {
 /** Date (YYYY-MM-DD) → that day's rounds. */
 export type Schedule = Record<string, DayRounds>;
 
+/** Keep the name and the values the round was asked with. */
 const freeze = (p: Player): Frozen => ({ name: p.name, tm: p.tm, model: p.model, low: p.low, high: p.high });
 
 /** Players as frozen in the schedule; null if any of them has left the data (then the browser computes the round). */
@@ -54,26 +55,31 @@ export function thaw(players: readonly Player[], frozen: readonly Frozen[]): Pla
 
 // What the browser computed before the schedule existed, and computes for a day the schedule lacks.
 
+/** Beat the Model's ten for a day, seeded by the date. */
 export function computeBeat(players: readonly Player[], day: string): Player[] {
   return drawRound(dailyPoolFor(players, day, () => true), dailyRand('beat', day));
 }
 
+/** Price Tag's five for a day, seeded by the date. */
 export function computePrice(players: readonly Player[], day: string): Player[] {
   return shuffled(dailyPoolFor(players, day, legacyPool), dailyRand('price', day)).slice(0, PRICE_ROUNDS);
 }
 
 // What the games call.
 
+/** The scheduled answer if he is still in the data, else one computed from the date. */
 export function guessTarget(players: readonly Player[], schedule: Schedule, day: string): Player {
   const name = schedule[day]?.guess;
   return (name && players.find((p) => p.name === name)) || dailyTarget(players, day);
 }
 
+/** The scheduled Beat the Model round, or a computed one if it can't be thawed. */
 export function beatRound(players: readonly Player[], schedule: Schedule, day: string): Player[] {
   const frozen = schedule[day]?.beat;
   return (frozen && thaw(players, frozen)) || computeBeat(players, day);
 }
 
+/** The scheduled Price Tag round, or a computed one if it can't be thawed. */
 export function priceRound(players: readonly Player[], schedule: Schedule, day: string): Player[] {
   const frozen = schedule[day]?.price;
   return (frozen && thaw(players, frozen)) || computePrice(players, day);
@@ -89,6 +95,7 @@ export function writeDay(players: readonly Player[], day: string, recent: Readon
   let guess = dailyTarget(players, day).name;
   if (recent.has(guess)) {
     const fresh = dailyPool(players, day).filter((p) => !recent.has(p.name));
+    // A separate seed from the target's own, so the swap is still the same for everyone.
     if (fresh.length) guess = fresh[Math.floor(dailyRand('guess-fresh', day)() * fresh.length)].name;
   }
   const out: DayRounds = {

@@ -19,6 +19,7 @@ export function StatsPanel({ stats, highlight }: { stats: GameStats; highlight?:
             <span class="stats__n">{i + 1}</span>
             <span
               class={`stats__bar ${highlight === i + 1 ? 'hl' : ''}`}
+              // A floor of 8% keeps the count readable on an empty bar.
               style={{ width: `${Math.max(8, (n / most) * 100)}%` }}
             >
               {n}

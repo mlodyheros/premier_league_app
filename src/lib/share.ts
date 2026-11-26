@@ -1,12 +1,14 @@
 /** Share a result: the native share sheet on phones, the clipboard elsewhere. */
 export async function shareText(text: string): Promise<'shared' | 'copied' | 'failed'> {
   const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
+  // Desktop browsers have navigator.share too, but copying is what people expect there.
   const touch = window.matchMedia?.('(pointer: coarse)').matches;
   if (touch && nav.share) {
     try {
       await nav.share({ text });
       return 'shared';
     } catch (err) {
+      // Cancelled by the user: don't fall back to the clipboard behind their back.
       if (err instanceof DOMException && err.name === 'AbortError') return 'failed';
     }
   }
@@ -18,6 +20,7 @@ export async function shareText(text: string): Promise<'shared' | 'copied' | 'fa
   }
 }
 
+/** The site's address without the hash route. */
 export function siteUrl(): string {
   return location.origin + location.pathname;
 }

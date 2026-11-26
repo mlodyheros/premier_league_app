@@ -50,6 +50,7 @@ export function celebrate(big = false): void {
     ctx!.clearRect(0, 0, innerWidth, innerHeight);
     ctx!.globalAlpha = Math.max(0, 1 - t / duration);
     for (const p of parts) {
+      // Gravity, then a little air drag.
       p.vy += 0.42;
       p.vx *= 0.99;
       p.x += p.vx;

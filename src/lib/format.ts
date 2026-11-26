@@ -1,6 +1,7 @@
 /** Formatting that follows the active language. */
 import { lang, t, type Lang } from '../i18n';
 
+/** Fixed digits with a trailing ".0" dropped, and a Polish decimal comma. */
 function decimal(n: number, digits: number, l: Lang): string {
   const s = n.toFixed(digits).replace(/\.0$/, '');
   return l === 'pl' ? s.replace('.', ',') : s;
@@ -59,6 +60,7 @@ export function ordinal(n: number, l: Lang = lang.value): string {
   if (l === 'pl') return `${n}.`;
   const s = ['th', 'st', 'nd', 'rd'];
   const v = n % 100;
+  // 11th-13th fall through to "th": (v - 20) % 10 is negative there, and s[11..13] is undefined.
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
@@ -86,6 +88,7 @@ export function fold(s: string): string {
     .toLowerCase();
 }
 
+/** "Bukayo Saka" -> "BS"; a single name gives its first two letters. */
 export function initials(name: string): string {
   const parts = name.split(/[\s-]+/).filter(Boolean);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();

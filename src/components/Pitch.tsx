@@ -44,6 +44,7 @@ export function Pitch({ formation, lineup, source, selected, highlight, onSlot, 
           : t('pitch.empty', { pos: posLabel(slot.type) });
         return (
           <button
+            // Keyed by occupant too, so a new pick remounts the slot and replays its entry animation.
             key={`${slot.id}-${p?.id ?? 'empty'}`}
             type="button"
             class={cls}

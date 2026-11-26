@@ -32,6 +32,7 @@ export function shuffled<T>(items: readonly T[], rand: () => number = Math.rando
   return out;
 }
 
+/** A random element (pass a seeded `rand` for a repeatable pick). */
 export function pick<T>(items: readonly T[], rand: () => number = Math.random): T {
   return items[Math.floor(rand() * items.length)];
 }
@@ -49,6 +50,7 @@ const EPOCH = Date.UTC(2026, 8, 30); // puzzle #1
 /** Puzzle number for a date key: #1 on launch day. */
 export function dayNumber(key: string): number {
   const [y, m, d] = key.split('-').map(Number);
+  // In UTC, and rounded, so daylight-saving shifts never skip or repeat a number.
   return Math.round((Date.UTC(y, m - 1, d) - EPOCH) / 86_400_000) + 1;
 }
 

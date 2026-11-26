@@ -33,6 +33,10 @@ export interface PlayedSeason {
   scorers?: Record<string, Tally>;
 }
 
+/**
+ * Simulate one season: your XI replaces the weakest club, the difficulty's
+ * bonus is added to its strength, and goals are shared out among the XI.
+ */
 export function playSeason(opts: {
   players: readonly Player[];
   meta: Meta;
@@ -58,6 +62,7 @@ export function playSeason(opts: {
     difficulty,
     draft,
     strength,
+    // The odds the XI had going in, kept with the result for the "you had an x% chance" note.
     odds: pointsOdds(strength + bonus, opponents, model, POINTS_TARGET),
     target: POINTS_TARGET,
     replaced: replaced.name,

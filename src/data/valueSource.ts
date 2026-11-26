@@ -8,6 +8,7 @@ export type ValueSource = 'tm' | 'model';
 
 const KEY = 'valueSource';
 
+// Anything but a saved 'model' (missing, corrupt) falls back to Transfermarkt.
 export const valueSource = signal<ValueSource>(readJson<ValueSource>(KEY) === 'model' ? 'model' : 'tm');
 
 effect(() => writeJson(KEY, valueSource.value));
@@ -21,6 +22,7 @@ export const sourceShort = (s: ValueSource = valueSource.value) => t(`short.${s}
 /** "TM values" / "wartości TM", for share texts. */
 export const shareValues = (s: ValueSource = valueSource.value) => t(`shareValues.${s}`);
 
+/** A player's value on the given source (the active one by default). */
 export function valueOf(player: Player, source: ValueSource = valueSource.value): number {
   return source === 'tm' ? player.tm : player.model;
 }

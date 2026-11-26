@@ -17,6 +17,7 @@ import { cardFooter, crestUrl, resultCells, xiOnPitch } from '../lib/shareSpecs'
 import { useDataset } from '../data/store';
 import { openShare } from './ShareSheet';
 
+/** Your team's row in a simulated table. */
 export function userRow(table: readonly TableRow[]): TableRow {
   return table.find((r) => r.id === USER_TEAM_ID)!;
 }
@@ -29,6 +30,7 @@ export interface Badge {
   label: 'road.badge.perfect' | 'road.badge.champions' | 'road.badge.invincible' | 'road.badge.centurion';
 }
 
+/** The honours a season earned; a perfect 38 wins replaces "invincible", it doesn't add to it. */
 export function seasonBadges(row: TableRow, position: number): Badge[] {
   const out: Badge[] = [];
   if (row.points >= 100) out.push({ icon: '💯', glyph: 'target-arrow', label: 'road.badge.centurion' });
@@ -38,6 +40,7 @@ export function seasonBadges(row: TableRow, position: number): Badge[] {
   return out;
 }
 
+/** The 38 results as coloured squares, one half of the season per line. */
 export function resultsGrid(season: PlayedSeason): string {
   const sq = season.results.map((r) => (r.outcome === 'W' ? '🟩' : r.outcome === 'D' ? '🟨' : '🟥'));
   return [sq.slice(0, 19).join(''), sq.slice(19).join('')].filter(Boolean).join('\n');

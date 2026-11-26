@@ -26,12 +26,14 @@ const read = <T>(file: string): T => JSON.parse(readFileSync(join(dataDir, file)
 const localDay = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
+/** A date key `n` days later (or earlier); local dates, so month ends roll over. */
 function addDays(day: string, n: number): string {
   const [y, m, d] = day.split('-').map(Number);
   return localDay(new Date(y, m - 1, d + n));
 }
 
 const players = read<Player[]>('players.json');
+// As in the browser (src/data/store.ts): ratings rank against the whole league.
 setRatingPool(players);
 const schedule: Schedule = existsSync(join(dataDir, 'daily.json')) ? read<Schedule>('daily.json') : {};
 
@@ -39,6 +41,7 @@ const today = process.argv[2] ?? localDay(new Date());
 const written: string[] = [];
 for (let i = 0; i <= AHEAD; i++) {
   const day = addDays(today, i);
+  // A day already written is never rewritten, even if the data has changed since.
   if (schedule[day]) continue;
   const recent = new Set(
     Object.entries(schedule)

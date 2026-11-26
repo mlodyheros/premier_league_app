@@ -4,6 +4,7 @@
  */
 const PREFIX = 'plg:';
 
+/** A stored value, or null when missing, unreadable or storage is blocked. */
 export function readJson<T>(key: string): T | null {
   try {
     const raw = localStorage.getItem(PREFIX + key);
@@ -13,6 +14,7 @@ export function readJson<T>(key: string): T | null {
   }
 }
 
+/** Store a value as JSON; silently does nothing if storage is unavailable. */
 export function writeJson(key: string, value: unknown): void {
   try {
     localStorage.setItem(PREFIX + key, JSON.stringify(value));
@@ -27,6 +29,7 @@ const KEEP = new Set(['lang', 'valueSource', 'analytics', 'poolLevel', 'onboarde
 /** Delete every score, streak and game in progress; keep the settings. */
 export function clearProgress(): void {
   try {
+    // Collect first, then remove: removing while iterating shifts the indexes.
     const doomed: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);

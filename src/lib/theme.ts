@@ -14,6 +14,7 @@ export const theme = signal<Theme>(saved && THEMES.includes(saved) ? saved : 'ni
 effect(() => {
   const t = theme.value;
   writeJson('theme', t);
+  // Night is the stylesheet's default, so it needs no attribute.
   if (t === 'night') delete document.documentElement.dataset.theme;
   else document.documentElement.dataset.theme = t;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', BAR[t]);

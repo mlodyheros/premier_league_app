@@ -20,6 +20,7 @@ export const history = signal<History | null>(null);
 export const historyError = signal<string | null>(null);
 let loading: Promise<void> | null = null;
 
+/** Fetch history.json once; concurrent callers share the request, and a failure allows a retry. */
 export function loadHistory(): Promise<void> {
   loading ??= fetch(`${import.meta.env.BASE_URL}data/history.json`)
     .then((res) => {

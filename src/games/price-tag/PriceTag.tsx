@@ -1,3 +1,7 @@
+/**
+ * Price Tag: five players, guess each one's market value on a slider, up to
+ * 100 points a player for getting close. Daily round or endless practice.
+ */
 import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { cardFooter } from '../../lib/shareSpecs';
 import { openShare } from '../../components/ShareSheet';
@@ -39,6 +43,7 @@ interface Progress {
   guesses: number[];
 }
 
+/** The game page: keeps daily and practice progress apart and hands the active one to Round. */
 export function PriceTag() {
   const { players, schedule } = useDataset();
   const [day] = useState(todayKey);
@@ -49,6 +54,7 @@ export function PriceTag() {
     () => readJson<Progress>(dailyKey(day)) ?? { source: valueSource.value, guesses: [] },
   );
   const [practiceRound, setPracticeRound] = useState(() => shuffled(practicePool()).slice(0, ROUNDS));
+  // Practice is not saved: a reload deals a new five.
   const [practice, setPractice] = useState<Progress>({ source: valueSource.value, guesses: [] });
 
   function switchMode(m: Mode) {
@@ -102,6 +108,7 @@ interface RoundProps {
   onRestart: () => void;
 }
 
+/** One five-player round: slider, lock in, reveal, and the end panel. */
 function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps) {
   const { source, guesses } = progress;
   const [slider, setSlider] = useState(START);
@@ -115,8 +122,10 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
 
   useEffect(() => setBest(getBest(bestKey)), [bestKey]);
 
+  // While a guess is revealed the card still shows that player; otherwise the next one.
   const index = revealed ? guesses.length - 1 : guesses.length;
   const player = round[Math.min(Math.max(index, 0), ROUNDS - 1)];
+  // Scored on the round's own source, never the current switch.
   const points = guesses.map((g, i) => score(g, valueOf(round[i], source)));
   const total = points.reduce((a, b) => a + b, 0);
   const guess = sliderToEur(slider);
@@ -126,6 +135,7 @@ function Round({ mode, day, round, progress, onProgress, onRestart }: RoundProps
     const next = [...guesses, guess];
     onProgress({ source, guesses: next });
     setRevealed(true);
+    // Score from `next`, not `guesses`: state has not caught up yet.
     const got = score(guess, valueOf(round[next.length - 1], source));
     buzz(got >= 60 ? 'good' : got >= 30 ? 'tap' : 'bad');
     if (got >= 90) celebrate();

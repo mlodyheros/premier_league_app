@@ -35,12 +35,15 @@ export function xiOnPitch(
   });
 }
 
+/** Each match as a card cell: win, draw, loss. */
 export function resultCells(results: readonly MatchResult[]): Cell[] {
   return results.map((r) => (r.outcome === 'W' ? 'good' : r.outcome === 'D' ? 'mid' : 'bad'));
 }
 
+/** A crest's address, for drawing onto the card. */
 export function crestUrl(code: string): string {
   return `${import.meta.env.BASE_URL}crests/${code}.svg`;
 }
 
+/** The card's call to action and the site's address. */
 export const cardFooter = (cta = t('share.cta')) => ({ cta, url: siteLabel() });

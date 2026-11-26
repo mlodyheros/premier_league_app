@@ -1,6 +1,7 @@
 /** Personal bests, one number per key, in localStorage. */
 import { readJson, writeJson } from './storage';
 
+/** The stored best for `key`, or null if there is none yet. */
 export function getBest(key: string): number | null {
   const v = readJson<number>(`best:${key}`);
   return typeof v === 'number' ? v : null;

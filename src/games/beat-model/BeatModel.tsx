@@ -1,3 +1,7 @@
+/**
+ * Beat the Model: ten players, each with a Transfermarkt value. Call whether
+ * the site's own value model rates him higher or lower. One point per right call.
+ */
 import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { cardFooter } from '../../lib/shareSpecs';
 import { openShare } from '../../components/ShareSheet';
@@ -29,6 +33,7 @@ const BEST_KEY = 'beat-model';
 const MODE_KEY = 'beat:mode';
 const dailyKey = (day: string) => `beat:daily:${day}`;
 
+/** The game page: daily and practice rounds, each with its own answers. */
 export function BeatModel() {
   const { players, schedule } = useDataset();
   const [day] = useState(todayKey);
@@ -47,6 +52,7 @@ export function BeatModel() {
     setMode(m);
   }
 
+  /** Only daily answers are saved; practice starts over on reload. */
   function setAnswers(next: Side[]) {
     if (mode === 'daily') {
       setDailyAnswers(next);
@@ -100,6 +106,7 @@ interface RoundProps {
   onRestart: () => void;
 }
 
+/** One ten-player round: the TM vs model duel, the reveal, and the end panel. */
 function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundProps) {
   const { meta } = useDataset();
   // Coming back mid-round shows the last answered player, revealed.
@@ -120,6 +127,7 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
     const next = [...answers, side];
     onAnswers(next);
     setRevealed(true);
+    // `answers.length` is the index of the question just answered.
     buzz(side === sideOf(questions[answers.length]) ? 'good' : 'bad');
     if (next.length === ROUNDS) {
       const final = next.filter((a, i) => a === sideOf(questions[i])).length;
@@ -290,6 +298,7 @@ function Round({ mode, day, questions, answers, onAnswers, onRestart }: RoundPro
  */
 function GapBar({ tm, model }: { tm: number; model: number }) {
   const gap = model / tm - 1;
+  // Half the track is 60%: bigger gaps fill it and stop.
   const reach = Math.min(Math.abs(gap) / 0.6, 1) * 50;
   const up = gap > 0;
   return (

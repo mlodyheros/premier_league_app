@@ -17,6 +17,7 @@ interface Request {
   file: string;
 }
 
+/** The open request, if any: set by openShare, cleared when the dialog closes. */
 const request = signal<Request | null>(null);
 
 /** Open the share sheet: a picture of the result, and its text. */
@@ -40,6 +41,8 @@ export function ShareSheet() {
     if (!req && d.open) d.close();
   }, [req]);
 
+  // Render the card for the request and format. A newer render cancels an older
+  // one, so switching formats quickly never shows a stale picture.
   useEffect(() => {
     if (!req) return;
     let cancelled = false;
@@ -61,6 +64,7 @@ export function ShareSheet() {
 
   const file = image && req ? new File([image.blob], `${req.file}-${format}.png`, { type: 'image/png' }) : null;
   const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
+  // Only offer "share image" where the browser can share files (mostly phones).
   const canShareFile = !!file && !!nav.canShare?.({ files: [file] });
 
   async function shareImage() {
@@ -94,6 +98,7 @@ export function ShareSheet() {
       class="settings share-sheet"
       aria-labelledby="share-title"
       onClose={() => (request.value = null)}
+      // A click on the backdrop lands on the <dialog> itself: close.
       onClick={(e) => {
         if (e.target === dialog.current) dialog.current?.close();
       }}

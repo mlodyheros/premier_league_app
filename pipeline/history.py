@@ -53,14 +53,17 @@ def _units(eur: float | None) -> int | None:
 
 
 def _week(day: str) -> tuple[int, int]:
+    """(ISO year, ISO week) of a YYYY-MM-DD date; tuples compare in date order."""
     return date.fromisoformat(day).isocalendar()[:2]
 
 
 def empty() -> dict:
+    """A history with no snapshots and no careers yet."""
     return {"unit": UNIT, "dates": [], "players": {}, "career": {}}
 
 
 def load(path: Path = HISTORY_PATH) -> dict:
+    """The current history.json, or an empty history on the first run."""
     if path.exists():
         return json.loads(path.read_text())
     return empty()
@@ -98,10 +101,12 @@ def add_snapshot(history: dict, players: list[dict], data_date: str) -> dict:
             raise SystemExit(f"Snapshot {data_date} is older than the last one ({dates[-1]}).")
         dates.append(data_date)
         slot = len(dates) - 1
+        # Every known player gets an empty slot for the new week; this export fills it below.
         for row in rows.values():
             row["tm"].append(None)
             row["model"].append(None)
 
+    # New players are back-filled with None for the weeks before they appeared.
     for p in players:
         row = rows.setdefault(p["name"], {"tm": [None] * len(dates), "model": [None] * len(dates)})
         row["tm"][slot] = _units(p["tm"])
@@ -156,6 +161,7 @@ def careers(root: Path, players: list[dict], data_date: str) -> dict[str, list]:
         if cands is None:
             continue
         ages = ((today - cands["born"]).dt.days / 365.25).fillna(-99)
+        # Same name is not enough (two Danilos): the age must match too, within a birthday's slack.
         cands = cands[(ages - p["age"]).abs() < 1.5]
         if len(cands) == 1:
             chosen[p["name"]] = int(cands["player_id"].iloc[0])
@@ -187,12 +193,14 @@ def careers(root: Path, players: list[dict], data_date: str) -> dict[str, list]:
 
 
 def write(history: dict, path: Path = HISTORY_PATH) -> None:
+    """Compact JSON (no spaces): the site downloads this file."""
     path.write_text(json.dumps(history, ensure_ascii=False, separators=(",", ":")))
 
 
 def from_git() -> dict:
     """Rebuild the weekly snapshots from every committed version of players.json."""
     repo = HERE.parent
+    # Each data update touches meta.json, so its commits list every export, oldest first.
     log = subprocess.run(
         ["git", "log", "--reverse", "--format=%H", "--", "public/data/meta.json"],
         cwd=repo, capture_output=True, text=True, check=True,

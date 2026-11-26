@@ -29,21 +29,25 @@ effect(() => writeJson('poolLevel', poolLevel.value));
 /** Daily rounds from this date on use the familiarity pools; earlier ones keep their old pool. */
 export const POOL_V2_FROM = '2026-10-02';
 
+/** Premier League minutes: the past seasons in the data plus this one. */
 export function plMinutes(p: Player): number {
   return p.stats.plMinutes + p.stats.minutes;
 }
 
+/** Whether a player is familiar enough for `level` (see the thresholds above). */
 export function inPool(p: Player, level: PoolLevel): boolean {
   if (level === 'expert') return true;
   if (level === 'easy') return p.tm >= 30_000_000 && plMinutes(p) >= 2500;
   return plMinutes(p) >= 1800 || (p.tm >= 50_000_000 && p.stats.otherMinutes >= 4000);
 }
 
+/** Every player in the pool for `level`. */
 export function poolOf(players: readonly Player[], level: PoolLevel): Player[] {
   return players.filter((p) => inPool(p, level));
 }
 
 /** The pool for a daily round on `day`: `normal` from POOL_V2_FROM, the old "known" list before. */
 export function dailyPoolFor(players: readonly Player[], day: string, legacy: (p: Player) => boolean): Player[] {
+  // ISO dates compare correctly as strings.
   return day >= POOL_V2_FROM ? poolOf(players, 'normal') : players.filter(legacy);
 }

@@ -22,6 +22,7 @@ export function notifyShare(result: 'shared' | 'copied' | 'downloaded' | 'failed
   toast(t(result === 'copied' ? 'share.copied' : result === 'downloaded' ? 'share.downloaded' : 'share.failed'));
 }
 
+/** Renders the queued toasts; mounted once, at the app's root. */
 export function Toasts() {
   return (
     <div class="toasts" role="status" aria-live="polite">

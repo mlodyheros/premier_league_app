@@ -9,6 +9,7 @@ export const updateReady = signal(false);
 
 const CHECK_EVERY = 15 * 60_000;
 
+/** File name of the script this page loaded, e.g. index-AbC123.js. */
 function runningScript(): string | null {
   const el = document.querySelector<HTMLScriptElement>('script[type="module"][src*="assets/index-"]');
   return el ? new URL(el.src).pathname.split('/').pop() ?? null : null;
@@ -19,6 +20,7 @@ async function check(): Promise<void> {
   const mine = runningScript();
   if (!mine) return;
   try {
+    // Cache-busted, so a CDN or the browser can't hand back the old page.
     const res = await fetch(`./index.html?v=${Date.now()}`, { cache: 'no-store' });
     if (!res.ok) return;
     const live = /assets\/(index-[\w-]+\.js)/.exec(await res.text())?.[1];

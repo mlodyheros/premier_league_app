@@ -37,6 +37,7 @@ export interface Ctx {
   season: number;
 }
 
+/** Seasons run July to June: data from 2027-03 belongs to the season that started in 2026. */
 export function seasonStart(dataDate: string): number {
   const [y, m] = dataDate.split('-').map(Number);
   return m >= 7 ? y : y - 1;
@@ -65,6 +66,7 @@ export function sellPrice(p: Player, { source, season }: Ctx): number {
   return toTenth(valueOf(p, source) * SELL_SHARE * contractFactor(p, season));
 }
 
+/** BUDGET_SHARE of the squad's value, rounded to €5M, never below MIN_BUDGET. */
 export function startingBudget(players: readonly Player[], club: string, source: ValueSource): number {
   const squadValue = players.filter((p) => p.club === club).reduce((sum, p) => sum + valueOf(p, source), 0);
   return Math.max(MIN_BUDGET, Math.round((squadValue * BUDGET_SHARE) / 5_000_000) * 5_000_000);
@@ -108,12 +110,14 @@ export function buyers(players: readonly Player[], meta: Meta, w: Window, ctx: C
   return out;
 }
 
+/** Your squad after the window, most valuable first. */
 export function squadOf(players: readonly Player[], w: Window): Player[] {
   return afterWindow(players, w)
     .filter((p) => p.club === w.club)
     .sort((a, b) => b.tm - a.tm);
 }
 
+/** Budget plus sales minus signings; negative when a value-source switch repriced the deals. */
 export function moneyLeft(players: readonly Player[], w: Window, ctx: Ctx): number {
   const byName = new Map(players.map((p) => [p.name, p]));
   const total = (names: string[], price: (p: Player, ctx: Ctx) => number) =>
@@ -121,10 +125,12 @@ export function moneyLeft(players: readonly Player[], w: Window, ctx: Ctx): numb
   return startingBudget(players, w.club, ctx.source) + total(w.sold, sellPrice) - total(w.bought, buyPrice);
 }
 
+/** Your player, not sold yet, within MAX_OUT, and the squad stays above MIN_SQUAD. */
 export function canSell(players: readonly Player[], w: Window, p: Player): boolean {
   return p.club === w.club && !w.sold.includes(p.name) && w.sold.length < MAX_OUT && squadOf(players, w).length > MIN_SQUAD;
 }
 
+/** Another club's player, not bought yet, within MAX_IN, and affordable now. */
 export function canBuy(players: readonly Player[], w: Window, p: Player, ctx: Ctx): boolean {
   return (
     p.club !== w.club &&

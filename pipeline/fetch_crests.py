@@ -20,6 +20,7 @@ OUT_DIR = Path(__file__).resolve().parent.parent / "public" / "crests"
 
 
 def main() -> None:
+    """Fetch each club's badge by its FPL team code and save it as <SHORT>.svg."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--pl-value", type=Path, default=Path.home() / "projects" / "pl-value-predictor")
     parser.add_argument("--force", action="store_true", help="download even if the file exists")
@@ -33,6 +34,7 @@ def main() -> None:
             continue
         with urllib.request.urlopen(CREST_URL.format(code=team["code"]), timeout=20) as resp:
             body = resp.read()
+        # A missing badge comes back as an HTML error page, not a 404: check before saving.
         if b"<svg" not in body[:2000]:
             raise SystemExit(f"{team['short_name']}: not an SVG")
         target.write_bytes(body)

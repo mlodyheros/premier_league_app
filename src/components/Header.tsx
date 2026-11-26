@@ -3,6 +3,7 @@ import { href, route } from '../router';
 import { Settings } from './Settings';
 import { ValueToggle } from './ValueToggle';
 
+/** The top bar: brand, main links (desktop) and the value switch and settings. */
 export function Header() {
   return (
     <header class="site-header">

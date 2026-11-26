@@ -1,3 +1,7 @@
+/**
+ * Transfer Window: pick a club, make up to three sales and three signings on a
+ * budget, then play a season and see how far the deals moved you from the forecast.
+ */
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { Icon } from '../../components/Icon';
 import { Avatar, Crest } from '../../components/Avatar';
@@ -46,6 +50,7 @@ import {
   type Window,
 } from './logic';
 
+/** Saved to storage, so a half-done window survives a reload. */
 interface State {
   window: Window | null;
   season: PlayedSeason | null;
@@ -60,6 +65,7 @@ type Tab = 'squad' | 'market';
 type Group = 'all' | PosGroup;
 const GROUPS: Group[] = ['all', 'GK', 'DEF', 'MID', 'FWD'];
 
+/** The game page: club picker, then the window, then the played season. */
 export function TransferWindow() {
   const { players, meta } = useDataset();
   const source = valueSource.value;
@@ -68,6 +74,7 @@ export function TransferWindow() {
   const [tab, setTab] = useState<Tab>('squad');
   const [justPlayed, setJustPlayed] = useState(false);
   const w = state.window;
+  // Records are kept per value source: TM and model prices make different games.
   const bestKey = `transfer:${source}`;
   const best = getBest(bestKey);
 
@@ -81,6 +88,7 @@ export function TransferWindow() {
     }
   }, [names]);
 
+  // The forecast with no deals: the baseline every change is measured against.
   const before = useMemo(
     () => (w ? outlook(leagueAfter(players, meta, ctx, { club: w.club, sold: [], bought: [] })) : null),
     [w?.club, ctx, players],
@@ -115,6 +123,7 @@ export function TransferWindow() {
   function play() {
     if (!w || !before || moneyLeft(players, w, ctx) < 0) return;
     const league = leagueAfter(players, meta, ctx, w);
+    // Unseeded on purpose: the forecast is the average, the played season is one draw from it.
     const s = simulateSeason(league, USER_TEAM_ID, Math.random, REALISTIC, SEASON_FORM_SD);
     const squad = squadOf(players, w);
     const lineup = autoFill(squad, FORMATION, {}, Infinity, source);
@@ -130,6 +139,7 @@ export function TransferWindow() {
       position: s.position,
       scorers: attributeGoals(FORMATION, lineup, s.results, Math.random),
     };
+    // The score: places gained over the no-deals forecast (negative if you finished below it).
     const gained = Math.round(before.position) - s.position;
     submitBest(bestKey, gained);
     trackEvent(`transfer/${w.club}/gained-${gained}`);
@@ -138,6 +148,7 @@ export function TransferWindow() {
     setState((st) => ({ ...st, season, before }));
   }
 
+  /** Share text: forecast vs finish, the deals by short name, and the results grid. */
   function shareTextNow(): string {
     if (!w || !state.season || !state.before) return '';
     const club = meta.clubs[w.club].name;
@@ -235,6 +246,7 @@ function formatDiff(n: number): string {
   return t(n > 0 ? 'tw.placesUp' : 'tw.placesDown', { count: Math.abs(n) });
 }
 
+/** Every club with its starting budget, plus a random pick. */
 function ClubPicker({ onPick }: { onPick: (club: string) => void }) {
   const { players, meta } = useDataset();
   const source = valueSource.value;
@@ -262,6 +274,7 @@ function ClubPicker({ onPick }: { onPick: (club: string) => void }) {
   );
 }
 
+/** The open window: outlook before/after, deals so far, and the squad and market lists. */
 function WindowView({
   w,
   before,
@@ -292,6 +305,7 @@ function WindowView({
   const byName = useMemo(() => new Map(players.map((p) => [p.name, p])), [players]);
   const squad = squadOf(players, w);
   const left = moneyLeft(players, w, ctx);
+  // Sold player name -> the club that bought him, for the "to Club" note.
   const goesTo = useMemo(() => buyers(players, meta, w, ctx), [players, meta, w, ctx]);
 
   const offers = useMemo(() => {
@@ -301,6 +315,7 @@ function WindowView({
       .slice(0, MARKET_ROWS);
   }, [players, w, ctx, group, query]);
 
+  // A name is only ever in one list, so undo just drops it from both.
   const undo = (name: string) =>
     onChange({ ...w, sold: w.sold.filter((n) => n !== name), bought: w.bought.filter((n) => n !== name) });
 
@@ -440,6 +455,7 @@ function WindowView({
 
 const pct = (v: number) => `${Math.round(v * 100)}%`;
 
+/** One outlook figure, with the pre-deal value shown when it changed (green if better). */
 function Stat({
   label,
   before,
@@ -453,6 +469,7 @@ function Stat({
   format: (v: number) => string;
   lowerIsBetter?: boolean;
 }) {
+  // Compare the formatted values so rounding noise doesn't show as a change.
   const changed = format(before) !== format(now);
   const better = lowerIsBetter ? now < before : now > before;
   return (
@@ -470,6 +487,7 @@ function Stat({
   );
 }
 
+/** A player line in the squad or market list; the action button comes in as children. */
 function Row({
   player: p,
   ctx,

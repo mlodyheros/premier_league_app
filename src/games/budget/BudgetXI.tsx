@@ -1,3 +1,7 @@
+/**
+ * Budget XI: pick a budget, build the strongest starting eleven you can afford
+ * at real market values, then see how it would rank and play a season with it.
+ */
 import { GameHeader, OtherGames } from '../../components/GameHeader';
 import { useRevealWhen } from '../../hooks/useRevealWhen';
 import { Icon } from '../../components/Icon';
@@ -39,11 +43,13 @@ const KEY = 'budget:draft';
 const sheetLayout = () => typeof matchMedia !== 'undefined' && matchMedia('(max-width: 720px)').matches;
 const MAX_ROWS = 60;
 
+/** The game page: budget themes, the pitch, the player picker and the result. */
 export function BudgetXI() {
   const { players, meta } = useDataset();
   const source = valueSource.value;
   const byName = useMemo(() => new Map(players.map((p) => [p.name, p])), [players]);
 
+  // Read on every render, but only used as the initial state below.
   const saved = readJson<Saved>(KEY);
   const [budget, setBudget] = useState(themeFor(saved?.budget).budget);
   const theme = themeFor(budget);
@@ -81,6 +87,7 @@ export function BudgetXI() {
   const strength = teamStrength(formation, lineup, source);
   const complete = isComplete(formation, lineup) && !over;
   const endRef = useRevealWhen(complete);
+  // A best per budget and value source: a €700M XI shouldn't beat an €80M record.
   const bestKey = `budget:${budget}:${source}`;
   const [best, setBest] = useState(() => getBest(bestKey));
   const [newBest, setNewBest] = useState(false);
@@ -89,6 +96,7 @@ export function BudgetXI() {
     if (complete) {
       const isNew = submitBest(bestKey, strength);
       setNewBest(isNew);
+      // Confetti from grade A (84.5), the big version at A+ (86.5); see grade() in logic.
       if (isNew && strength >= 84.5) celebrate(strength >= 86.5);
     } else {
       setNewBest(false);
@@ -153,6 +161,7 @@ export function BudgetXI() {
     };
   }, [sheetOpen]);
 
+  /** Fill the empty slots within the money left (see autoFill); picks already made stay. */
   function fillRest() {
     const filled = autoFill(players, formation, lineup, budget, source);
     setPicks(Object.fromEntries(Object.entries(filled).flatMap(([id, p]) => (p ? [[id, p.name]] : []))));
@@ -201,6 +210,7 @@ export function BudgetXI() {
   }
 
   const clubs = useMemo(() => clubTeams(players, meta, source), [players, meta, source]);
+  // The finished XI's prospects: it replaces the weakest club (first in `league`), against the other 19.
   const outlook = useMemo(() => {
     if (!complete) return null;
     const { league } = withUserTeam(clubs, strength);
@@ -212,6 +222,7 @@ export function BudgetXI() {
     };
   }, [complete, strength, clubs]);
 
+  /** Share text with the XI by short name, keeper last. */
   function shareTextNow(): string {
     const lines = [...formation.slots].reverse().map((s) => lineup[s.id]?.short ?? '?');
     const head = t('budget.share', {

@@ -3,6 +3,7 @@ import { t } from '../i18n';
 import { href } from '../router';
 import { Icon, type IconName } from './Icon';
 
+/** One game or page as a player on the home page's pitch. */
 export interface Spot {
   /** Where on the pitch, percent from the left and from the top (attack at the top). */
   x: number;

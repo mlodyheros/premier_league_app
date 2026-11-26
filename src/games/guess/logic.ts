@@ -28,6 +28,11 @@ function direction(guess: number, target: number): Direction {
   return target > guess ? 'up' : 'down';
 }
 
+/**
+ * The five clue marks for a guess: club exact only; position near on the same
+ * group (e.g. CB vs LB); nationality near on the same continent; age and value
+ * near within AGE_NEAR years and VALUE_NEAR times.
+ */
 export function compare(guess: Player, target: Player, source: ValueSource): Feedback {
   const gv = valueOf(guess, source);
   const tv = valueOf(target, source);
@@ -99,6 +104,7 @@ export const HINT_AFTER = 5;
 
 const SQUARE: Record<Mark, string> = { hit: '🟩', near: '🟨', miss: '⬛' };
 
+/** One row of coloured squares per guess, in board order: no names, nothing given away. */
 export function shareGrid(feedback: readonly Feedback[]): string {
   return feedback
     .map((f) => [f.club, f.pos, f.nat, f.age.mark, f.value.mark].map((m) => SQUARE[m]).join(''))
