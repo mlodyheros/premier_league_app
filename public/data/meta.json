@@ -1,55 +1,55 @@
 {
   "season": "2026/27",
-  "dataDate": "2026-11-27",
+  "dataDate": "2026-11-28",
   "gameweek": 11,
-  "exportedAt": "2026-11-27T12:40:24+00:00",
+  "exportedAt": "2026-11-28T12:38:25+00:00",
   "source": {
     "name": "pl-value-predictor",
     "url": "https://github.com/mlodyheros/pl-value-predictor"
   },
-  "players": 545,
+  "players": 546,
   "model": {
     "kind": "Linear regression on log(1 + value), weighted by √value",
     "features": 28,
     "scoring": "out-of-fold (5-fold), averaged over 20 random splits",
-    "cvR2Log": 0.868,
-    "cvMaeEur": 5860000,
-    "cvRmseEur": 8730000,
-    "cvTopDecileMaeEur": 12000000,
-    "cvTopDecileRatio": 0.899,
+    "cvR2Log": 0.87,
+    "cvMaeEur": 5850000,
+    "cvRmseEur": 8610000,
+    "cvTopDecileMaeEur": 12460000,
+    "cvTopDecileRatio": 0.901,
     "rangeLevel": 0.8,
     "tiers": {
       "0": {
         "key": "pl_history",
         "label": "backed by Premier League history",
-        "players": 428,
+        "players": 429,
         "rangeLow": 0.56,
-        "rangeHigh": 1.52
+        "rangeHigh": 1.53
       },
       "1": {
         "key": "non_pl_history",
         "label": "backed by other leagues only",
         "players": 60,
-        "rangeLow": 0.59,
-        "rangeHigh": 1.38
+        "rangeLow": 0.63,
+        "rangeHigh": 1.39
       },
       "2": {
         "key": "no_history",
         "label": "no recent playing record in any covered league",
         "players": 57,
-        "rangeLow": 0.37,
-        "rangeHigh": 2.03
+        "rangeLow": 0.36,
+        "rangeHigh": 2.02
       }
     },
     "diagnostics": {
       "typicalMiss": 0.256,
-      "inRange": 440,
-      "ratioUnder5m": 1.61,
+      "inRange": 437,
+      "ratioUnder5m": 1.59,
       "ratioOver20m": 0.98,
-      "typicalMissNoRecord": 0.485,
-      "typicalMissWithRecord": 0.236,
-      "totalModelEur": 14111390000,
-      "totalTmEur": 14107375000
+      "typicalMissNoRecord": 0.492,
+      "typicalMissWithRecord": 0.233,
+      "totalModelEur": 14102550000,
+      "totalTmEur": 14111375000
     }
   },
   "clubs": {
